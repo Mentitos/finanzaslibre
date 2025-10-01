@@ -217,6 +217,7 @@ class SettingsMenu extends StatelessWidget {
             _buildFeatureItem('Historial completo de movimientos'),
             _buildFeatureItem('Estadísticas detalladas'),
             _buildFeatureItem('Exportación e importación de datos'),
+            _buildFeatureItem('Retroalimentación y soporte'),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
