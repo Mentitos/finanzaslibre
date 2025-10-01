@@ -5,6 +5,7 @@ Objetivos:
   - Multiples Usuarios
   - Modo oscuro
   - Estadisticas mensuales
+  - Objetivos de ahorro concretos o aislados
 
 
 Objetivos logrados:
