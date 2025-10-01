@@ -126,7 +126,7 @@ class HistoryTab extends StatelessWidget {
       items: [
         const DropdownMenuItem(
           value: 'all',
-          child: Text('Todas las categorías'),
+          child: Text('Categorías'),
         ),
         ...categories.map((category) => DropdownMenuItem(
               value: category,

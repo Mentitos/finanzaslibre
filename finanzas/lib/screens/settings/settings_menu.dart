@@ -4,6 +4,7 @@ import '../../constants/app_constants.dart';
 import 'security_section.dart';
 import '../dialogs/export_import_dialogs.dart';
 import '../dialogs/confirmation_dialogs.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsMenu extends StatelessWidget {
   final SavingsDataManager dataManager;
@@ -186,17 +187,18 @@ class SettingsMenu extends StatelessWidget {
   }
 
   void _showAboutDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.savings, color: Theme.of(context).primaryColor, size: 28),
-            const SizedBox(width: 12),
-            const Text(AppConstants.appName),
-          ],
-        ),
-        content: Column(
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Row(
+        children: [
+          Icon(Icons.savings, color: Theme.of(context).primaryColor, size: 28),
+          const SizedBox(width: 12),
+          const Text(AppConstants.appName),
+        ],
+      ),
+      content: SingleChildScrollView(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -207,6 +209,76 @@ class SettingsMenu extends StatelessWidget {
             const SizedBox(height: 8),
             const Text(AppConstants.appDescription),
             const SizedBox(height: 16),
+
+            // ---- NUEVA SECCION OPEN SOURCE ----
+            const Text(
+              'Proyecto Open Source',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Este proyecto es de código abierto. Podes ver el repositorio en:',
+              style: TextStyle(fontSize: 13),
+            ),
+            const SizedBox(height: 4),
+            InkWell(
+              onTap: () {
+                // abre el link al repo
+                // necesitas agregar url_launcher en pubspec.yaml
+                // url_launcher: ^6.3.0 (o la ultima version)
+                launchUrl(Uri.parse('https://github.com/Mentitos/finanzaslibre'));
+              },
+              child: const Text(
+                'github.com/Mentitos/finanzaslibre',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.blue,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // ---- CREATOR ----
+            const Text(
+              'Creador:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            const Text('Matias Gabriel Tello'),
+
+            const SizedBox(height: 16),
+
+            // ---- DONACIONES ----
+            const Text(
+              'Apoya el proyecto:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.purple.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.purple.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.favorite, color: Colors.purple[700], size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Si queres apoyar podes donar por Ualá: MATIASTELLO54.UALA',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ---- CARACTERISTICAS ORIGINALES ----
             const Text(
               'Características:',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -218,6 +290,7 @@ class SettingsMenu extends StatelessWidget {
             _buildFeatureItem('Estadísticas detalladas'),
             _buildFeatureItem('Exportación e importación de datos'),
             _buildFeatureItem('Retroalimentación y soporte'),
+
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -241,15 +314,17 @@ class SettingsMenu extends StatelessWidget {
             ),
           ],
         ),
-        actions: [
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
-          ),
-        ],
       ),
-    );
-  }
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cerrar'),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildFeatureItem(String text) {
     return Padding(
