@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../models/savings_record.dart';
-import '../../widgets/stat_card.dart';
 import '../../widgets/record_item.dart';
 import '../../utils/formatters.dart';
 import '../../constants/app_constants.dart';
@@ -201,42 +200,86 @@ class SummaryTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow() {
-    final totalRecords = statistics['totalRecords'] ?? 0;
-    final totalDeposits = statistics['totalDeposits'] ?? 0;
-    final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
+ Widget _buildStatsRow() {
+  final totalRecords = statistics['totalRecords'] ?? 0;
+  final totalDeposits = statistics['totalDeposits'] ?? 0;
+  final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
 
-    return Row(
-      children: [
-        Expanded(
-          child: StatCard(
+  return Card(
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(16),
+    ),
+    elevation: 1,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      child: Row(
+        children: [
+          _buildStatItem(
             title: 'Total Registros',
             value: '$totalRecords',
             icon: Icons.receipt_long,
             color: Colors.orange,
           ),
-        ),
-        const SizedBox(width: AppConstants.smallPadding),
-        Expanded(
-          child: StatCard(
+          _buildDivider(),
+          _buildStatItem(
             title: AppConstants.depositLabel,
             value: '$totalDeposits',
             icon: Icons.arrow_upward,
             color: AppConstants.depositColor,
           ),
-        ),
-        const SizedBox(width: AppConstants.smallPadding),
-        Expanded(
-          child: StatCard(
+          _buildDivider(),
+          _buildStatItem(
             title: AppConstants.withdrawalLabel,
             value: '$totalWithdrawals',
             icon: Icons.arrow_downward,
             color: AppConstants.withdrawalColor,
           ),
+        ],
+      ),
+    ),
+  );
+}
+Widget _buildStatItem({
+  required String title,
+  required String value,
+  required IconData icon,
+  required Color color,
+}) {
+  return Expanded(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: color, size: 26),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 13,
+            color: Colors.grey[700],
+          ),
+          textAlign: TextAlign.center,
         ),
       ],
-    );
-  }
+    ),
+  );
+}
+Widget _buildDivider() {
+  return Container(
+    width: 1,
+    height: 50,
+    color: Colors.grey.withOpacity(0.3),
+  );
+}
+
 
   Widget _buildRecentMovements(BuildContext context) {
     final recentRecords = allRecords.take(AppConstants.recentRecordsCount).toList();
