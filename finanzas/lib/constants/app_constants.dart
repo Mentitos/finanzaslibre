@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppConstants {
   // Información de la aplicación
   static const String appName = 'Mis Ahorros';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.1.0';
   static const String appDescription = 'Tu compañero para gestionar ahorros';
   
   // Colores de la aplicación

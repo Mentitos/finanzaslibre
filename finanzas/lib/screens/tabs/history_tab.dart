@@ -98,13 +98,13 @@ class HistoryTab extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
       child: Row(
         children: [
-          _buildFilterChip(AppConstants.allFilter, 'all'),
-          const SizedBox(width: AppConstants.smallPadding),
           _buildFilterChip(AppConstants.depositsFilter, 'deposits'),
           const SizedBox(width: AppConstants.smallPadding),
           _buildFilterChip(AppConstants.withdrawalsFilter, 'withdrawals'),
           const SizedBox(width: AppConstants.defaultPadding),
-          _buildCategoryDropdown(),
+          Builder(
+            builder: (context) => _buildCategoryDropdown(context),
+          ),
         ],
       ),
     );
@@ -115,28 +115,81 @@ class HistoryTab extends StatelessWidget {
     return FilterChip(
       label: Text(text),
       selected: isSelected,
-      onSelected: (selected) => onFilterChanged(value),
+      onSelected: (selected) {
+        if (isSelected) {
+          onFilterChanged('all');
+        } else {
+          onFilterChanged(value);
+        }
+      },
     );
   }
 
-  Widget _buildCategoryDropdown() {
-    return DropdownButton<String>(
-      value: selectedCategory,
-      hint: const Text('Categoría'),
-      items: [
-        const DropdownMenuItem(
-          value: 'all',
-          child: Text('Categorías'),
+  Widget _buildCategoryDropdown(BuildContext context) {
+    return PopupMenuButton<String>(
+      initialValue: selectedCategory,
+      offset: const Offset(0, 40),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: selectedCategory == 'all' 
+                ? Colors.grey.shade400 
+                : Theme.of(context).primaryColor,
+            width: selectedCategory == 'all' ? 1 : 2,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: selectedCategory == 'all'
+              ? Colors.transparent
+              : Theme.of(context).primaryColor.withOpacity(0.1),
         ),
-        ...categories.map((category) => DropdownMenuItem(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.category,
+              size: 20,
+              color: selectedCategory == 'all' 
+                  ? Colors.grey.shade700 
+                  : Theme.of(context).primaryColor,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              selectedCategory == 'all' 
+                  ? 'Categoría' 
+                  : selectedCategory,
+              style: TextStyle(
+                fontWeight: selectedCategory == 'all' 
+                    ? FontWeight.normal 
+                    : FontWeight.bold,
+                color: selectedCategory == 'all' 
+                    ? Colors.black87 
+                    : Theme.of(context).primaryColor,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.arrow_drop_down,
+              size: 20,
+              color: selectedCategory == 'all' 
+                  ? Colors.grey.shade700 
+                  : Theme.of(context).primaryColor,
+            ),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => [
+        const PopupMenuItem(
+          value: 'all',
+          child: Text('Todas las categorías'),
+        ),
+        ...categories.map((category) => PopupMenuItem(
               value: category,
               child: Text(category),
             )),
       ],
-      onChanged: (value) {
-        if (value != null) {
-          onCategoryChanged(value);
-        }
+      onSelected: (value) {
+        onCategoryChanged(value);
       },
     );
   }

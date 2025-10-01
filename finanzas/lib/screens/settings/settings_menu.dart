@@ -5,6 +5,7 @@ import 'security_section.dart';
 import '../dialogs/export_import_dialogs.dart';
 import '../dialogs/confirmation_dialogs.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart'; // Para Clipboard
 
 class SettingsMenu extends StatelessWidget {
   final SavingsDataManager dataManager;
@@ -250,33 +251,90 @@ class SettingsMenu extends StatelessWidget {
             const SizedBox(height: 16),
 
             // ---- DONACIONES ----
-            const Text(
-              'Apoya el proyecto:',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            // ---- DONACIONES ----
+const Text(
+  'Apoya el proyecto:',
+  style: TextStyle(fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 4),
+Container(
+  padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: Colors.purple.withOpacity(0.1),
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(color: Colors.purple.withOpacity(0.3)),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Icon(Icons.favorite, color: Colors.purple[700], size: 20),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'Si querés apoyar podés donar por Ualá:',
+              style: TextStyle(fontSize: 13),
             ),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.purple.withOpacity(0.3)),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      InkWell(
+        onTap: () async {
+          const alias = 'MATIASTELLO54.UALA'; // Cambia esto por tu alias real
+          await Clipboard.setData(const ClipboardData(text: alias));
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text('Alias copiado: $alias'),
+                  ],
+                ),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 2),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.favorite, color: Colors.purple[700], size: 20),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Si queres apoyar podes donar por Ualá: MATIASTELLO54.UALA',
-                      style: TextStyle(fontSize: 13),
-                    ),
-                  ),
-                ],
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.purple.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.purple.withOpacity(0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.account_balance_wallet, 
+                   color: Colors.purple[700], 
+                   size: 18),
+              const SizedBox(width: 8),
+              const Text(
+                'MATIASTELLO54.UALA', // Cambia esto por tu alias real
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple,
+                ),
               ),
-            ),
-
-            const SizedBox(height: 16),
+              const SizedBox(width: 8),
+              Icon(Icons.content_copy, 
+                   color: Colors.purple[700], 
+                   size: 16),
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
+),
 
             // ---- CARACTERISTICAS ORIGINALES ----
             const Text(
