@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 
 class PinSetupScreen extends StatefulWidget {
   final bool isChanging;
@@ -19,15 +20,31 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   String _confirmPin = '';
   bool _isConfirming = false;
   bool _isVerifyingCurrent = false;
+  bool _biometricEnabled = false;
+  
+  final LocalAuthentication _localAuth = LocalAuthentication();
+  bool _canCheckBiometrics = false;
 
   bool get _needsCurrentPin => widget.isChanging && widget.currentPin != null;
 
   @override
   void initState() {
     super.initState();
-    // Si necesita verificar el PIN actual primero
+    _checkBiometrics();
     if (_needsCurrentPin) {
       _isVerifyingCurrent = true;
+    }
+  }
+
+  Future<void> _checkBiometrics() async {
+    try {
+      final canCheck = await _localAuth.canCheckBiometrics;
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      setState(() {
+        _canCheckBiometrics = canCheck && isDeviceSupported;
+      });
+    } catch (e) {
+      setState(() => _canCheckBiometrics = false);
     }
   }
 
@@ -52,6 +69,10 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
               _buildTitle(),
               const SizedBox(height: 48),
               _buildPinDots(),
+              if (!_isVerifyingCurrent && !_isConfirming) ...[
+                const SizedBox(height: 32),
+                _buildBiometricToggle(),
+              ],
               const Spacer(),
               _buildNumPad(),
               const SizedBox(height: 24),
@@ -104,6 +125,58 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
         fontWeight: FontWeight.w500,
       ),
       textAlign: TextAlign.center,
+    );
+  }
+
+  Widget _buildBiometricToggle() {
+    if (!_canCheckBiometrics) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.green.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.fingerprint,
+            color: Colors.green[700],
+            size: 32,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Desbloqueo biométrico',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Usa huella o Face ID',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: _biometricEnabled,
+            onChanged: (value) {
+              setState(() => _biometricEnabled = value);
+            },
+            activeColor: Colors.green,
+          ),
+        ],
+      ),
     );
   }
 
@@ -261,7 +334,11 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   void _verifyConfirmation() {
     if (_pin == _confirmPin) {
       Future.delayed(const Duration(milliseconds: 200), () {
-        Navigator.pop(context, _pin);
+        // Retornar tanto el PIN como el estado de biométrica
+        Navigator.pop(context, {
+          'pin': _pin,
+          'biometricEnabled': _biometricEnabled,
+        });
       });
     } else {
       _showError('Los PINs no coinciden');

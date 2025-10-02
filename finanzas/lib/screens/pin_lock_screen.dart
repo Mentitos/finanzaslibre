@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Necesario para SystemNavigator.pop
+import 'package:local_auth/local_auth.dart';
 
 class PinLockScreen extends StatefulWidget {
   final String correctPin;
+  final bool isBiometricEnabled; 
 
   const PinLockScreen({
     super.key,
     required this.correctPin,
+    this.isBiometricEnabled = false,
   });
 
   @override
@@ -18,17 +22,78 @@ class _PinLockScreenState extends State<PinLockScreen>
   int _attempts = 0;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
+  
+  final LocalAuthentication _localAuth = LocalAuthentication();
+  bool _canUseBiometrics = false;
 
   @override
   void initState() {
     super.initState();
+    // 1. Configuración de animación (corregida)
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
-      vsync: this,
+      vsync: this, 
     );
     _shakeAnimation = Tween<double>(begin: 0, end: 10).animate(
       CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
     );
+
+    // 2. Comprobar y autenticar con biometría
+    if (widget.isBiometricEnabled) {
+      // Usamos addPostFrameCallback para asegurar que el contexto (BuildContext) es válido
+      // y no hay problemas al mostrar el diálogo de autenticación justo después de la navegación.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkBiometrics(); 
+      });
+    }
+  }
+
+  // 3. Método para verificar si el dispositivo soporta biometría
+  Future<void> _checkBiometrics() async {
+    try {
+      final canCheck = await _localAuth.canCheckBiometrics;
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      
+      if (mounted) {
+        setState(() {
+          _canUseBiometrics = canCheck && isDeviceSupported;
+        });
+      }
+
+      // 4. Intenta autenticar automáticamente si está disponible
+      if (_canUseBiometrics) {
+        _authenticateWithBiometrics();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _canUseBiometrics = false);
+      }
+    }
+  }
+  
+  // 5. Nuevo método para autenticación biométrica
+  Future<void> _authenticateWithBiometrics() async {
+    bool authenticated = false;
+    try {
+      authenticated = await _localAuth.authenticate(
+        localizedReason: 'Accede usando tu huella o Face ID',
+        options: const AuthenticationOptions(
+          useErrorDialogs: true,
+          stickyAuth: true,
+        ),
+      );
+    } on PlatformException catch (e) {
+      // Manejar el error si la autenticación falla por un problema del sistema
+      debugPrint('Biometric Error: ${e.code}');
+    }
+
+    if (authenticated) {
+      // Autenticación exitosa, cierra la pantalla de bloqueo
+      if (mounted) {
+        // Retornar 'true' para indicar éxito al AuthWrapper
+        Navigator.of(context).pop(true); 
+      }
+    }
   }
 
   @override
@@ -173,6 +238,10 @@ class _PinLockScreenState extends State<PinLockScreen>
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: numbers.map((number) {
         if (number.isEmpty) {
+          // Si el usuario habilitó biometría Y el dispositivo es compatible
+          if (widget.isBiometricEnabled && _canUseBiometrics) {
+            return _buildBiometricButton(); 
+          }
           return const SizedBox(width: 72, height: 72);
         }
 
@@ -182,6 +251,35 @@ class _PinLockScreenState extends State<PinLockScreen>
 
         return _buildNumButton(number);
       }).toList(),
+    );
+  }
+
+  Widget _buildBiometricButton() {
+    return InkWell(
+      onTap: _authenticateWithBiometrics,
+      borderRadius: BorderRadius.circular(36),
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.green[50],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Icon(
+            Icons.fingerprint,
+            color: Colors.green[700],
+            size: 32,
+          ),
+        ),
+      ),
     );
   }
 
@@ -255,6 +353,7 @@ class _PinLockScreenState extends State<PinLockScreen>
 
   void _verifyPin() {
     if (_pin == widget.correctPin) {
+      // Retornar 'true' para indicar éxito al AuthWrapper
       Navigator.of(context).pop(true);
     } else {
       _shakeController.forward(from: 0);
@@ -296,8 +395,9 @@ class _PinLockScreenState extends State<PinLockScreen>
         actions: [
           FilledButton(
             onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).pop(false);
+              // Cierra el diálogo y luego cierra la aplicación.
+              Navigator.of(context).pop(); 
+              SystemNavigator.pop(); 
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Entendido'),

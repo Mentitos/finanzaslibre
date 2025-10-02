@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'screens/savings_screen.dart';
 import 'screens/pin_lock_screen.dart';
-import 'services/savings_data_manager.dart';
+import 'services/savings_data_manager.dart'; // Asegúrate de que este servicio existe
 
 void main() {
+  // Inicializamos el gestor de datos para SharedPreferences o similar
+  SavingsDataManager.init(); 
   runApp(const MyApp());
 }
 
@@ -47,6 +49,8 @@ class _AuthWrapperState extends State<AuthWrapper> {
   bool _isAuthenticated = false;
   bool _needsPin = false;
   String? _savedPin;
+  // ************* CORRECCIÓN 1: Añadir estado para biometría *************
+  bool _isBiometricEnabled = false; 
 
   @override
   void initState() {
@@ -57,25 +61,37 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _checkPinStatus() async {
     final pinEnabled = await _dataManager.isPinEnabled();
     final pin = await _dataManager.loadPin();
+    
+    // ************* CORRECCIÓN 2: Cargar el estado de biometría *************
+    final biometricStatus = await _dataManager.loadBiometricEnabled();
 
     setState(() {
       _needsPin = pinEnabled && pin != null;
       _savedPin = pin;
-      _isAuthenticated = !_needsPin; // Si no necesita PIN, ya está autenticado
+      _isBiometricEnabled = biometricStatus; // <--- Cargar el estado
+      _isAuthenticated = !_needsPin; 
       _isLoading = false;
     });
 
     // Si necesita PIN, mostrarlo
     if (_needsPin && _savedPin != null && mounted) {
-      _showPinLock();
+      // Usamos addPostFrameCallback para asegurar que el widget se haya dibujado
+      // antes de intentar hacer una navegación (push).
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+         _showPinLock();
+      });
     }
   }
 
   Future<void> _showPinLock() async {
+    // ************* CORRECCIÓN 3: Pasar el estado de biometría a PinLockScreen *************
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PinLockScreen(correctPin: _savedPin!),
+        builder: (context) => PinLockScreen(
+          correctPin: _savedPin!,
+          isBiometricEnabled: _isBiometricEnabled, // <--- ¡Valor corregido!
+        ),
         fullscreenDialog: true,
       ),
     );
@@ -85,8 +101,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         _isAuthenticated = true;
       });
     } else {
-      // Si el usuario no se autenticó correctamente, cerrar la app
-      // En producción podrías usar SystemNavigator.pop()
+      // Cerrar la app si falla la autenticación (ejemplo: 5 intentos fallidos)
       setState(() {
         _isAuthenticated = false;
       });
@@ -104,25 +119,16 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
 
     if (!_isAuthenticated && _needsPin) {
-      // Mostrar pantalla de bloqueo mientras espera autenticación
+      // Mostrar una pantalla básica mientras PinLockScreen está sobre ella
       return Scaffold(
-        body: Center(
+        appBar: AppBar(title: const Text('Bloqueado')),
+        body: const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.lock,
-                size: 64,
-                color: Colors.grey[400],
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'App bloqueada',
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.grey[600],
-                ),
-              ),
+              Icon(Icons.lock, size: 64, color: Colors.grey),
+              SizedBox(height: 16),
+              Text('Ingresa el PIN'),
             ],
           ),
         ),

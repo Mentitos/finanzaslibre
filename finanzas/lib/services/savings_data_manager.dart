@@ -1,14 +1,19 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/savings_record.dart';
+import '../models/savings_record.dart'; // Asumiendo que existe RecordType
+// La definición de 'RecordType' se eliminó de aquí para evitar conflictos.
 
 class SavingsDataManager {
+  // --- CLAVES DE PREFERENCIAS ---
   static const String _recordsKey = 'savings_records';
   static const String _categoriesKey = 'savings_categories';
   static const String _privacyModeKey = 'privacy_mode_enabled';
+  
+  // Claves de Seguridad
   static const String _pinKey = 'security_pin';
   static const String _pinEnabledKey = 'pin_enabled';
+  static const String _biometricEnabledKey = 'biometric_enabled';
   
   static const List<String> _defaultCategories = [
     'General',
@@ -25,9 +30,122 @@ class SavingsDataManager {
   factory SavingsDataManager() => _instance;
   SavingsDataManager._internal();
 
+  /// Método de inicialización estático para compatibilidad con main.dart.
+  /// Si se requiere lógica asíncrona de inicio, debe colocarse aquí.
+  static void init() {
+    // La inicialización se realiza aquí si es necesaria, pero el Singleton es lazy.
+  }
+
   // Cache en memoria para mejorar performance
   List<SavingsRecord>? _cachedRecords;
   List<String>? _cachedCategories;
+
+  // ====================================================================
+  // ------------------------- MÉTODOS DE SEGURIDAD ---------------------
+  // ====================================================================
+
+  /// Guarda el PIN, habilita la protección por PIN y guarda el estado biométrico.
+  /// **Esta es la función a usar después de la PinSetupScreen.**
+  Future<bool> savePinData(String pin, bool biometricEnabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pinSuccess = await prefs.setString(_pinKey, pin);
+      final enabledSuccess = await prefs.setBool(_pinEnabledKey, true);
+      final biometricSuccess = await prefs.setBool(_biometricEnabledKey, biometricEnabled);
+      return pinSuccess && enabledSuccess && biometricSuccess;
+    } catch (e) {
+      debugPrint('Error guardando datos de seguridad: $e');
+      return false;
+    }
+  }
+
+  /// Guarda el PIN de seguridad (Reintroducido para compatibilidad)
+  /// Esto también habilita la protección por PIN.
+  Future<bool> savePin(String pin) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pinSuccess = await prefs.setString(_pinKey, pin);
+      final enabledSuccess = await setPinEnabled(true); // Asegura que esté habilitado
+      return pinSuccess && enabledSuccess;
+    } catch (e) {
+      debugPrint('Error guardando PIN: $e');
+      return false;
+    }
+  }
+
+  /// Guarda solo el estado de autenticación biométrica (útil si el PIN ya existe)
+  Future<bool> setBiometricEnabled(bool enabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.setBool(_biometricEnabledKey, enabled);
+    } catch (e) {
+      debugPrint('Error guardando estado biométrico: $e');
+      return false;
+    }
+  }
+
+  /// Carga el PIN guardado
+  Future<String?> loadPin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_pinKey);
+    } catch (e) {
+      debugPrint('Error cargando PIN: $e');
+      return null;
+    }
+  }
+  
+  /// Verifica si el PIN está habilitado
+  Future<bool> isPinEnabled() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_pinEnabledKey) ?? false;
+    } catch (e) {
+      debugPrint('Error verificando PIN habilitado: $e');
+      return false;
+    }
+  }
+
+  /// Verifica si la autenticación biométrica está habilitada
+  /// **Renombrado de isBiometricEnabled para compatibilidad con main.dart**
+  Future<bool> loadBiometricEnabled() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_biometricEnabledKey) ?? false;
+    } catch (e) {
+      debugPrint('Error verificando biométrica: $e');
+      return false;
+    }
+  }
+
+  /// Habilita o deshabilita la protección por PIN (sin cambiar el PIN)
+  Future<bool> setPinEnabled(bool enabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return await prefs.setBool(_pinEnabledKey, enabled);
+    } catch (e) {
+      debugPrint('Error guardando estado del PIN: $e');
+      return false;
+    }
+  }
+
+  /// Elimina el PIN de seguridad y deshabilita la protección
+  Future<bool> removePin() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_pinKey);
+      await prefs.remove(_pinEnabledKey);
+      await prefs.remove(_biometricEnabledKey); // También quitamos biometría
+      return true;
+    } catch (e) {
+      debugPrint('Error eliminando PIN: $e');
+      return false;
+    }
+  }
+
+  // ====================================================================
+  // ------------------------- MÉTODOS DE DATOS -------------------------
+  // ====================================================================
 
   /// Carga todos los registros de ahorros
   Future<List<SavingsRecord>> loadRecords({bool forceReload = false}) async {
@@ -102,22 +220,18 @@ class SavingsDataManager {
   }
 
   /// Elimina un registro por ID
-  /// Elimina una categoría y mueve sus registros a "General"
-/// Elimina un registro por ID
-Future<bool> deleteRecord(String id) async {
-  final records = await loadRecords();
-  final initialLength = records.length;
-  records.removeWhere((record) => record.id == id);
-  
-  if (records.length < initialLength) {
-    return await saveRecords(records);
+  Future<bool> deleteRecord(String id) async {
+    final records = await loadRecords();
+    final initialLength = records.length;
+    records.removeWhere((record) => record.id == id);
+    
+    if (records.length < initialLength) {
+      return await saveRecords(records);
+    }
+    
+    debugPrint('Registro con id $id no encontrado');
+    return false;
   }
-  
-  debugPrint('Registro con id $id no encontrado');
-  return false;
-}
-
-
 
   /// Busca registros por criterios
   Future<List<SavingsRecord>> searchRecords({
@@ -206,8 +320,36 @@ Future<bool> deleteRecord(String id) async {
     return false; // Ya existe
   }
 
-  /// Elimina una categoría (solo si no está en uso)
- 
+  /// Elimina una categoría y mueve sus registros a "General"
+  Future<bool> deleteCategory(String category) async {
+    try {
+      // Cargar registros actuales
+      final records = await loadRecords();
+      
+      // Mover todos los registros a "General"
+      final updatedRecords = records.map((record) {
+        if (record.category == category) {
+          return record.copyWith(category: 'General');
+        }
+        return record;
+      }).toList();
+      
+      await saveRecords(updatedRecords);
+      
+      // Eliminar la categoría de la lista
+      final categories = await loadCategories();
+      if (categories.contains(category) && category != 'General') {
+        categories.remove(category);
+        await saveCategories(categories);
+        return true;
+      }
+      
+      return false; // No se eliminó (era General o no existía)
+    } catch (e) {
+      debugPrint('Error eliminando categoría: $e');
+      return false;
+    }
+  }
 
   /// Obtiene estadísticas básicas
   Future<Map<String, dynamic>> getStatistics() async {
@@ -297,6 +439,10 @@ Future<bool> deleteRecord(String id) async {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_recordsKey);
       await prefs.remove(_categoriesKey);
+      // Limpiar también las claves de seguridad
+      await prefs.remove(_pinKey);
+      await prefs.remove(_pinEnabledKey);
+      await prefs.remove(_biometricEnabledKey);
       
       _cachedRecords = null;
       _cachedCategories = null;
@@ -327,95 +473,6 @@ Future<bool> deleteRecord(String id) async {
       return prefs.getBool(_privacyModeKey) ?? false;
     } catch (e) {
       debugPrint('Error cargando modo privacidad: $e');
-      return false;
-    }
-  }
-
-  /// Guarda el PIN de seguridad
-  Future<bool> savePin(String pin) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return await prefs.setString(_pinKey, pin);
-    } catch (e) {
-      debugPrint('Error guardando PIN: $e');
-      return false;
-    }
-  }
-
-  /// Carga el PIN guardado
-  Future<String?> loadPin() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getString(_pinKey);
-    } catch (e) {
-      debugPrint('Error cargando PIN: $e');
-      return null;
-    }
-  }
-
-  /// Habilita o deshabilita la protección por PIN
-  Future<bool> setPinEnabled(bool enabled) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return await prefs.setBool(_pinEnabledKey, enabled);
-    } catch (e) {
-      debugPrint('Error guardando estado del PIN: $e');
-      return false;
-    }
-  }
-Future<bool> deleteCategory(String category) async {
-  try {
-    // Cargar registros actuales
-    final records = await loadRecords();
-    
-    // Verificar si la categoría está en uso
-    final recordsWithCategory = records.where((r) => r.category == category).toList();
-    
-    if (recordsWithCategory.isNotEmpty) {
-      // Mover todos los registros a "General"
-      final updatedRecords = records.map((record) {
-        if (record.category == category) {
-          return record.copyWith(category: 'General');
-        }
-        return record;
-      }).toList();
-      
-      await saveRecords(updatedRecords);
-    }
-    
-    // Eliminar la categoría de la lista
-    final categories = await loadCategories();
-    if (categories.contains(category) && category != 'General') {
-      categories.remove(category);
-      await saveCategories(categories);
-      return true;
-    }
-    
-    return false;
-  } catch (e) {
-    return false;
-  }
-}
-  /// Verifica si el PIN está habilitado
-  Future<bool> isPinEnabled() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getBool(_pinEnabledKey) ?? false;
-    } catch (e) {
-      debugPrint('Error verificando PIN habilitado: $e');
-      return false;
-    }
-  }
-
-  /// Elimina el PIN de seguridad
-  Future<bool> removePin() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_pinKey);
-      await prefs.remove(_pinEnabledKey);
-      return true;
-    } catch (e) {
-      debugPrint('Error eliminando PIN: $e');
       return false;
     }
   }

@@ -72,16 +72,17 @@ class SecuritySection extends StatelessWidget {
   }
 
   Future<void> _setupPin(BuildContext context) async {
-    final pin = await Navigator.push<String>(
+    final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
         builder: (context) => const PinSetupScreen(isChanging: false),
       ),
     );
 
-    if (pin != null) {
-      await dataManager.savePin(pin);
+    if (result != null) {
+      await dataManager.savePin(result['pin']);
       await dataManager.setPinEnabled(true);
+      await dataManager.setBiometricEnabled(result['biometricEnabled'] ?? false);
       onShowSnackBar('PIN configurado correctamente', false);
     }
   }
@@ -94,7 +95,7 @@ class SecuritySection extends StatelessWidget {
       return;
     }
 
-    final newPin = await Navigator.push<String>(
+    final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
         builder: (context) => PinSetupScreen(
@@ -104,8 +105,9 @@ class SecuritySection extends StatelessWidget {
       ),
     );
 
-    if (newPin != null) {
-      await dataManager.savePin(newPin);
+    if (result != null) {
+      await dataManager.savePin(result['pin']);
+      await dataManager.setBiometricEnabled(result['biometricEnabled'] ?? false);
       onShowSnackBar('PIN actualizado correctamente', false);
     }
   }
