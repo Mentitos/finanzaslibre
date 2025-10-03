@@ -8,7 +8,14 @@ class ExportImportDialogs {
     Map<String, dynamic> data,
     int recordsCount,
     int categoriesCount,
+    
   ) {
+      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  final containerColor = isDarkMode ? Colors.grey[800] : Colors.grey[200];
+  final textColor = isDarkMode ? Colors.white : Colors.black;
+
+
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -35,14 +42,17 @@ class ExportImportDialogs {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: SelectableText(
-                  jsonEncode(data),
-                  style: const TextStyle(fontSize: 12),
-                ),
+                color: containerColor,
+                borderRadius: BorderRadius.circular(8),
               ),
+              child: SelectableText(
+                jsonEncode(data),
+                style: TextStyle(
+                fontSize: 12,
+                color: textColor,
+    ),
+  ),
+)
             ],
           ),
         ),
