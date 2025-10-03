@@ -105,7 +105,7 @@ class _PinLockScreenState extends State<PinLockScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).cardColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),

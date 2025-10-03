@@ -6,6 +6,7 @@ import '../dialogs/export_import_dialogs.dart';
 import '../dialogs/confirmation_dialogs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart'; // Para Clipboard
+import '../../main.dart';
 
 class SettingsMenu extends StatelessWidget {
   final SavingsDataManager dataManager;
@@ -39,6 +40,8 @@ class SettingsMenu extends StatelessWidget {
           children: [
             _buildHeader(context),
             const Divider(height: 30),
+            _buildAppearanceSection(context), // AGREGAR AQUÍ
+            const Divider(height: 30),
             SecuritySection(
               dataManager: dataManager,
               onShowSnackBar: onShowSnackBar,
@@ -69,7 +72,43 @@ class SettingsMenu extends StatelessWidget {
       ],
     );
   }
-
+Widget _buildAppearanceSection(BuildContext context) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 16, bottom: 8),
+        child: Text(
+          'Apariencia',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Colors.grey[700],
+          ),
+        ),
+      ),
+      ListTile(
+        leading: Icon(
+          Theme.of(context).brightness == Brightness.dark
+              ? Icons.dark_mode
+              : Icons.light_mode,
+          color: Colors.amber,
+        ),
+        title: const Text('Modo oscuro'),
+        subtitle: Text(
+          Theme.of(context).brightness == Brightness.dark
+              ? 'Tema oscuro activado'
+              : 'Tema claro activado',
+        ),
+        trailing: Switch(
+          value: Theme.of(context).brightness == Brightness.dark,
+          onChanged: (value) {
+            MyApp.of(context).toggleTheme();
+          },
+        ),
+      ),
+    ],
+  );
+}
   Widget _buildDataManagementSection(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

@@ -209,7 +209,7 @@ class _RecordDialogState extends State<RecordDialog> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Colors.white : Colors.grey[600],
+              color: isSelected ? Theme.of(context).cardColor : Colors.grey[600],
               size: 32,
             ),
             const SizedBox(height: 8),
@@ -218,7 +218,7 @@ class _RecordDialogState extends State<RecordDialog> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.white : Colors.grey[600],
+                color: isSelected ? Theme.of(context).cardColor : Colors.grey[600],
               ),
             ),
           ],

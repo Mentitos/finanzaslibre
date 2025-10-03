@@ -166,7 +166,7 @@ class HistoryTab extends StatelessWidget {
                     ? FontWeight.normal 
                     : FontWeight.bold,
                 color: selectedCategory == 'all' 
-                    ? Colors.black87 
+                    ? Theme.of(context).textTheme.bodyLarge?.color
                     : Theme.of(context).primaryColor,
               ),
             ),

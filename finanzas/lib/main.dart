@@ -1,37 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/savings_screen.dart';
 import 'screens/pin_lock_screen.dart';
-import 'services/savings_data_manager.dart'; // Asegúrate de que este servicio existe
+import 'services/savings_data_manager.dart';
 
-void main() {
-  // Inicializamos el gestor de datos para SharedPreferences o similar
-  SavingsDataManager.init(); 
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  SavingsDataManager.init();
+  
+  // Cargar preferencia de tema
+  final prefs = await SharedPreferences.getInstance();
+  final isDarkMode = prefs.getBool('dark_mode') ?? false;
+  
+  runApp(MyApp(isDarkMode: isDarkMode));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  final bool isDarkMode;
+  
+  const MyApp({super.key, required this.isDarkMode});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+  
+  // Método estático para acceder al estado desde otros widgets
+  static _MyAppState of(BuildContext context) {
+    return context.findAncestorStateOfType<_MyAppState>()!;
+  }
+}
+
+class _MyAppState extends State<MyApp> {
+  late ThemeMode _themeMode;
+  
+  @override
+  void initState() {
+    super.initState();
+    _themeMode = widget.isDarkMode ? ThemeMode.dark : ThemeMode.light;
+  }
+  
+  // Método para cambiar el tema
+  void toggleTheme() async {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light 
+          ? ThemeMode.dark 
+          : ThemeMode.light;
+    });
+    
+    // Guardar preferencia
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('dark_mode', _themeMode == ThemeMode.dark);
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Mis Ahorros',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          brightness: Brightness.light,
-        ),
-        cardTheme: const CardThemeData(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(16)),
-          ),
+      debugShowCheckedModeBanner: false,
+      theme: _buildLightTheme(),
+      darkTheme: _buildDarkTheme(),
+      themeMode: _themeMode,
+      home: const AuthWrapper(),
+    );
+  }
+  
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      primarySwatch: Colors.green,
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.green,
+        brightness: Brightness.light,
+      ),
+      cardTheme: const CardThemeData(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
       ),
-      home: const AuthWrapper(),
-      debugShowCheckedModeBanner: false,
+    );
+  }
+  
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      primarySwatch: Colors.green,
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.green,
+        brightness: Brightness.dark,
+      ),
+      cardTheme: CardThemeData(
+        elevation: 2,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(16)),
+        ),
+        color: Colors.grey[850],
+      ),
     );
   }
 }
@@ -49,8 +112,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   bool _isAuthenticated = false;
   bool _needsPin = false;
   String? _savedPin;
-  // ************* CORRECCIÓN 1: Añadir estado para biometría *************
-  bool _isBiometricEnabled = false; 
+  bool _isBiometricEnabled = false;
 
   @override
   void initState() {
@@ -61,36 +123,30 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _checkPinStatus() async {
     final pinEnabled = await _dataManager.isPinEnabled();
     final pin = await _dataManager.loadPin();
-    
-    // ************* CORRECCIÓN 2: Cargar el estado de biometría *************
-    final biometricStatus = await _dataManager.loadBiometricEnabled();
+    final biometricStatus = await _dataManager.loadBiometricEnabled(); //
 
     setState(() {
       _needsPin = pinEnabled && pin != null;
       _savedPin = pin;
-      _isBiometricEnabled = biometricStatus; // <--- Cargar el estado
-      _isAuthenticated = !_needsPin; 
+      _isBiometricEnabled = biometricStatus;
+      _isAuthenticated = !_needsPin;
       _isLoading = false;
     });
 
-    // Si necesita PIN, mostrarlo
     if (_needsPin && _savedPin != null && mounted) {
-      // Usamos addPostFrameCallback para asegurar que el widget se haya dibujado
-      // antes de intentar hacer una navegación (push).
       WidgetsBinding.instance.addPostFrameCallback((_) {
-         _showPinLock();
+        _showPinLock();
       });
     }
   }
 
   Future<void> _showPinLock() async {
-    // ************* CORRECCIÓN 3: Pasar el estado de biometría a PinLockScreen *************
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => PinLockScreen(
           correctPin: _savedPin!,
-          isBiometricEnabled: _isBiometricEnabled, // <--- ¡Valor corregido!
+          isBiometricEnabled: _isBiometricEnabled,
         ),
         fullscreenDialog: true,
       ),
@@ -101,7 +157,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
         _isAuthenticated = true;
       });
     } else {
-      // Cerrar la app si falla la autenticación (ejemplo: 5 intentos fallidos)
       setState(() {
         _isAuthenticated = false;
       });
@@ -119,7 +174,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
     }
 
     if (!_isAuthenticated && _needsPin) {
-      // Mostrar una pantalla básica mientras PinLockScreen está sobre ella
       return Scaffold(
         appBar: AppBar(title: const Text('Bloqueado')),
         body: const Center(

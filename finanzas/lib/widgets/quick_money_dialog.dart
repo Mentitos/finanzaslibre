@@ -169,10 +169,10 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
         controller: _tabController,
         indicator: BoxDecoration(
           borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
         ),
         indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: Colors.black,
+        labelColor: Theme.of(context).textTheme.bodyLarge?.color,
         unselectedLabelColor: Colors.grey[600],
         tabs: const [
           Tab(

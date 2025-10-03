@@ -4,8 +4,6 @@ import '../../widgets/record_item.dart';
 import '../../utils/formatters.dart';
 import '../../constants/app_constants.dart';
 
-// MoneyType ya está importado desde savings_record.dart
-
 class SummaryTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
   final List<SavingsRecord> allRecords;
@@ -49,7 +47,7 @@ class SummaryTab extends StatelessWidget {
             const SizedBox(height: AppConstants.defaultPadding),
             _buildMoneyTypesRow(),
             const SizedBox(height: AppConstants.defaultPadding),
-            _buildStatsRow(),
+            _buildStatsRow(context), // PASAR context
             const SizedBox(height: AppConstants.largePadding),
             if (allRecords.isNotEmpty) _buildRecentMovements(context),
           ],
@@ -180,7 +178,7 @@ class SummaryTab extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                  color: Colors.grey[600],
+                  color: Colors.grey[600], // Este queda igual, funciona en ambos modos
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -202,86 +200,94 @@ class SummaryTab extends StatelessWidget {
     );
   }
 
- Widget _buildStatsRow() {
-  final totalRecords = statistics['totalRecords'] ?? 0;
-  final totalDeposits = statistics['totalDeposits'] ?? 0;
-  final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
+  Widget _buildStatsRow(BuildContext context) { // AGREGAR context
+    final totalRecords = statistics['totalRecords'] ?? 0;
+    final totalDeposits = statistics['totalDeposits'] ?? 0;
+    final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
 
-  return Card(
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(16),
-    ),
-    elevation: 1,
-    child: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-      child: Row(
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 1,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        child: Row(
+          children: [
+            _buildStatItem(
+              context, // PASAR context
+              title: 'Total Registros',
+              value: '$totalRecords',
+              icon: Icons.receipt_long,
+              color: Colors.orange,
+            ),
+            _buildDivider(),
+            _buildStatItem(
+              context, // PASAR context
+              title: AppConstants.depositLabel,
+              value: '$totalDeposits',
+              icon: Icons.arrow_upward,
+              color: AppConstants.depositColor,
+            ),
+            _buildDivider(),
+            _buildStatItem(
+              context, // PASAR context
+              title: AppConstants.withdrawalLabel,
+              value: '$totalWithdrawals',
+              icon: Icons.arrow_downward,
+              color: AppConstants.withdrawalColor,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatItem(
+    BuildContext context, { // AGREGAR context
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+  }) {
+    // Usar color adaptativo para el texto
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
+    
+    return Expanded(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          _buildStatItem(
-            title: 'Total Registros',
-            value: '$totalRecords',
-            icon: Icons.receipt_long,
-            color: Colors.orange,
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
-          _buildDivider(),
-          _buildStatItem(
-            title: AppConstants.depositLabel,
-            value: '$totalDeposits',
-            icon: Icons.arrow_upward,
-            color: AppConstants.depositColor,
-          ),
-          _buildDivider(),
-          _buildStatItem(
-            title: AppConstants.withdrawalLabel,
-            value: '$totalWithdrawals',
-            icon: Icons.arrow_downward,
-            color: AppConstants.withdrawalColor,
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              color: textColor.withOpacity(0.7), // USAR COLOR ADAPTATIVO
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
-    ),
-  );
-}
-Widget _buildStatItem({
-  required String title,
-  required String value,
-  required IconData icon,
-  required Color color,
-}) {
-  return Expanded(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: color, size: 26),
-        const SizedBox(height: 6),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          title,
-          style: TextStyle(
-            fontSize: 13,
-            color: Colors.grey[700],
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    ),
-  );
-}
-Widget _buildDivider() {
-  return Container(
-    width: 1,
-    height: 50,
-    color: Colors.grey.withOpacity(0.3),
-  );
-}
+    );
+  }
 
+  Widget _buildDivider() {
+    return Container(
+      width: 1,
+      height: 50,
+      color: Colors.grey.withOpacity(0.3),
+    );
+  }
 
   Widget _buildRecentMovements(BuildContext context) {
     final recentRecords = allRecords.take(AppConstants.recentRecordsCount).toList();
@@ -310,7 +316,6 @@ Widget _buildDivider() {
               record: record,
               onTap: () => onEditRecord(record),
               categoryColors: categoryColors,
-
             )),
           ],
         ),

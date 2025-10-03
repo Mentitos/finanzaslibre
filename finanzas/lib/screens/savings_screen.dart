@@ -353,7 +353,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         icon: const Icon(Icons.add),
         label: const Text('Nuevo'),
         backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        foregroundColor: Theme.of(context).cardColor,
       ),
     );
   }
