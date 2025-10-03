@@ -7,23 +7,36 @@ import 'services/savings_data_manager.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SavingsDataManager.init();
-  
-  // Cargar preferencia de tema
+
+  // Obtener SharedPreferences primero
   final prefs = await SharedPreferences.getInstance();
-  final isDarkMode = prefs.getBool('dark_mode') ?? false;
-  
-  runApp(MyApp(isDarkMode: isDarkMode));
+
+  // Cargar preferencia de tema
+  final themeModeString = prefs.getString('theme_mode') ?? 'system';
+
+  ThemeMode initialTheme;
+  switch (themeModeString) {
+    case 'light':
+      initialTheme = ThemeMode.light;
+      break;
+    case 'dark':
+      initialTheme = ThemeMode.dark;
+      break;
+    default:
+      initialTheme = ThemeMode.system;
+  }
+
+  runApp(MyApp(initialTheme: initialTheme));
 }
 
 class MyApp extends StatefulWidget {
-  final bool isDarkMode;
-  
-  const MyApp({super.key, required this.isDarkMode});
+  final ThemeMode initialTheme;
+
+  const MyApp({super.key, required this.initialTheme});
 
   @override
   State<MyApp> createState() => _MyAppState();
-  
-  // Método estático para acceder al estado desde otros widgets
+
   static _MyAppState of(BuildContext context) {
     return context.findAncestorStateOfType<_MyAppState>()!;
   }
@@ -31,24 +44,29 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late ThemeMode _themeMode;
-  
+
   @override
   void initState() {
     super.initState();
-    _themeMode = widget.isDarkMode ? ThemeMode.dark : ThemeMode.light;
+    _themeMode = widget.initialTheme; // Usar el valor cargado
   }
-  
-  // Método para cambiar el tema
+
   void toggleTheme() async {
     setState(() {
-      _themeMode = _themeMode == ThemeMode.light 
-          ? ThemeMode.dark 
-          : ThemeMode.light;
+      if (_themeMode == ThemeMode.light) {
+        _themeMode = ThemeMode.dark;
+      } else if (_themeMode == ThemeMode.dark) {
+        _themeMode = ThemeMode.light;
+      } else {
+        _themeMode = ThemeMode.dark; // si estaba en system
+      }
     });
-    
-    // Guardar preferencia
+
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('dark_mode', _themeMode == ThemeMode.dark);
+    String modeString = 'system';
+    if (_themeMode == ThemeMode.light) modeString = 'light';
+    if (_themeMode == ThemeMode.dark) modeString = 'dark';
+    await prefs.setString('theme_mode', modeString);
   }
 
   @override
