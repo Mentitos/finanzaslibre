@@ -278,6 +278,32 @@ Widget _buildAppearanceSection(BuildContext context) {
               ),
             ),
             const SizedBox(height: 16),
+            
+
+// ---- CORREO DE SUGERENCIAS ----
+const Text(
+  'Sugerencias:',
+  style: TextStyle(fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 4),
+InkWell(
+  onTap: () async {
+    final Uri emailLaunchUri = Uri(
+      scheme: 'mailto',
+      path: 'sugerenciasfinanzaslibre@gmail.com',
+      query: 'subject=Feedback FinanzasLibre&body=Hola, quisiera sugerir...', 
+    );
+    await launchUrl(emailLaunchUri);
+  },
+  child: const Text(
+    'sugerenciasfinanzaslibre@gmail.com',
+    style: TextStyle(
+      fontSize: 13,
+      color: Colors.blue,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+),
 
             // ---- CREATOR ----
             const Text(
