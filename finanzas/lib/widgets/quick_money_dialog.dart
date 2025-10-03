@@ -159,34 +159,37 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
   }
 
   Widget _buildTabBar() {
-    return Container(
-      margin: const EdgeInsets.all(AppConstants.defaultPadding),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+
+  return Container(
+    margin: const EdgeInsets.all(AppConstants.defaultPadding),
+    decoration: BoxDecoration(
+      color: Theme.of(context).colorScheme.surfaceVariant,
+      borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+    ),
+    child: TabBar(
+      controller: _tabController,
+      indicator: BoxDecoration(
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
+        color: Theme.of(context).colorScheme.primaryContainer,
       ),
-      child: TabBar(
-        controller: _tabController,
-        indicator: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-          color: Theme.of(context).cardColor,
+      indicatorSize: TabBarIndicatorSize.tab,
+      labelColor: Theme.of(context).textTheme.bodyLarge?.color,
+      unselectedLabelColor: isDark ? Colors.grey[300] : Colors.grey[600],
+      tabs: const [
+        Tab(
+          icon: Icon(Icons.add_circle, color: Colors.green),
+          text: 'Depósito',
         ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: Theme.of(context).textTheme.bodyLarge?.color,
-        unselectedLabelColor: Colors.grey[600],
-        tabs: const [
-          Tab(
-            icon: Icon(Icons.add_circle, color: Colors.green),
-            text: 'Depósito',
-          ),
-          Tab(
-            icon: Icon(Icons.remove_circle, color: Colors.red),
-            text: 'Retiro',
-          ),
-        ],
-      ),
-    );
-  }
+        Tab(
+          icon: Icon(Icons.remove_circle, color: Colors.red),
+          text: 'Retiro',
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildDepositTab() {
     return _buildTabContent(

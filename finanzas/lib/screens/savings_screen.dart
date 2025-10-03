@@ -324,12 +324,12 @@ class _SavingsScreenState extends State<SavingsScreen>
                       _applyFilters();
                     });
                   },
-                  onSearchChanged: (query) {
+                  onSearchChanged: (List<SavingsRecord> results) {
                     setState(() {
-                      _searchQuery = query;
-                      _applyFilters();
+                      _filteredRecords = results;
                     });
                   },
+
                   onSearchCleared: () {
                     _searchController.clear();
                     setState(() {

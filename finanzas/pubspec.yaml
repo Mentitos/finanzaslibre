@@ -38,6 +38,9 @@ dependencies:
   url_launcher: ^6.3.0
   intl: ^0.18.1 
   local_auth: ^2.3.0
+  local_auth_android: ^1.0.0
+  fuzzywuzzy: ^1.2.0
+
 
 dev_dependencies:
   flutter_test:

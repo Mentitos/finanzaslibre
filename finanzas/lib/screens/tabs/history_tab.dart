@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../models/savings_record.dart';
 import '../../widgets/record_item.dart';
 import '../../constants/app_constants.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
+
 
 class HistoryTab extends StatelessWidget {
   final List<SavingsRecord> allRecords;
@@ -17,7 +19,7 @@ class HistoryTab extends StatelessWidget {
   final Function(String) onDeleteRecord;
   final Function(String) onFilterChanged;
   final Function(String) onCategoryChanged;
-  final Function(String) onSearchChanged;
+  final Function(List<SavingsRecord>) onSearchChanged;
   final VoidCallback onSearchCleared;
   final VoidCallback onAddRecordTap;
 
@@ -75,25 +77,46 @@ class HistoryTab extends StatelessWidget {
   }
 
   Widget _buildSearchBar() {
-    return Padding(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      child: TextField(
-        controller: searchController,
-        decoration: InputDecoration(
-          hintText: 'Buscar registros...',
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: onSearchCleared,
-                )
-              : null,
-          border: const OutlineInputBorder(),
-        ),
-        onChanged: onSearchChanged,
+  return Padding(
+    padding: const EdgeInsets.all(AppConstants.defaultPadding),
+    child: TextField(
+      controller: searchController,
+      decoration: InputDecoration(
+        hintText: 'Buscar registros...',
+        prefixIcon: const Icon(Icons.search),
+        suffixIcon: searchController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: onSearchCleared,
+              )
+            : null,
+        border: const OutlineInputBorder(),
       ),
-    );
+      onChanged: (value) {
+        final results = fuzzySearch(value, allRecords);
+        onSearchChanged(results);
+      },
+
+    ),
+  );
+}
+
+List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
+  // si query está vacía, devolvemos todo
+  if (query.trim().isEmpty) {
+    return records;
   }
+
+  final normalizedQuery = query.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
+
+  return records.where((record) {
+    final desc = record.description.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
+    final category = record.category.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
+    final descRatio = ratio(normalizedQuery, desc);
+    final catRatio = ratio(normalizedQuery, category);
+    return descRatio >= 70 || catRatio >= 70;
+  }).toList();
+}
 
   Widget _buildFilters() {
     return SingleChildScrollView(
@@ -198,24 +221,27 @@ class HistoryTab extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    String title = AppConstants.emptyRecordsTitle;
-    String subtitle = AppConstants.emptyRecordsSubtitle;
+  String title = AppConstants.emptyRecordsTitle;
+  String subtitle = AppConstants.emptyRecordsSubtitle;
 
-    if (searchQuery.isNotEmpty) {
-      title = AppConstants.emptySearchTitle;
-      subtitle = AppConstants.emptySearchSubtitle;
-    } else if (selectedCategory != 'all') {
-      title = AppConstants.emptyCategoryTitle;
-      subtitle = AppConstants.emptyCategorySubtitle;
-    }
+  if (searchQuery.isNotEmpty) {
+    title = AppConstants.emptySearchTitle;
+    subtitle = AppConstants.emptySearchSubtitle;
+  } else if (selectedCategory != 'all') {
+    title = AppConstants.emptyCategoryTitle;
+    subtitle = AppConstants.emptyCategorySubtitle;
+  }
 
-    return EmptyRecordsWidget(
+  return SingleChildScrollView(
+    child: EmptyRecordsWidget(
       title: title,
       subtitle: subtitle,
       onActionPressed: searchQuery.isEmpty ? onAddRecordTap : null,
       actionText: searchQuery.isEmpty ? 'Agregar Registro' : null,
-    );
-  }
+    ),
+  );
+}
+
 
   void _showDeleteConfirmation(BuildContext context, SavingsRecord record) {
     showDialog(

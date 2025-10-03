@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Necesario para SystemNavigator.pop
 import 'package:local_auth/local_auth.dart';
+import 'dart:io' show Platform;
+import 'package:local_auth_android/local_auth_android.dart';
 
 class PinLockScreen extends StatefulWidget {
   final String correctPin;
   final bool isBiometricEnabled; 
-
+  
   const PinLockScreen({
     super.key,
     required this.correctPin,
@@ -49,27 +51,35 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   // 3. Método para verificar si el dispositivo soporta biometría
-  Future<void> _checkBiometrics() async {
-    try {
-      final canCheck = await _localAuth.canCheckBiometrics;
-      final isDeviceSupported = await _localAuth.isDeviceSupported();
-      
-      if (mounted) {
-        setState(() {
-          _canUseBiometrics = canCheck && isDeviceSupported;
-        });
-      }
+  
+Future<void> _checkBiometrics() async {
+  if (!Platform.isAndroid) return; // 🚫 Ignora iOS
 
-      // 4. Intenta autenticar automáticamente si está disponible
-      if (_canUseBiometrics) {
-        _authenticateWithBiometrics();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _canUseBiometrics = false);
-      }
+  final localAuth = LocalAuthentication();
+
+  try {
+    final didAuthenticate = await localAuth.authenticate(
+      localizedReason: 'Usa tu huella para ingresar',
+      authMessages: const <AuthMessages>[
+        AndroidAuthMessages(
+          signInTitle: 'Autenticacion requerida',
+          cancelButton: 'Cancelar',
+          biometricHint: 'Verifica tu identidad',
+        ),
+      ],
+    );
+
+    if (didAuthenticate) {
+      // ✅ acceso concedido → ejemplo: navegar
+      Navigator.pushReplacementNamed(context, '/home');
+    } else {
+      // ❌ acceso denegado → ejemplo: animacion shake
+      _shakeController.forward(from: 0);
     }
+  } catch (e) {
+    debugPrint('Error en autenticacion biometrica: $e');
   }
+}
   
   // 5. Nuevo método para autenticación biométrica
   Future<void> _authenticateWithBiometrics() async {
