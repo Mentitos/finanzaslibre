@@ -4,7 +4,7 @@ import 'package:local_auth/local_auth.dart';
 class PinSetupScreen extends StatefulWidget {
   final bool isChanging;
   final String? currentPin;
-
+  
   const PinSetupScreen({
     super.key,
     this.isChanging = false,
@@ -37,16 +37,28 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   }
 
   Future<void> _checkBiometrics() async {
-    try {
-      final canCheck = await _localAuth.canCheckBiometrics;
-      final isDeviceSupported = await _localAuth.isDeviceSupported();
-      setState(() {
-        _canCheckBiometrics = canCheck && isDeviceSupported;
-      });
-    } catch (e) {
-      setState(() => _canCheckBiometrics = false);
+  try {
+    final canCheck = await _localAuth.canCheckBiometrics;
+    final isDeviceSupported = await _localAuth.isDeviceSupported();
+
+    bool hasBiometrics = false;
+    if (canCheck && isDeviceSupported) {
+      final availableBiometrics = await _localAuth.getAvailableBiometrics();
+      hasBiometrics = availableBiometrics.isNotEmpty;
     }
+
+    setState(() {
+      _canCheckBiometrics = canCheck && isDeviceSupported;
+      _biometricEnabled = hasBiometrics; // activamos por defecto si hay huella
+    });
+  } catch (e) {
+    setState(() {
+      _canCheckBiometrics = false;
+      _biometricEnabled = false;
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -90,23 +102,27 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   }
 
   Widget _buildIcon() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
-        shape: BoxShape.circle,
-      ),
-      child: Icon(
-        _isVerifyingCurrent
-            ? Icons.lock_outline
-            : _isConfirming
-                ? Icons.lock_reset
-                : Icons.lock_open,
-        size: 64,
-        color: Colors.green,
-      ),
-    );
-  }
+  final primaryColor = Theme.of(context).colorScheme.primary.withOpacity(0.8);
+  final bgColor = Theme.of(context).colorScheme.primary.withOpacity(0.1);
+
+  return Container(
+    padding: const EdgeInsets.all(24),
+    decoration: BoxDecoration(
+      color: bgColor,
+      shape: BoxShape.circle,
+    ),
+    child: Icon(
+      _isVerifyingCurrent
+          ? Icons.lock_outline
+          : _isConfirming
+              ? Icons.lock_reset
+              : Icons.lock_open,
+      size: 64,
+      color: primaryColor,
+    ),
+  );
+}
+
 
   Widget _buildTitle() {
     String text;
@@ -129,75 +145,69 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   }
 
   Widget _buildBiometricToggle() {
-    if (!_canCheckBiometrics) return const SizedBox.shrink();
+  if (!_canCheckBiometrics) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.fingerprint,
-            color: Colors.green[700],
-            size: 32,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Desbloqueo biométrico',
+  final primaryColor = Theme.of(context).colorScheme.primary;
+  final borderColor = primaryColor.withOpacity(0.3);
+  final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: primaryColor.withOpacity(0.05),
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(color: borderColor),
+    ),
+    child: Row(
+      children: [
+        Icon(Icons.fingerprint, color: primaryColor, size: 32),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Desbloqueo biométrico',
                   style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Usa huella o Face ID',
+                      fontWeight: FontWeight.w600, fontSize: 15, color: textColor)),
+              const SizedBox(height: 2),
+              Text('Usa huella o Face ID',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
+                      fontSize: 12, color: textColor?.withOpacity(0.7))),
+            ],
           ),
-          Switch(
-            value: _biometricEnabled,
-            onChanged: (value) {
-              setState(() => _biometricEnabled = value);
-            },
-            activeColor: Colors.green,
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+        Switch(
+          value: _biometricEnabled,
+          onChanged: (value) => setState(() => _biometricEnabled = value),
+          activeColor: primaryColor,
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildPinDots() {
-    final currentPin = _isConfirming ? _confirmPin : _pin;
-    
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(4, (index) {
-        return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 12),
-          width: 16,
-          height: 16,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: index < currentPin.length ? Colors.green : Colors.grey[300],
-          ),
-        );
-      }),
-    );
-  }
+  final currentPin = _isConfirming ? _confirmPin : _pin;
+  final primaryColor = Theme.of(context).colorScheme.primary;
+  final inactiveColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.3);
+
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: List.generate(4, (index) {
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 12),
+        width: 16,
+        height: 16,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: index < currentPin.length ? primaryColor : inactiveColor,
+        ),
+      );
+    }),
+  );
+}
+
 
   Widget _buildNumPad() {
     return Column(
@@ -231,28 +241,38 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   }
 
   Widget _buildNumButton(String number) {
-    return InkWell(
-      onTap: () => _onNumberPressed(number),
-      borderRadius: BorderRadius.circular(36),
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.grey[100],
+  final textColor = Theme.of(context).colorScheme.onSurface;
+  final bgColor = Theme.of(context).colorScheme.surface;
+
+  return InkWell(
+    onTap: () => _onNumberPressed(number),
+    borderRadius: BorderRadius.circular(36),
+    child: Container(
+      width: 72,
+      height: 72,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: bgColor,
+        border: Border.all(
+          color: textColor, // borde del mismo color que el número
+          width: 2,
         ),
-        child: Center(
-          child: Text(
-            number,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-            ),
+      ),
+      child: Center(
+        child: Text(
+          number,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w500,
+            color: textColor,
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+
 
   Widget _buildDeleteButton() {
     return InkWell(

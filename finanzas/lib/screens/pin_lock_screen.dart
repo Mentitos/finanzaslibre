@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Necesario para SystemNavigator.pop
+import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
-import 'dart:io' show Platform;
-import 'package:local_auth_android/local_auth_android.dart';
 
 class PinLockScreen extends StatefulWidget {
   final String correctPin;
-  final bool isBiometricEnabled; 
-  
+  final bool isBiometricEnabled;
+
   const PinLockScreen({
     super.key,
     required this.correctPin,
@@ -24,85 +22,60 @@ class _PinLockScreenState extends State<PinLockScreen>
   int _attempts = 0;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnimation;
-  
+
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _canUseBiometrics = false;
 
   @override
   void initState() {
     super.initState();
-    // 1. Configuración de animación (corregida)
+
+    // Shake animation
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
-      vsync: this, 
+      vsync: this,
     );
     _shakeAnimation = Tween<double>(begin: 0, end: 10).animate(
       CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
     );
 
-    // 2. Comprobar y autenticar con biometría
+    _checkBiometricAvailability();
+
     if (widget.isBiometricEnabled) {
-      // Usamos addPostFrameCallback para asegurar que el contexto (BuildContext) es válido
-      // y no hay problemas al mostrar el diálogo de autenticación justo después de la navegación.
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _checkBiometrics(); 
+        _authenticateWithBiometrics();
       });
     }
   }
 
-  // 3. Método para verificar si el dispositivo soporta biometría
-  
-Future<void> _checkBiometrics() async {
-  if (!Platform.isAndroid) return; // 🚫 Ignora iOS
-
-  final localAuth = LocalAuthentication();
-
-  try {
-    final didAuthenticate = await localAuth.authenticate(
-      localizedReason: 'Usa tu huella para ingresar',
-      authMessages: const <AuthMessages>[
-        AndroidAuthMessages(
-          signInTitle: 'Autenticacion requerida',
-          cancelButton: 'Cancelar',
-          biometricHint: 'Verifica tu identidad',
-        ),
-      ],
-    );
-
-    if (didAuthenticate) {
-      // ✅ acceso concedido → ejemplo: navegar
-      Navigator.pushReplacementNamed(context, '/home');
-    } else {
-      // ❌ acceso denegado → ejemplo: animacion shake
-      _shakeController.forward(from: 0);
-    }
-  } catch (e) {
-    debugPrint('Error en autenticacion biometrica: $e');
-  }
-}
-  
-  // 5. Nuevo método para autenticación biométrica
-  Future<void> _authenticateWithBiometrics() async {
-    bool authenticated = false;
+  Future<void> _checkBiometricAvailability() async {
     try {
-      authenticated = await _localAuth.authenticate(
-        localizedReason: 'Accede usando tu huella o Face ID',
+      final canCheck = await _localAuth.canCheckBiometrics;
+      final isDeviceSupported = await _localAuth.isDeviceSupported();
+      setState(() {
+        _canUseBiometrics = canCheck && isDeviceSupported;
+      });
+    } catch (_) {
+      setState(() => _canUseBiometrics = false);
+    }
+  }
+
+  Future<void> _authenticateWithBiometrics() async {
+    try {
+      final authenticated = await _localAuth.authenticate(
+        localizedReason: 'Usa tu huella o Face ID para ingresar',
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,
         ),
       );
-    } on PlatformException catch (e) {
-      // Manejar el error si la autenticación falla por un problema del sistema
-      debugPrint('Biometric Error: ${e.code}');
-    }
 
-    if (authenticated) {
-      // Autenticación exitosa, cierra la pantalla de bloqueo
-      if (mounted) {
-        // Retornar 'true' para indicar éxito al AuthWrapper
-        Navigator.of(context).pop(true); 
+      if (authenticated && mounted) {
+        // Consideramos la huella como un PIN correcto
+        Navigator.of(context).pop(true);
       }
+    } on PlatformException catch (e) {
+      debugPrint('Error biometrico: ${e.code}');
     }
   }
 
@@ -114,15 +87,16 @@ Future<void> _checkBiometrics() async {
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = Theme.of(context).colorScheme.background;
     return Scaffold(
-      backgroundColor: Theme.of(context).cardColor,
+      backgroundColor: bgColor,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
               const Spacer(),
-              _buildAppLogo(),
+              _buildLogo(),
               const SizedBox(height: 32),
               _buildTitle(),
               const SizedBox(height: 8),
@@ -152,27 +126,29 @@ Future<void> _checkBiometrics() async {
     );
   }
 
-  Widget _buildAppLogo() {
+  Widget _buildLogo() {
+    final primary = Theme.of(context).colorScheme.primary;
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
+        color: primary.withOpacity(0.1),
         shape: BoxShape.circle,
       ),
-      child: const Icon(
+      child: Icon(
         Icons.savings,
         size: 72,
-        color: Colors.green,
+        color: primary,
       ),
     );
   }
 
   Widget _buildTitle() {
-    return const Text(
+    return Text(
       'Mis Ahorros',
       style: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.onBackground,
       ),
     );
   }
@@ -182,12 +158,14 @@ Future<void> _checkBiometrics() async {
       'Ingresa tu PIN para continuar',
       style: TextStyle(
         fontSize: 16,
-        color: Colors.grey[600],
+        color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
       ),
     );
   }
 
   Widget _buildPinDots() {
+    final primary = Theme.of(context).colorScheme.primary;
+    final inactive = Theme.of(context).colorScheme.onBackground.withOpacity(0.3);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(4, (index) {
@@ -197,7 +175,7 @@ Future<void> _checkBiometrics() async {
           height: 16,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: index < _pin.length ? Colors.green : Colors.grey[300],
+            color: index < _pin.length ? primary : inactive,
           ),
         );
       }),
@@ -205,24 +183,22 @@ Future<void> _checkBiometrics() async {
   }
 
   Widget _buildAttemptWarning() {
+    final red = Colors.red;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.red[50],
+        color: red[50],
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.red[200]!),
+        border: Border.all(color: red[200]!),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.warning, color: Colors.red[700], size: 18),
+          Icon(Icons.warning, color: red[700], size: 18),
           const SizedBox(width: 8),
           Text(
             'Intentos fallidos: $_attempts',
-            style: TextStyle(
-              color: Colors.red[700],
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(color: red[700], fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -248,23 +224,19 @@ Future<void> _checkBiometrics() async {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: numbers.map((number) {
         if (number.isEmpty) {
-          // Si el usuario habilitó biometría Y el dispositivo es compatible
           if (widget.isBiometricEnabled && _canUseBiometrics) {
-            return _buildBiometricButton(); 
+            return _buildBiometricButton();
           }
           return const SizedBox(width: 72, height: 72);
         }
-
-        if (number == 'delete') {
-          return _buildDeleteButton();
-        }
-
+        if (number == 'delete') return _buildDeleteButton();
         return _buildNumButton(number);
       }).toList(),
     );
   }
 
   Widget _buildBiometricButton() {
+    final primary = Theme.of(context).colorScheme.primary;
     return InkWell(
       onTap: _authenticateWithBiometrics,
       borderRadius: BorderRadius.circular(36),
@@ -273,27 +245,16 @@ Future<void> _checkBiometrics() async {
         height: 72,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.green[50],
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: primary.withOpacity(0.1),
         ),
-        child: Center(
-          child: Icon(
-            Icons.fingerprint,
-            color: Colors.green[700],
-            size: 32,
-          ),
-        ),
+        child: Icon(Icons.fingerprint, size: 32, color: primary),
       ),
     );
   }
 
   Widget _buildNumButton(String number) {
+    final bgColor = Theme.of(context).colorScheme.surface;
+    final textColor = Theme.of(context).colorScheme.onSurface;
     return InkWell(
       onTap: () => _onNumberPressed(number),
       borderRadius: BorderRadius.circular(36),
@@ -302,22 +263,13 @@ Future<void> _checkBiometrics() async {
         height: 72,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.grey[100],
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          color: bgColor,
+          border: Border.all(color: textColor, width: 2),
         ),
         child: Center(
           child: Text(
             number,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w500,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: textColor),
           ),
         ),
       ),
@@ -325,6 +277,7 @@ Future<void> _checkBiometrics() async {
   }
 
   Widget _buildDeleteButton() {
+    final red = Colors.red;
     return InkWell(
       onTap: _onDeletePressed,
       borderRadius: BorderRadius.circular(36),
@@ -333,15 +286,9 @@ Future<void> _checkBiometrics() async {
         height: 72,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.red[50],
+          color: red[50],
         ),
-        child: const Center(
-          child: Icon(
-            Icons.backspace_outlined,
-            color: Colors.red,
-            size: 24,
-          ),
-        ),
+        child: Icon(Icons.backspace_outlined, color: red, size: 24),
       ),
     );
   }
@@ -349,21 +296,16 @@ Future<void> _checkBiometrics() async {
   void _onNumberPressed(String number) {
     if (_pin.length < 4) {
       setState(() => _pin += number);
-      if (_pin.length == 4) {
-        _verifyPin();
-      }
+      if (_pin.length == 4) _verifyPin();
     }
   }
 
   void _onDeletePressed() {
-    if (_pin.isNotEmpty) {
-      setState(() => _pin = _pin.substring(0, _pin.length - 1));
-    }
+    if (_pin.isNotEmpty) setState(() => _pin = _pin.substring(0, _pin.length - 1));
   }
 
   void _verifyPin() {
     if (_pin == widget.correctPin) {
-      // Retornar 'true' para indicar éxito al AuthWrapper
       Navigator.of(context).pop(true);
     } else {
       _shakeController.forward(from: 0);
@@ -371,7 +313,6 @@ Future<void> _checkBiometrics() async {
         _attempts++;
         _pin = '';
       });
-
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('PIN incorrecto'),
@@ -381,9 +322,7 @@ Future<void> _checkBiometrics() async {
         ),
       );
 
-      if (_attempts >= 5) {
-        _showTooManyAttemptsDialog();
-      }
+      if (_attempts >= 5) _showTooManyAttemptsDialog();
     }
   }
 
@@ -391,23 +330,18 @@ Future<void> _checkBiometrics() async {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: Colors.red),
-            SizedBox(width: 8),
-            Text('Demasiados intentos'),
-          ],
-        ),
-        content: const Text(
-          'Has fallado 5 intentos. Por seguridad, la aplicación se cerrará.',
-        ),
+      builder: (_) => AlertDialog(
+        title: Row(children: const [
+          Icon(Icons.warning, color: Colors.red),
+          SizedBox(width: 8),
+          Text('Demasiados intentos'),
+        ]),
+        content: const Text('Has fallado 5 intentos. La app se cerrará.'),
         actions: [
           FilledButton(
             onPressed: () {
-              // Cierra el diálogo y luego cierra la aplicación.
-              Navigator.of(context).pop(); 
-              SystemNavigator.pop(); 
+              Navigator.of(context).pop();
+              SystemNavigator.pop();
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Entendido'),
