@@ -352,7 +352,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         onPressed: _showAddRecordDialog,
         icon: const Icon(Icons.add),
         label: const Text('Nuevo'),
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: Colors.green,
         foregroundColor: Theme.of(context).cardColor,
       ),
     );

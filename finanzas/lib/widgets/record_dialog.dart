@@ -80,7 +80,7 @@ class _RecordDialogState extends State<RecordDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildHeader(),
+            _buildHeader(context),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
@@ -89,28 +89,28 @@ class _RecordDialogState extends State<RecordDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTypeSelector(),
+                      _buildTypeSelector(context),
                       const SizedBox(height: 24),
-                      _buildAmountSection(),
+                      _buildAmountSection(context),
                       const SizedBox(height: 24),
-                      _buildCategorySelector(),
+                      _buildCategorySelector(context),
                       const SizedBox(height: 20),
-                      _buildDescriptionInput(),
+                      _buildDescriptionInput(context),
                       const SizedBox(height: 16),
-                      _buildNotesInput(),
+                      _buildNotesInput(context),
                     ],
                   ),
                 ),
               ),
             ),
-            _buildActionButtons(),
+            _buildActionButtons(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -132,8 +132,7 @@ class _RecordDialogState extends State<RecordDialog> {
           Expanded(
             child: Text(
               _isEditing ? 'Editar Registro' : 'Nuevo Registro',
-              style: const TextStyle(
-                fontSize: 20,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -147,14 +146,15 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildTypeSelector() {
+  Widget _buildTypeSelector(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Tipo de operación',
-          style: TextStyle(
-            fontSize: 16,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -163,6 +163,7 @@ class _RecordDialogState extends State<RecordDialog> {
           children: [
             Expanded(
               child: _buildTypeOption(
+                context,
                 RecordType.deposit,
                 'DEPÓSITO',
                 Icons.add_circle_outline,
@@ -172,6 +173,7 @@ class _RecordDialogState extends State<RecordDialog> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildTypeOption(
+                context,
                 RecordType.withdrawal,
                 'RETIRO',
                 Icons.remove_circle_outline,
@@ -185,12 +187,17 @@ class _RecordDialogState extends State<RecordDialog> {
   }
 
   Widget _buildTypeOption(
+    BuildContext context,
     RecordType type,
     String label,
     IconData icon,
     Color color,
   ) {
     final isSelected = _selectedType == type;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedBg = isDark ? Colors.grey[800] : Colors.grey[100];
+    final unselectedBorder = isDark ? Colors.grey[700] : Colors.grey[300];
+    final unselectedColor = isDark ? Colors.grey[400] : Colors.grey[600];
 
     return GestureDetector(
       onTap: () => setState(() => _selectedType = type),
@@ -198,10 +205,10 @@ class _RecordDialogState extends State<RecordDialog> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? color : Colors.grey[100],
+          color: isSelected ? color : unselectedBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? color : Colors.grey[300]!,
+            color: isSelected ? color : unselectedBorder!,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -209,7 +216,7 @@ class _RecordDialogState extends State<RecordDialog> {
           children: [
             Icon(
               icon,
-              color: isSelected ? Theme.of(context).cardColor : Colors.grey[600],
+              color: isSelected ? Colors.white : unselectedColor,
               size: 32,
             ),
             const SizedBox(height: 8),
@@ -218,7 +225,7 @@ class _RecordDialogState extends State<RecordDialog> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: isSelected ? Theme.of(context).cardColor : Colors.grey[600],
+                color: isSelected ? Colors.white : unselectedColor,
               ),
             ),
           ],
@@ -227,19 +234,21 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildAmountSection() {
+  Widget _buildAmountSection(BuildContext context) {
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Montos',
-          style: TextStyle(
-            fontSize: 16,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 12),
         _buildAmountField(
+          context,
           controller: _physicalController,
           label: 'Dinero Físico',
           icon: Icons.account_balance_wallet,
@@ -247,6 +256,7 @@ class _RecordDialogState extends State<RecordDialog> {
         ),
         const SizedBox(height: 16),
         _buildAmountField(
+          context,
           controller: _digitalController,
           label: 'Dinero Digital',
           icon: Icons.credit_card,
@@ -256,18 +266,18 @@ class _RecordDialogState extends State<RecordDialog> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.05),
+            color: Colors.blue.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.withOpacity(0.2)),
+            border: Border.all(color: Colors.blue.withOpacity(0.3)),
           ),
           child: Row(
             children: [
               Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Ingresa al menos un monto',
-                  style: TextStyle(fontSize: 12, color: Colors.black87),
+                  style: TextStyle(fontSize: 12, color: textColor),
                 ),
               ),
             ],
@@ -277,18 +287,22 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildAmountField({
+  Widget _buildAmountField(
+    BuildContext context, {
     required TextEditingController controller,
     required String label,
     required IconData icon,
     required Color color,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark ? Colors.grey[700] : Colors.grey[300];
+    
     return Container(
       decoration: BoxDecoration(
         color: color.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: controller.text.isNotEmpty ? color : Colors.grey[300]!,
+          color: controller.text.isNotEmpty ? color : borderColor!,
           width: controller.text.isNotEmpty ? 2 : 1,
         ),
       ),
@@ -322,7 +336,9 @@ class _RecordDialogState extends State<RecordDialog> {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: controller.text.isEmpty ? Colors.grey[400] : color,
+                    color: controller.text.isEmpty 
+                        ? (isDark ? Colors.grey[600] : Colors.grey[400])
+                        : color,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -334,7 +350,7 @@ class _RecordDialogState extends State<RecordDialog> {
                       hintStyle: TextStyle(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: Colors.grey[300],
+                        color: isDark ? Colors.grey[700] : Colors.grey[300],
                       ),
                       border: InputBorder.none,
                       isDense: true,
@@ -353,10 +369,7 @@ class _RecordDialogState extends State<RecordDialog> {
                     validator: (value) {
                       final physical = double.tryParse(_physicalController.text) ?? 0;
                       final digital = double.tryParse(_digitalController.text) ?? 0;
-
-                      if (physical == 0 && digital == 0) {
-                        return '';
-                      }
+                      if (physical == 0 && digital == 0) return '';
                       return null;
                     },
                     onChanged: (value) => setState(() {}),
@@ -375,7 +388,9 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildCategorySelector() {
+  Widget _buildCategorySelector(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return DropdownButtonFormField<String>(
       value: _selectedCategory,
       decoration: InputDecoration(
@@ -385,7 +400,7 @@ class _RecordDialogState extends State<RecordDialog> {
         ),
         prefixIcon: const Icon(Icons.category),
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
       ),
       items: widget.categories.map((category) {
         return DropdownMenuItem(
@@ -411,7 +426,9 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildDescriptionInput() {
+  Widget _buildDescriptionInput(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return TextFormField(
       controller: _descriptionController,
       decoration: InputDecoration(
@@ -422,7 +439,7 @@ class _RecordDialogState extends State<RecordDialog> {
         prefixIcon: const Icon(Icons.description),
         hintText: 'Ej: Ahorro mensual, gastos varios...',
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
       ),
       maxLines: 2,
       maxLength: 100,
@@ -430,7 +447,9 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildNotesInput() {
+  Widget _buildNotesInput(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return TextFormField(
       controller: _notesController,
       decoration: InputDecoration(
@@ -441,7 +460,7 @@ class _RecordDialogState extends State<RecordDialog> {
         prefixIcon: const Icon(Icons.note_add),
         hintText: 'Información extra...',
         filled: true,
-        fillColor: Colors.grey[50],
+        fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
       ),
       maxLines: 3,
       maxLength: 200,
@@ -449,11 +468,13 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: isDark ? Colors.grey[900] : Colors.grey[50],
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(20),
           bottomRight: Radius.circular(20),
@@ -501,6 +522,7 @@ class _RecordDialogState extends State<RecordDialog> {
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
+                        color: Colors.white,
                       ),
                     ),
             ),
@@ -551,6 +573,6 @@ class _RecordDialogState extends State<RecordDialog> {
   }
 
   Color _getCategoryColor(String category) {
-  return AppConstants.getCategoryColor(category, widget.categoryColors);
-}
+    return AppConstants.getCategoryColor(category, widget.categoryColors);
+  }
 }
