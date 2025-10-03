@@ -205,11 +205,25 @@ class AppConstants {
   static const String reminderNotificationBody = '¡No olvides registrar tus ahorros de hoy!';
   
   // Métodos utilitarios para colores
-  static Color getCategoryColor(String category) {
-    final hash = category.hashCode;
-    return categoryColors[hash.abs() % categoryColors.length];
+  static Color getCategoryColor(String category, [Map<String, Color>? customColors]) {
+  // Si hay colores personalizados, usarlos primero
+  if (customColors != null && customColors.containsKey(category)) {
+    return customColors[category]!;
   }
   
+  // Colores predeterminados
+  final defaultColors = {
+    'General': Colors.blue,
+    'Trabajo': Colors.green,
+    'Inversión': Colors.orange,
+    'Regalo': Colors.pink,
+    'Emergencia': Colors.red,
+    'Freelance': Colors.purple,
+    'Bonificación': Colors.amber,
+  };
+  
+  return defaultColors[category] ?? Colors.grey;
+}
   static Color getTypeColor(bool isDeposit) {
     return isDeposit ? depositColor : withdrawalColor;
   }

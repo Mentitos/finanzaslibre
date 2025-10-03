@@ -26,6 +26,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   List<SavingsRecord> _filteredRecords = [];
   List<String> _categories = [];
   Map<String, dynamic> _statistics = {};
+  Map<String, Color> _categoryColors = {};
 
   String _currentFilter = 'all';
   String _selectedCategory = 'all';
@@ -55,12 +56,15 @@ class _SavingsScreenState extends State<SavingsScreen>
       final categories = await _dataManager.loadCategories();
       final stats = await _dataManager.getStatistics();
       final privacyMode = await _dataManager.loadPrivacyMode();
+      final categoryColors = await _dataManager.loadAllCategoryColors();
+
 
       setState(() {
         _allRecords = records;
         _categories = categories;
         _statistics = stats;
         _privacyMode = privacyMode;
+        _categoryColors = categoryColors; // NUEVO
         _applyFilters();
         _isLoading = false;
       });
@@ -134,19 +138,21 @@ class _SavingsScreenState extends State<SavingsScreen>
     }
   }
 
-  Future<void> _addCategory(String category) async {
-    try {
-      final success = await _dataManager.addCategory(category);
-      if (success) {
-        await _loadData();
-        _showSuccessSnackBar(AppConstants.categorySavedSuccess);
-      } else {
-        _showErrorSnackBar(AppConstants.categoryExistsError);
-      }
-    } catch (e) {
-      _showErrorSnackBar(AppConstants.genericError);
+  Future<void> _addCategory(String category, Color color) async {
+  try {
+    final success = await _dataManager.addCategory(category);
+    if (success) {
+      // Guardar el color por separado
+      await _dataManager.saveCategoryColor(category, color);
+      await _loadData();
+      _showSuccessSnackBar(AppConstants.categorySavedSuccess);
+    } else {
+      _showErrorSnackBar(AppConstants.categoryExistsError);
     }
+  } catch (e) {
+    _showErrorSnackBar(AppConstants.genericError);
   }
+}
 
   Future<void> _deleteCategory(String category) async {
     try {
@@ -173,6 +179,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       builder: (context) => RecordDialog(
         onSave: _addRecord,
         categories: _categories,
+        categoryColors: _categoryColors,
         initialCategory: _selectedCategory != 'all' ? _selectedCategory : null,
       ),
     );
@@ -184,6 +191,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       builder: (context) => RecordDialog(
         onSave: _updateRecord,
         categories: _categories,
+        categoryColors: _categoryColors,
         record: record,
       ),
     );
@@ -196,6 +204,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         moneyType: moneyType,
         onSave: _addRecord,
         categories: _categories,
+        categoryColors: _categoryColors,
         currentAmount: currentAmount,
       ),
     );
@@ -284,6 +293,7 @@ class _SavingsScreenState extends State<SavingsScreen>
                 SummaryTab(
                   statistics: _statistics,
                   allRecords: _allRecords,
+                  categoryColors: _categoryColors,
                   privacyMode: _privacyMode,
                   onRefresh: _loadData,
                   onEditRecord: _showEditRecordDialog,
@@ -294,6 +304,7 @@ class _SavingsScreenState extends State<SavingsScreen>
                   allRecords: _allRecords,
                   filteredRecords: _filteredRecords,
                   categories: _categories,
+                  categoryColors: _categoryColors,
                   currentFilter: _currentFilter,
                   selectedCategory: _selectedCategory,
                   searchQuery: _searchQuery,
@@ -331,6 +342,7 @@ class _SavingsScreenState extends State<SavingsScreen>
                 CategoriesTab(
                   statistics: _statistics,
                   categories: _categories,
+                  categoryColors: _categoryColors,
                   onAddCategory: _addCategory,
                   onDeleteCategory: _deleteCategory,
                 ),

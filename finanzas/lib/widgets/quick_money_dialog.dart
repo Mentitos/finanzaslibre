@@ -8,6 +8,7 @@ class QuickMoneyDialog extends StatefulWidget {
   final MoneyType moneyType;
   final Function(SavingsRecord) onSave;
   final List<String> categories;
+  final Map<String, Color>? categoryColors;
   final double currentAmount;
 
   const QuickMoneyDialog({
@@ -15,6 +16,7 @@ class QuickMoneyDialog extends StatefulWidget {
     required this.moneyType,
     required this.onSave,
     required this.categories,
+    this.categoryColors,
     required this.currentAmount,
   });
 
@@ -357,7 +359,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: AppConstants.getCategoryColor(category),
+                color: AppConstants.getCategoryColor(category, widget.categoryColors), // USA categoryColors
                 shape: BoxShape.circle,
               ),
             ),

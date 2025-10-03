@@ -1,23 +1,27 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart'; // Necesario para Color
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/savings_record.dart'; // Asumiendo que existe RecordType
-// La definición de 'RecordType' se eliminó de aquí para evitar conflictos.
+import '../models/savings_record.dart';
+import 'dart:ui'; // Para Color
 
 class SavingsDataManager {
   // --- CLAVES DE PREFERENCIAS ---
   static const String _recordsKey = 'savings_records';
   static const String _categoriesKey = 'savings_categories';
   static const String _privacyModeKey = 'privacy_mode_enabled';
-  
+
   // Claves de Seguridad
   static const String _pinKey = 'security_pin';
   static const String _pinEnabledKey = 'pin_enabled';
   static const String _biometricEnabledKey = 'biometric_enabled';
-  
+
+  // Nueva clave para colores de categorías
+  static const String _categoryColorsKey = 'category_colors';
+
   static const List<String> _defaultCategories = [
     'General',
-    'Trabajo', 
+    'Trabajo',
     'Inversión',
     'Regalo',
     'Emergencia',
@@ -25,21 +29,109 @@ class SavingsDataManager {
     'Bonificación'
   ];
 
-  // Singleton pattern para evitar múltiples instancias
+  // Singleton
   static final SavingsDataManager _instance = SavingsDataManager._internal();
   factory SavingsDataManager() => _instance;
   SavingsDataManager._internal();
 
-  /// Método de inicialización estático para compatibilidad con main.dart.
-  /// Si se requiere lógica asíncrona de inicio, debe colocarse aquí.
-  static void init() {
-    // La inicialización se realiza aquí si es necesaria, pero el Singleton es lazy.
-  }
+  static void init() {}
 
-  // Cache en memoria para mejorar performance
+  // Cache
   List<SavingsRecord>? _cachedRecords;
   List<String>? _cachedCategories;
 
+  // ====================================================================
+  // ----------------------- METODOS DE CATEGORIAS ----------------------
+  // ====================================================================
+
+  /// Agrega una nueva categoría (con color)
+  Future<bool> addCategoryWithColor(String category, Color color) async {
+    if (category.trim().isEmpty) return false;
+
+    final categories = await loadCategories();
+    final trimmedCategory = category.trim();
+
+    if (!categories.contains(trimmedCategory)) {
+      categories.add(trimmedCategory);
+      await saveCategories(categories);
+
+      // Guardar color asociado
+      await saveCategoryColor(trimmedCategory, color);
+      return true;
+    }
+
+    return false;
+  }
+
+  /// Agrega una nueva categoría sin color (compatibilidad con código existente)
+  Future<bool> addCategory(String category) async {
+    if (category.trim().isEmpty) return false;
+
+    final categories = await loadCategories();
+    final trimmedCategory = category.trim();
+
+    if (!categories.contains(trimmedCategory)) {
+      categories.add(trimmedCategory);
+      return await saveCategories(categories);
+    }
+
+    return false; // Ya existe
+  }
+
+  /// Guarda el color de una categoría
+  Future<bool> saveCategoryColor(String category, Color color) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final colorsJson = prefs.getString(_categoryColorsKey);
+    Map<String, int> colorMap = {};
+    
+    if (colorsJson != null) {
+      final decoded = json.decode(colorsJson);
+      colorMap = Map<String, int>.from(decoded);
+    }
+    
+    colorMap[category] = color.value;
+    await prefs.setString(_categoryColorsKey, json.encode(colorMap));
+    return true;
+  } catch (e) {
+    debugPrint('Error guardando color: $e');
+    return false;
+  }
+}
+
+  /// Carga el color de una categoría
+  Future<Color?> loadCategoryColor(String category) async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final colorsJson = prefs.getString(_categoryColorsKey);
+    
+    if (colorsJson != null) {
+      final colorMap = Map<String, int>.from(json.decode(colorsJson));
+      if (colorMap.containsKey(category)) {
+        return Color(colorMap[category]!);
+      }
+    }
+  } catch (e) {
+    debugPrint('Error cargando color: $e');
+  }
+  return null;
+}
+
+  /// Carga todos los colores de categorías
+  Future<Map<String, Color>> loadAllCategoryColors() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    final colorsJson = prefs.getString(_categoryColorsKey);
+    
+    if (colorsJson != null) {
+      final colorMap = Map<String, int>.from(json.decode(colorsJson));
+      return colorMap.map((key, value) => MapEntry(key, Color(value)));
+    }
+  } catch (e) {
+    debugPrint('Error cargando colores: $e');
+  }
+  return {};
+}
   // ====================================================================
   // ------------------------- MÉTODOS DE SEGURIDAD ---------------------
   // ====================================================================
@@ -306,19 +398,7 @@ class SavingsDataManager {
   }
 
   /// Agrega una nueva categoría
-  Future<bool> addCategory(String category) async {
-    if (category.trim().isEmpty) return false;
-    
-    final categories = await loadCategories();
-    final trimmedCategory = category.trim();
-    
-    if (!categories.contains(trimmedCategory)) {
-      categories.add(trimmedCategory);
-      return await saveCategories(categories);
-    }
-    
-    return false; // Ya existe
-  }
+  
 
   /// Elimina una categoría y mueve sus registros a "General"
   Future<bool> deleteCategory(String category) async {

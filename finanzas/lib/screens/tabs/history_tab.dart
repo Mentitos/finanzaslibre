@@ -7,6 +7,7 @@ class HistoryTab extends StatelessWidget {
   final List<SavingsRecord> allRecords;
   final List<SavingsRecord> filteredRecords;
   final List<String> categories;
+  final Map<String, Color> categoryColors;
   final String currentFilter;
   final String selectedCategory;
   final String searchQuery;
@@ -25,6 +26,7 @@ class HistoryTab extends StatelessWidget {
     required this.allRecords,
     required this.filteredRecords,
     required this.categories,
+    required this.categoryColors,
     required this.currentFilter,
     required this.selectedCategory,
     required this.searchQuery,
@@ -62,6 +64,7 @@ class HistoryTab extends StatelessWidget {
                         onEdit: () => onEditRecord(record),
                         onDelete: () => _showDeleteConfirmation(context, record),
                         showCategory: true,
+                        categoryColors: categoryColors,
                       );
                     },
                   ),

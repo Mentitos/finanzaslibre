@@ -9,6 +9,7 @@ import '../../constants/app_constants.dart';
 class SummaryTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
   final List<SavingsRecord> allRecords;
+  final Map<String, Color> categoryColors;
   final bool privacyMode;
   final Future<void> Function() onRefresh;
   final Function(SavingsRecord) onEditRecord;
@@ -19,6 +20,7 @@ class SummaryTab extends StatelessWidget {
     super.key,
     required this.statistics,
     required this.allRecords,
+    required this.categoryColors,
     required this.privacyMode,
     required this.onRefresh,
     required this.onEditRecord,
@@ -307,6 +309,8 @@ Widget _buildDivider() {
             ...recentRecords.map((record) => RecentRecordItem(
               record: record,
               onTap: () => onEditRecord(record),
+              categoryColors: categoryColors,
+
             )),
           ],
         ),

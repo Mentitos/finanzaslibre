@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/savings_record.dart';
+import '../constants/app_constants.dart';
 
 class RecordDialog extends StatefulWidget {
   final Function(SavingsRecord) onSave;
   final List<String> categories;
+  final Map<String, Color>? categoryColors;
   final SavingsRecord? record;
   final String? initialCategory;
 
@@ -12,6 +14,7 @@ class RecordDialog extends StatefulWidget {
     super.key,
     required this.onSave,
     required this.categories,
+    this.categoryColors,
     this.record,
     this.initialCategory,
   });
@@ -548,17 +551,6 @@ class _RecordDialogState extends State<RecordDialog> {
   }
 
   Color _getCategoryColor(String category) {
-    const colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.red,
-      Colors.teal,
-      Colors.indigo,
-    ];
-
-    final hash = category.hashCode;
-    return colors[hash.abs() % colors.length];
-  }
+  return AppConstants.getCategoryColor(category, widget.categoryColors);
+}
 }

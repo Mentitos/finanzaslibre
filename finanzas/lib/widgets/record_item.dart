@@ -8,12 +8,14 @@ class RecordItem extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final bool showCategory;
+  final Map<String, Color>? categoryColors;
 
   const RecordItem({
     super.key,
     required this.record,
     required this.onEdit,
     required this.onDelete,
+    this.categoryColors,
     this.showCategory = false,
   });
 
@@ -25,7 +27,7 @@ class RecordItem extends StatelessWidget {
         : Colors.red;
     
     // Color de categoría solo para el badge
-    final categoryColor = AppConstants.getCategoryColor(record.category);
+    final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -206,11 +208,13 @@ class RecordItem extends StatelessWidget {
 class RecentRecordItem extends StatelessWidget {
   final SavingsRecord record;
   final VoidCallback onTap;
+  final Map<String, Color>? categoryColors;
 
   const RecentRecordItem({
     super.key,
     required this.record,
     required this.onTap,
+    this.categoryColors,
   });
 
   @override
@@ -221,7 +225,7 @@ class RecentRecordItem extends StatelessWidget {
         : Colors.red;
     
     // Color de categoría para el badge
-    final categoryColor = AppConstants.getCategoryColor(record.category);
+    final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
     
     return ListTile(
       onTap: onTap,

@@ -5,7 +5,8 @@ import '../../constants/app_constants.dart';
 class CategoriesTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
   final List<String> categories;
-  final Function(String) onAddCategory;
+  final Map<String, Color> categoryColors;
+  final Function(String, Color) onAddCategory;
   final Function(String) onDeleteCategory;
 
   const CategoriesTab({
@@ -13,6 +14,7 @@ class CategoriesTab extends StatelessWidget {
     required this.statistics,
     required this.categories,
     required this.onAddCategory,
+    required this.categoryColors,
     required this.onDeleteCategory,
   });
 
@@ -31,95 +33,95 @@ class CategoriesTab extends StatelessWidget {
   }
 
   Widget _buildCategoryTotalsCard(BuildContext context) {
-    final categoryTotals = statistics['categoryTotals'] as Map<String, double>? ?? {};
-    final categoryTotalsList = categoryTotals.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+  final categoryTotals = statistics['categoryTotals'] as Map<String, double>? ?? {};
+  final categoryTotalsList = categoryTotals.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Ahorros por Categoría',
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: AppConstants.defaultPadding),
-            if (categoryTotalsList.isEmpty)
-              const Text('No hay datos disponibles')
-            else
-              ...categoryTotalsList.map((entry) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: AppConstants.getCategoryColor(entry.key),
-                            shape: BoxShape.circle,
-                          ),
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Ahorros por Categoría',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: AppConstants.defaultPadding),
+          if (categoryTotalsList.isEmpty)
+            const Text('No hay datos disponibles')
+          else
+            ...categoryTotalsList.map((entry) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: AppConstants.getCategoryColor(entry.key, categoryColors), // CAMBIO AQUÍ
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(entry.key)),
-                        Text(
-                          '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: entry.value >= 0 ? Colors.green : Colors.red,
-                          ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(entry.key)),
+                      Text(
+                        '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: entry.value >= 0 ? Colors.green : Colors.red,
                         ),
-                      ],
-                    ),
-                  )),
-          ],
-        ),
+                      ),
+                    ],
+                  ),
+                )),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildCategoryManagementCard(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Administrar Categorías',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                IconButton(
-                  onPressed: () => _showAddCategoryDialog(context),
-                  icon: const Icon(Icons.add),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppConstants.defaultPadding),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: categories.map((category) => Chip(
-                label: Text(category),
-                avatar: CircleAvatar(
-                  backgroundColor: AppConstants.getCategoryColor(category),
-                  radius: 8,
-                ),
-                deleteIcon: const Icon(Icons.close, size: 16),
-                onDeleted: category != 'General'
-                    ? () => _showDeleteCategoryConfirmation(context, category)
-                    : null,
-              )).toList(),
-            ),
-          ],
-        ),
+Widget _buildCategoryManagementCard(BuildContext context) {
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Administrar Categorías',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              IconButton(
+                onPressed: () => _showAddCategoryDialog(context),
+                icon: const Icon(Icons.add),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppConstants.defaultPadding),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: categories.map((category) => Chip(
+              label: Text(category),
+              avatar: CircleAvatar(
+                backgroundColor: AppConstants.getCategoryColor(category, categoryColors), // CAMBIO AQUÍ
+                radius: 8,
+              ),
+              deleteIcon: const Icon(Icons.close, size: 16),
+              onDeleted: category != 'General'
+                  ? () => _showDeleteCategoryConfirmation(context, category)
+                  : null,
+            )).toList(),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   void _showAddCategoryDialog(BuildContext context) {
     showDialog(
@@ -214,9 +216,10 @@ class CategoriesTab extends StatelessWidget {
 }
 
 // Widget separado para el diálogo de agregar categoría con selector de color
+// Widget separado para el diálogo de agregar categoría con selector de color
 class _CategoryDialog extends StatefulWidget {
   final List<String> categories;
-  final Function(String) onAddCategory;
+  final Function(String, Color) onAddCategory; // CAMBIA ESTO
 
   const _CategoryDialog({
     required this.categories,
@@ -374,35 +377,29 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   }
 
   void _handleAddCategory() {
-    final name = _controller.text.trim();
-    
-    if (!AppConstants.isValidCategoryName(name)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Nombre de categoría inválido'),
-          backgroundColor: AppConstants.errorColor,
-        ),
-      );
-      return;
-    }
-    
-    if (widget.categories.contains(name)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(AppConstants.categoryExistsError),
-          backgroundColor: AppConstants.errorColor,
-        ),
-      );
-      return;
-    }
-
-    Navigator.pop(context);
-    
-    // TODO: Necesitas modificar onAddCategory para recibir también el color
-    // Por ahora solo enviamos el nombre
-    widget.onAddCategory(name);
-    
-    // El color se guardará usando AppConstants.getCategoryColor
-    // que debería modificarse para guardar colores personalizados
+  final name = _controller.text.trim();
+  
+  if (!AppConstants.isValidCategoryName(name)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Nombre de categoría inválido'),
+        backgroundColor: AppConstants.errorColor,
+      ),
+    );
+    return;
   }
+  
+  if (widget.categories.contains(name)) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(AppConstants.categoryExistsError),
+        backgroundColor: AppConstants.errorColor,
+      ),
+    );
+    return;
+  }
+
+  Navigator.pop(context);
+  widget.onAddCategory(name, _selectedColor); // ENVÍA EL COLOR
+}
 }
