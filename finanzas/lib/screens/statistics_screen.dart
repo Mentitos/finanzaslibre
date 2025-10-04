@@ -4,7 +4,7 @@ import '../models/savings_record.dart';
 import '../constants/app_constants.dart';
 import '../utils/formatters.dart';
 
-enum StatisticsPeriod { day, week, month }
+enum StatisticsPeriod { day, week, month, specificMonth, specificDay }
 
 class StatisticsScreen extends StatefulWidget {
   final List<SavingsRecord> allRecords;
@@ -22,6 +22,16 @@ class StatisticsScreen extends StatefulWidget {
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
   StatisticsPeriod _selectedPeriod = StatisticsPeriod.month;
+  DateTime? _selectedSpecificMonth;
+  DateTime? _selectedSpecificDay;
+
+  @override
+  void initState() {
+    super.initState();
+    final now = DateTime.now();
+    _selectedSpecificMonth = now;
+    _selectedSpecificDay = now;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +64,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   List<SavingsRecord> _getFilteredRecords() {
     final now = DateTime.now();
     DateTime startDate;
+    DateTime? endDate;
 
     switch (_selectedPeriod) {
       case StatisticsPeriod.day:
@@ -66,11 +77,27 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       case StatisticsPeriod.month:
         startDate = DateTime(now.year, now.month, 1);
         break;
+      case StatisticsPeriod.specificMonth:
+        final monthToUse = _selectedSpecificMonth ?? now;
+        startDate = DateTime(monthToUse.year, monthToUse.month, 1);
+        endDate = DateTime(monthToUse.year, monthToUse.month + 1, 0, 23, 59, 59);
+        break;
+      case StatisticsPeriod.specificDay:
+        final dayToUse = _selectedSpecificDay ?? now;
+        startDate = DateTime(dayToUse.year, dayToUse.month, dayToUse.day);
+        endDate = DateTime(dayToUse.year, dayToUse.month, dayToUse.day, 23, 59, 59);
+        break;
     }
 
     return widget.allRecords.where((record) {
-      return record.createdAt.isAfter(startDate) ||
+      final isAfterStart = record.createdAt.isAfter(startDate) ||
           record.createdAt.isAtSameMomentAs(startDate);
+      
+      if (endDate != null) {
+        return isAfterStart && record.createdAt.isBefore(endDate);
+      }
+      
+      return isAfterStart;
     }).toList();
   }
 
@@ -91,31 +118,63 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8),
-        child: Row(
+        child: Column(
           children: [
-            Expanded(
-              child: _buildPeriodButton(
-                'Día',
-                StatisticsPeriod.day,
-                Icons.today,
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildPeriodButton(
+                    'Día',
+                    StatisticsPeriod.day,
+                    Icons.today,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildPeriodButton(
+                    'Semana',
+                    StatisticsPeriod.week,
+                    Icons.date_range,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildPeriodButton(
+                    'Mes',
+                    StatisticsPeriod.month,
+                    Icons.calendar_month,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildPeriodButton(
-                'Semana',
-                StatisticsPeriod.week,
-                Icons.date_range,
-              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildPeriodButton(
+                    'Mes específico',
+                    StatisticsPeriod.specificMonth,
+                    Icons.event_note,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildPeriodButton(
+                    'Día específico',
+                    StatisticsPeriod.specificDay,
+                    Icons.event,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _buildPeriodButton(
-                'Mes',
-                StatisticsPeriod.month,
-                Icons.calendar_month,
-              ),
-            ),
+            if (_selectedPeriod == StatisticsPeriod.specificMonth) ...[
+              const SizedBox(height: 12),
+              _buildMonthSelector(),
+            ],
+            if (_selectedPeriod == StatisticsPeriod.specificDay) ...[
+              const SizedBox(height: 12),
+              _buildDaySelector(),
+            ],
           ],
         ),
       ),
@@ -149,12 +208,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             const SizedBox(height: 4),
             Text(
               label,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: isSelected
                     ? Colors.white
                     : Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                fontSize: 12,
+                fontSize: 11,
               ),
             ),
           ],
@@ -175,6 +235,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       0,
       (sum, r) => sum + r.totalAmount,
     );
+    final balance = totalDeposits - totalWithdrawals;
 
     return Row(
       children: [
@@ -186,13 +247,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             Icons.arrow_upward,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: _buildSummaryCard(
             'Gastos',
             totalWithdrawals,
             Colors.red,
             Icons.arrow_downward,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: _buildSummaryCard(
+            'Balance',
+            balance.abs(),
+            balance >= 0 ? Colors.blue : Colors.orange,
+            balance >= 0 ? Icons.trending_up : Icons.trending_down,
           ),
         ),
       ],
@@ -208,7 +278,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             Icon(icon, color: color, size: 32),
             const SizedBox(height: 8),
             Text(
-              '\$${Formatters.formatCurrency(amount)}',
+              '${AppConstants.currencySymbol}${Formatters.formatCurrency(amount)}',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -263,8 +333,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 PieChartData(
                   sectionsSpace: 2,
                   centerSpaceRadius: 60,
+                  pieTouchData: PieTouchData(enabled: true),
                   sections: sortedEntries.map((entry) {
-                    final index = sortedEntries.indexOf(entry);
                     final percentage = (entry.value.abs() /
                             sortedEntries.fold<double>(
                                 0, (sum, e) => sum + e.value.abs())) *
@@ -284,6 +354,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     );
                   }).toList(),
                 ),
+                swapAnimationDuration: const Duration(milliseconds: 800),
+                swapAnimationCurve: Curves.easeInOutCubic,
               ),
             ),
           ],
@@ -339,7 +411,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ),
                         ),
                         Text(
-                          '\$${Formatters.formatCurrency(entry.value.abs())}',
+                          '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value.abs())}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: entry.value >= 0 ? Colors.green : Colors.red,
@@ -375,6 +447,250 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildMonthSelector() {
+    final now = DateTime.now();
+    final selectedMonth = _selectedSpecificMonth ?? now;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Theme.of(context).colorScheme.primary),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.calendar_month, 
+            color: Theme.of(context).colorScheme.primary, 
+            size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _formatMonthYear(selectedMonth),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.arrow_drop_down),
+            onPressed: () => _selectMonth(context),
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDaySelector() {
+    final now = DateTime.now();
+    final selectedDay = _selectedSpecificDay ?? now;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Theme.of(context).colorScheme.primary),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.event, 
+            color: Theme.of(context).colorScheme.primary, 
+            size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _formatDate(selectedDay),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.arrow_drop_down),
+            onPressed: () => _selectDay(context),
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatMonthYear(DateTime date) {
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return '${months[date.month - 1]} ${date.year}';
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
+  Future<void> _selectMonth(BuildContext context) async {
+    final now = DateTime.now();
+    final initialDate = _selectedSpecificMonth ?? now;
+    
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Seleccionar mes'),
+          content: SizedBox(
+            width: 300,
+            height: 300,
+            child: YearMonthPicker(
+              initialDate: initialDate,
+              onDateSelected: (date) {
+                setState(() {
+                  _selectedSpecificMonth = date;
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _selectDay(BuildContext context) async {
+    final now = DateTime.now();
+    final initialDate = _selectedSpecificDay ?? now;
+    
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: DateTime(2020),
+      lastDate: now,
+    );
+    
+    if (picked != null) {
+      setState(() {
+        _selectedSpecificDay = picked;
+      });
+    }
+  }
+}
+
+class YearMonthPicker extends StatefulWidget {
+  final DateTime initialDate;
+  final Function(DateTime) onDateSelected;
+
+  const YearMonthPicker({
+    super.key,
+    required this.initialDate,
+    required this.onDateSelected,
+  });
+
+  @override
+  State<YearMonthPicker> createState() => _YearMonthPickerState();
+}
+
+class _YearMonthPickerState extends State<YearMonthPicker> {
+  late int _selectedYear;
+  late int _selectedMonth;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedYear = widget.initialDate.year;
+    _selectedMonth = widget.initialDate.month;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final years = List.generate(
+      now.year - 2019,
+      (index) => 2020 + index,
+    );
+
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    return Column(
+      children: [
+        DropdownButtonFormField<int>(
+          value: _selectedYear,
+          decoration: const InputDecoration(
+            labelText: 'Año',
+            border: OutlineInputBorder(),
+          ),
+          items: years.map((year) {
+            return DropdownMenuItem(
+              value: year,
+              child: Text(year.toString()),
+            );
+          }).toList(),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() {
+                _selectedYear = value;
+              });
+            }
+          },
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: GridView.builder(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 2,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemCount: 12,
+            itemBuilder: (context, index) {
+              final month = index + 1;
+              final isSelected = month == _selectedMonth;
+              final isFuture = _selectedYear == now.year && month > now.month;
+
+              return InkWell(
+                onTap: isFuture ? null : () {
+                  setState(() {
+                    _selectedMonth = month;
+                  });
+                  widget.onDateSelected(DateTime(_selectedYear, month));
+                },
+                child: Container(
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : (isFuture ? Colors.grey[300] : Colors.grey[100]),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey[300]!,
+                    ),
+                  ),
+                  child: Text(
+                    months[index],
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : (isFuture ? Colors.grey : Colors.black87),
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
