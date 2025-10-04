@@ -3,6 +3,8 @@ import '../../models/savings_record.dart';
 import '../../widgets/record_item.dart';
 import '../../utils/formatters.dart';
 import '../../constants/app_constants.dart';
+import '../statistics_screen.dart';
+
 
 class SummaryTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
@@ -200,12 +202,25 @@ class SummaryTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(BuildContext context) { // AGREGAR context
-    final totalRecords = statistics['totalRecords'] ?? 0;
-    final totalDeposits = statistics['totalDeposits'] ?? 0;
-    final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
+  Widget _buildStatsRow(BuildContext context) {
+  final totalRecords = statistics['totalRecords'] ?? 0;
+  final totalDeposits = statistics['totalDeposits'] ?? 0;
+  final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
 
-    return Card(
+  return InkWell(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => StatisticsScreen(
+            allRecords: allRecords,
+            categoryColors: categoryColors,
+          ),
+        ),
+      );
+    },
+    borderRadius: BorderRadius.circular(16),
+    child: Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
@@ -215,7 +230,7 @@ class SummaryTab extends StatelessWidget {
         child: Row(
           children: [
             _buildStatItem(
-              context, // PASAR context
+              context,
               title: 'Total Registros',
               value: '$totalRecords',
               icon: Icons.receipt_long,
@@ -223,7 +238,7 @@ class SummaryTab extends StatelessWidget {
             ),
             _buildDivider(),
             _buildStatItem(
-              context, // PASAR context
+              context,
               title: AppConstants.depositLabel,
               value: '$totalDeposits',
               icon: Icons.arrow_upward,
@@ -231,7 +246,7 @@ class SummaryTab extends StatelessWidget {
             ),
             _buildDivider(),
             _buildStatItem(
-              context, // PASAR context
+              context,
               title: AppConstants.withdrawalLabel,
               value: '$totalWithdrawals',
               icon: Icons.arrow_downward,
@@ -240,8 +255,9 @@ class SummaryTab extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  ); // ESTE PARÉNTESIS CIERRA EL InkWell
+}
 
   Widget _buildStatItem(
     BuildContext context, { // AGREGAR context
