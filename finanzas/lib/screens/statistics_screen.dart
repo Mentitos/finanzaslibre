@@ -451,10 +451,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildMonthSelector() {
-    final now = DateTime.now();
-    final selectedMonth = _selectedSpecificMonth ?? now;
-    
-    return Container(
+  final now = DateTime.now();
+  final selectedMonth = _selectedSpecificMonth ?? now;
+  
+  return InkWell(
+    borderRadius: BorderRadius.circular(8),
+    onTap: () => _selectMonth(context), // ahora toca cualquier parte
+    child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -463,9 +466,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.calendar_month, 
+          Icon(
+            Icons.calendar_month, 
             color: Theme.of(context).colorScheme.primary, 
-            size: 20),
+            size: 40,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -476,21 +481,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.arrow_drop_down),
-            onPressed: () => _selectMonth(context),
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          const Icon(Icons.arrow_drop_down), // ya no necesita onPressed
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildDaySelector() {
-    final now = DateTime.now();
-    final selectedDay = _selectedSpecificDay ?? now;
-    
-    return Container(
+  final now = DateTime.now();
+  final selectedDay = _selectedSpecificDay ?? now;
+  
+  return InkWell(
+    borderRadius: BorderRadius.circular(8),
+    onTap: () => _selectDay(context),
+    child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -499,9 +505,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
       child: Row(
         children: [
-          Icon(Icons.event, 
+          Icon(
+            Icons.event, 
             color: Theme.of(context).colorScheme.primary, 
-            size: 20),
+            size: 40,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
@@ -512,15 +520,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.arrow_drop_down),
-            onPressed: () => _selectDay(context),
-            color: Theme.of(context).colorScheme.primary,
-          ),
+          const Icon(Icons.arrow_drop_down),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   String _formatMonthYear(DateTime date) {
     const months = [
