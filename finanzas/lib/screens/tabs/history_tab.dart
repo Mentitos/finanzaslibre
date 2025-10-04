@@ -152,73 +152,78 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
   }
 
   Widget _buildCategoryDropdown(BuildContext context) {
-    return PopupMenuButton<String>(
-      initialValue: selectedCategory,
-      offset: const Offset(0, 40),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: selectedCategory == 'all' 
-                ? Colors.grey.shade400 
-                : Theme.of(context).primaryColor,
-            width: selectedCategory == 'all' ? 1 : 2,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          color: selectedCategory == 'all'
-              ? Colors.transparent
-              : Theme.of(context).primaryColor.withOpacity(0.1),
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final primaryColor = Theme.of(context).colorScheme.primary; // USA colorScheme
+  
+  final borderColor = selectedCategory == 'all'
+      ? (isDark ? Colors.grey.shade600 : Colors.grey.shade400)
+      : primaryColor;
+  final iconColor = selectedCategory == 'all'
+      ? (isDark ? Colors.grey.shade400 : Colors.grey.shade700)
+      : primaryColor;
+  final textColor = selectedCategory == 'all'
+      ? Theme.of(context).textTheme.bodyLarge?.color
+      : primaryColor;
+
+  return PopupMenuButton<String>(
+    initialValue: selectedCategory,
+    offset: const Offset(0, 40),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: borderColor,
+          width: selectedCategory == 'all' ? 1 : 2,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.category,
-              size: 20,
-              color: selectedCategory == 'all' 
-                  ? Colors.grey.shade700 
-                  : Theme.of(context).primaryColor,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              selectedCategory == 'all' 
-                  ? 'Categoría' 
-                  : selectedCategory,
-              style: TextStyle(
-                fontWeight: selectedCategory == 'all' 
-                    ? FontWeight.normal 
-                    : FontWeight.bold,
-                color: selectedCategory == 'all' 
-                    ? Theme.of(context).textTheme.bodyLarge?.color
-                    : Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              size: 20,
-              color: selectedCategory == 'all' 
-                  ? Colors.grey.shade700 
-                  : Theme.of(context).primaryColor,
-            ),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(8),
+        color: selectedCategory == 'all'
+            ? Colors.transparent
+            : Theme.of(context).primaryColor.withOpacity(0.1),
       ),
-      itemBuilder: (context) => [
-        const PopupMenuItem(
-          value: 'all',
-          child: Text('Todas las categorías'),
-        ),
-        ...categories.map((category) => PopupMenuItem(
-              value: category,
-              child: Text(category),
-            )),
-      ],
-      onSelected: (value) {
-        onCategoryChanged(value);
-      },
-    );
-  }
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.category,
+            size: 20,
+            color: iconColor,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            selectedCategory == 'all' 
+                ? 'Categoría' 
+                : selectedCategory,
+            style: TextStyle(
+              fontWeight: selectedCategory == 'all' 
+                  ? FontWeight.normal 
+                  : FontWeight.bold,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            Icons.arrow_drop_down,
+            size: 20,
+            color: iconColor,
+          ),
+        ],
+      ),
+    ),
+    itemBuilder: (context) => [
+      const PopupMenuItem(
+        value: 'all',
+        child: Text('Todas las categorías'),
+      ),
+      ...categories.map((category) => PopupMenuItem(
+            value: category,
+            child: Text(category),
+          )),
+    ],
+    onSelected: (value) {
+      onCategoryChanged(value);
+    },
+  );
+}
 
   Widget _buildEmptyState(BuildContext context) {
   String title = AppConstants.emptyRecordsTitle;
