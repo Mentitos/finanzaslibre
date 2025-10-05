@@ -131,31 +131,31 @@ abstract class AppLocalizations {
   /// No description provided for @totalSavings.
   ///
   /// In es, this message translates to:
-  /// **'Ahorros totales'**
+  /// **'Total Ahorrado'**
   String get totalSavings;
 
   /// No description provided for @physicalMoney.
   ///
   /// In es, this message translates to:
-  /// **'Dinero físico'**
+  /// **'Dinero Físico'**
   String get physicalMoney;
 
   /// No description provided for @digitalMoney.
   ///
   /// In es, this message translates to:
-  /// **'Dinero digital'**
+  /// **'Dinero Digital'**
   String get digitalMoney;
 
   /// No description provided for @deposit.
   ///
   /// In es, this message translates to:
-  /// **'Ingreso'**
+  /// **'Depósito'**
   String get deposit;
 
   /// No description provided for @withdrawal.
   ///
   /// In es, this message translates to:
-  /// **'Gasto'**
+  /// **'Retiro'**
   String get withdrawal;
 
   /// No description provided for @balance.
@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteRecord.
   ///
   /// In es, this message translates to:
-  /// **'Eliminar registro'**
+  /// **'Eliminar Registro'**
   String get deleteRecord;
 
   /// No description provided for @cancel.
@@ -197,7 +197,7 @@ abstract class AppLocalizations {
   /// No description provided for @lastMovement.
   ///
   /// In es, this message translates to:
-  /// **'Último movimiento'**
+  /// **'Último Movimiento'**
   String get lastMovement;
 
   /// No description provided for @totalRecords.
@@ -239,13 +239,13 @@ abstract class AppLocalizations {
   /// No description provided for @deposits.
   ///
   /// In es, this message translates to:
-  /// **'Ingresos'**
+  /// **'Depósitos'**
   String get deposits;
 
   /// No description provided for @withdrawals.
   ///
   /// In es, this message translates to:
-  /// **'Gastos'**
+  /// **'Retiros'**
   String get withdrawals;
 
   /// No description provided for @category.

@@ -24,19 +24,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get statistics => 'Estadísticas';
 
   @override
-  String get totalSavings => 'Ahorros totales';
+  String get totalSavings => 'Total Ahorrado';
 
   @override
-  String get physicalMoney => 'Dinero físico';
+  String get physicalMoney => 'Dinero Físico';
 
   @override
-  String get digitalMoney => 'Dinero digital';
+  String get digitalMoney => 'Dinero Digital';
 
   @override
-  String get deposit => 'Ingreso';
+  String get deposit => 'Depósito';
 
   @override
-  String get withdrawal => 'Gasto';
+  String get withdrawal => 'Retiro';
 
   @override
   String get balance => 'Balance';
@@ -45,7 +45,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addRecord => 'Agregar Registro';
 
   @override
-  String get deleteRecord => 'Eliminar registro';
+  String get deleteRecord => 'Eliminar Registro';
 
   @override
   String get cancel => 'Cancelar';
@@ -57,7 +57,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get save => 'Guardar';
 
   @override
-  String get lastMovement => 'Último movimiento';
+  String get lastMovement => 'Último Movimiento';
 
   @override
   String get totalRecords => 'Total Registros';
@@ -78,10 +78,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get searchRecords => 'Buscar registros...';
 
   @override
-  String get deposits => 'Ingresos';
+  String get deposits => 'Depósitos';
 
   @override
-  String get withdrawals => 'Gastos';
+  String get withdrawals => 'Retiros';
 
   @override
   String get category => 'Categoría';
