@@ -8,6 +8,7 @@ import 'tabs/summary_tab.dart';
 import 'tabs/history_tab.dart';
 import 'tabs/categories_tab.dart';
 import 'settings/settings_menu.dart';
+import '../l10n/app_localizations.dart'; // AGREGAR IMPORT
 
 class SavingsScreen extends StatefulWidget {
   const SavingsScreen({super.key});
@@ -58,19 +59,21 @@ class _SavingsScreenState extends State<SavingsScreen>
       final privacyMode = await _dataManager.loadPrivacyMode();
       final categoryColors = await _dataManager.loadAllCategoryColors();
 
-
       setState(() {
         _allRecords = records;
         _categories = categories;
         _statistics = stats;
         _privacyMode = privacyMode;
-        _categoryColors = categoryColors; // NUEVO
+        _categoryColors = categoryColors;
         _applyFilters();
         _isLoading = false;
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorSnackBar('Error al cargar los datos');
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
+        _showErrorSnackBar(l10n.loadError);
+      }
     }
   }
 
@@ -97,74 +100,78 @@ class _SavingsScreenState extends State<SavingsScreen>
   }
 
   Future<void> _addRecord(SavingsRecord record) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final success = await _dataManager.addRecord(record);
       if (success) {
         await _loadData();
-        _showSuccessSnackBar(AppConstants.recordSavedSuccess);
+        _showSuccessSnackBar(l10n.recordSaved);
       } else {
-        _showErrorSnackBar(AppConstants.saveError);
+        _showErrorSnackBar(l10n.saveError);
       }
     } catch (e) {
-      _showErrorSnackBar(AppConstants.genericError);
+      _showErrorSnackBar(l10n.genericError);
     }
   }
 
   Future<void> _updateRecord(SavingsRecord record) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final success = await _dataManager.updateRecord(record);
       if (success) {
         await _loadData();
-        _showSuccessSnackBar(AppConstants.recordUpdatedSuccess);
+        _showSuccessSnackBar(l10n.recordUpdated);
       } else {
-        _showErrorSnackBar(AppConstants.saveError);
+        _showErrorSnackBar(l10n.saveError);
       }
     } catch (e) {
-      _showErrorSnackBar(AppConstants.genericError);
+      _showErrorSnackBar(l10n.genericError);
     }
   }
 
   Future<void> _deleteRecord(String id) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final success = await _dataManager.deleteRecord(id);
       if (success) {
         await _loadData();
-        _showSuccessSnackBar(AppConstants.recordDeletedSuccess);
+        _showSuccessSnackBar(l10n.recordDeleted);
       } else {
-        _showErrorSnackBar('Error al eliminar el registro');
+        _showErrorSnackBar(l10n.genericError);
       }
     } catch (e) {
-      _showErrorSnackBar(AppConstants.genericError);
+      _showErrorSnackBar(l10n.genericError);
     }
   }
 
   Future<void> _addCategory(String category, Color color) async {
-  try {
-    final success = await _dataManager.addCategory(category);
-    if (success) {
-      // Guardar el color por separado
-      await _dataManager.saveCategoryColor(category, color);
-      await _loadData();
-      _showSuccessSnackBar(AppConstants.categorySavedSuccess);
-    } else {
-      _showErrorSnackBar(AppConstants.categoryExistsError);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final success = await _dataManager.addCategory(category);
+      if (success) {
+        await _dataManager.saveCategoryColor(category, color);
+        await _loadData();
+        _showSuccessSnackBar(l10n.categorySaved);
+      } else {
+        _showErrorSnackBar(l10n.categoryExists);
+      }
+    } catch (e) {
+      _showErrorSnackBar(l10n.genericError);
     }
-  } catch (e) {
-    _showErrorSnackBar(AppConstants.genericError);
   }
-}
 
   Future<void> _deleteCategory(String category) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final success = await _dataManager.deleteCategory(category);
       if (success) {
         await _loadData();
-        _showSuccessSnackBar(AppConstants.categoryDeletedSuccess);
+        _showSuccessSnackBar(l10n.categoryDeleted);
       } else {
-        _showErrorSnackBar(AppConstants.categoryInUseError);
+        _showErrorSnackBar(l10n.categoryInUse);
       }
     } catch (e) {
-      _showErrorSnackBar(AppConstants.genericError);
+      _showErrorSnackBar(l10n.genericError);
     }
   }
 
@@ -259,29 +266,31 @@ class _SavingsScreenState extends State<SavingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppConstants.appName),
+        title: Text(l10n.appName),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
         actions: [
           IconButton(
             icon: Icon(_privacyMode ? Icons.visibility_off : Icons.visibility),
             onPressed: _togglePrivacyMode,
-            tooltip: _privacyMode ? 'Mostrar montos' : 'Ocultar montos',
+            tooltip: _privacyMode ? l10n.showAmounts : l10n.hideAmounts,
           ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: _showSettingsMenu,
-            tooltip: 'Configuración',
+            tooltip: l10n.settings,
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: AppConstants.summaryTabTitle, icon: Icon(Icons.dashboard)),
-            Tab(text: AppConstants.historyTabTitle, icon: Icon(Icons.history)),
-            Tab(text: AppConstants.categoriesTabTitle, icon: Icon(Icons.category)),
+          tabs: [
+            Tab(text: l10n.summary, icon: const Icon(Icons.dashboard)),
+            Tab(text: l10n.history, icon: const Icon(Icons.history)),
+            Tab(text: l10n.categories, icon: const Icon(Icons.category)),
           ],
         ),
       ),
@@ -329,7 +338,6 @@ class _SavingsScreenState extends State<SavingsScreen>
                       _filteredRecords = results;
                     });
                   },
-
                   onSearchCleared: () {
                     _searchController.clear();
                     setState(() {
@@ -351,7 +359,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddRecordDialog,
         icon: const Icon(Icons.add),
-        label: const Text('Nuevo'),
+        label: Text(l10n.new_),
         backgroundColor: Colors.green,
         foregroundColor: Theme.of(context).cardColor,
       ),

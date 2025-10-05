@@ -45,7 +45,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get addRecord => 'Agregar Registro';
 
   @override
-  String get deleteRecord => 'Eliminar Registro';
+  String get deleteRecord => 'Eliminar registro';
 
   @override
   String get cancel => 'Cancelar';
@@ -57,7 +57,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get save => 'Guardar';
 
   @override
-  String get lastMovement => 'Último Movimiento';
+  String get lastMovement => 'Último movimiento';
 
   @override
   String get totalRecords => 'Total Registros';
@@ -157,4 +157,236 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get categoryExists => 'La categoría ya existe';
+
+  @override
+  String get appName => 'Finanzas Libre';
+
+  @override
+  String get appDescription => 'Tu compañero para gestionar ahorros';
+
+  @override
+  String get settings => 'Configuración';
+
+  @override
+  String get editRecord => 'Editar Registro';
+
+  @override
+  String get edit => 'Editar';
+
+  @override
+  String get search => 'Buscar';
+
+  @override
+  String get filter => 'Filtrar';
+
+  @override
+  String get export => 'Exportar';
+
+  @override
+  String get import => 'Importar';
+
+  @override
+  String get description => 'Descripción';
+
+  @override
+  String get notes => 'Notas';
+
+  @override
+  String get date => 'Fecha';
+
+  @override
+  String get amount => 'Monto';
+
+  @override
+  String get emptyRecords => 'No hay registros aún';
+
+  @override
+  String get emptyRecordsSubtitle => '¡Agrega tu primer registro de ahorro!';
+
+  @override
+  String get emptySearch => 'No se encontraron resultados';
+
+  @override
+  String get emptySearchSubtitle => 'Intenta con otros términos de búsqueda';
+
+  @override
+  String get emptyCategory => 'Sin registros en esta categoría';
+
+  @override
+  String get emptyCategorySubtitle => 'Agrega registros a esta categoría';
+
+  @override
+  String get deleteRecordConfirm => '¿Estás seguro de eliminar este registro?';
+
+  @override
+  String get clearAllData => 'Limpiar todos los datos';
+
+  @override
+  String get clearAllDataConfirm =>
+      '¿Estás seguro? Esta acción no se puede deshacer';
+
+  @override
+  String get recordSaved => 'Registro guardado exitosamente';
+
+  @override
+  String get recordUpdated => 'Registro actualizado exitosamente';
+
+  @override
+  String get recordDeleted => 'Registro eliminado';
+
+  @override
+  String get categorySaved => 'Categoría guardada';
+
+  @override
+  String get categoryDeleted => 'Categoría eliminada';
+
+  @override
+  String get genericError => 'Ocurrió un error inesperado';
+
+  @override
+  String get saveError => 'Error al guardar los datos';
+
+  @override
+  String get loadError => 'Error al cargar los datos';
+
+  @override
+  String get validationError => 'Por favor verifica los datos ingresados';
+
+  @override
+  String get emptyAmount => 'Debe ingresar al menos una cantidad';
+
+  @override
+  String get allFilter => 'Todos';
+
+  @override
+  String get today => 'Hoy';
+
+  @override
+  String get thisWeek => 'Esta semana';
+
+  @override
+  String get thisMonth => 'Este mes';
+
+  @override
+  String get thisYear => 'Este año';
+
+  @override
+  String get showAmounts => 'Mostrar montos';
+
+  @override
+  String get hideAmounts => 'Ocultar montos';
+
+  @override
+  String get new_ => 'Nuevo';
+
+  @override
+  String get appearance => 'Apariencia';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get darkMode => 'Modo oscuro';
+
+  @override
+  String get darkModeOn => 'Tema oscuro activado';
+
+  @override
+  String get lightModeOn => 'Tema claro activado';
+
+  @override
+  String get selectLanguage => 'Seleccionar idioma';
+
+  @override
+  String get dataManagement => 'Gestión de Datos';
+
+  @override
+  String get exportData => 'Exportar datos';
+
+  @override
+  String get exportDataSubtitle => 'Guardar respaldo de tus registros';
+
+  @override
+  String get importData => 'Importar datos';
+
+  @override
+  String get importDataSubtitle => 'Restaurar desde un respaldo';
+
+  @override
+  String get dataExportSuccess => 'Datos exportados exitosamente';
+
+  @override
+  String get dataExportError => 'Error al exportar datos';
+
+  @override
+  String get dangerZone => 'Zona de Peligro';
+
+  @override
+  String get deleteAllRecords => 'Eliminar todos los registros';
+
+  @override
+  String get deleteAllRecordsSubtitle =>
+      'Borrar historial manteniendo categorías';
+
+  @override
+  String get resetApp => 'Restablecer aplicación';
+
+  @override
+  String get resetAppSubtitle => 'Borrar todo y volver al inicio';
+
+  @override
+  String get about => 'Acerca de';
+
+  @override
+  String get version => 'Versión';
+
+  @override
+  String get openSourceProject => 'Proyecto Open Source';
+
+  @override
+  String get openSourceDescription =>
+      'Este proyecto es de código abierto. Podés ver el repositorio en:';
+
+  @override
+  String get suggestions => 'Sugerencias:';
+
+  @override
+  String get creator => 'Creador:';
+
+  @override
+  String get supportProject => 'Apoya el proyecto:';
+
+  @override
+  String get donateUala => 'Si querés apoyar podés donar por Ualá:';
+
+  @override
+  String get aliasCopied => 'Alias copiado';
+
+  @override
+  String get features => 'Características:';
+
+  @override
+  String get feature1 => 'Gestión de dinero físico y digital';
+
+  @override
+  String get feature2 => 'Categorías personalizadas';
+
+  @override
+  String get feature3 => 'Historial completo de movimientos';
+
+  @override
+  String get feature4 => 'Estadísticas detalladas';
+
+  @override
+  String get feature5 => 'Exportación e importación de datos';
+
+  @override
+  String get feature6 => 'Retroalimentación y soporte';
+
+  @override
+  String get dataStoredLocally =>
+      'Tus datos se guardan localmente en tu dispositivo';
+
+  @override
+  String get close => 'Cerrar';
 }

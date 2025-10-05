@@ -173,7 +173,7 @@ abstract class AppLocalizations {
   /// No description provided for @deleteRecord.
   ///
   /// In es, this message translates to:
-  /// **'Eliminar Registro'**
+  /// **'Eliminar registro'**
   String get deleteRecord;
 
   /// No description provided for @cancel.
@@ -197,7 +197,7 @@ abstract class AppLocalizations {
   /// No description provided for @lastMovement.
   ///
   /// In es, this message translates to:
-  /// **'Último Movimiento'**
+  /// **'Último movimiento'**
   String get lastMovement;
 
   /// No description provided for @totalRecords.
@@ -397,6 +397,462 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'La categoría ya existe'**
   String get categoryExists;
+
+  /// No description provided for @appName.
+  ///
+  /// In es, this message translates to:
+  /// **'Finanzas Libre'**
+  String get appName;
+
+  /// No description provided for @appDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu compañero para gestionar ahorros'**
+  String get appDescription;
+
+  /// No description provided for @settings.
+  ///
+  /// In es, this message translates to:
+  /// **'Configuración'**
+  String get settings;
+
+  /// No description provided for @editRecord.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar Registro'**
+  String get editRecord;
+
+  /// No description provided for @edit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get edit;
+
+  /// No description provided for @search.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar'**
+  String get search;
+
+  /// No description provided for @filter.
+  ///
+  /// In es, this message translates to:
+  /// **'Filtrar'**
+  String get filter;
+
+  /// No description provided for @export.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar'**
+  String get export;
+
+  /// No description provided for @import.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar'**
+  String get import;
+
+  /// No description provided for @description.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción'**
+  String get description;
+
+  /// No description provided for @notes.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get notes;
+
+  /// No description provided for @date.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get date;
+
+  /// No description provided for @amount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto'**
+  String get amount;
+
+  /// No description provided for @emptyRecords.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay registros aún'**
+  String get emptyRecords;
+
+  /// No description provided for @emptyRecordsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¡Agrega tu primer registro de ahorro!'**
+  String get emptyRecordsSubtitle;
+
+  /// No description provided for @emptySearch.
+  ///
+  /// In es, this message translates to:
+  /// **'No se encontraron resultados'**
+  String get emptySearch;
+
+  /// No description provided for @emptySearchSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Intenta con otros términos de búsqueda'**
+  String get emptySearchSubtitle;
+
+  /// No description provided for @emptyCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin registros en esta categoría'**
+  String get emptyCategory;
+
+  /// No description provided for @emptyCategorySubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrega registros a esta categoría'**
+  String get emptyCategorySubtitle;
+
+  /// No description provided for @deleteRecordConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de eliminar este registro?'**
+  String get deleteRecordConfirm;
+
+  /// No description provided for @clearAllData.
+  ///
+  /// In es, this message translates to:
+  /// **'Limpiar todos los datos'**
+  String get clearAllData;
+
+  /// No description provided for @clearAllDataConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro? Esta acción no se puede deshacer'**
+  String get clearAllDataConfirm;
+
+  /// No description provided for @recordSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro guardado exitosamente'**
+  String get recordSaved;
+
+  /// No description provided for @recordUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro actualizado exitosamente'**
+  String get recordUpdated;
+
+  /// No description provided for @recordDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Registro eliminado'**
+  String get recordDeleted;
+
+  /// No description provided for @categorySaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría guardada'**
+  String get categorySaved;
+
+  /// No description provided for @categoryDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría eliminada'**
+  String get categoryDeleted;
+
+  /// No description provided for @genericError.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocurrió un error inesperado'**
+  String get genericError;
+
+  /// No description provided for @saveError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al guardar los datos'**
+  String get saveError;
+
+  /// No description provided for @loadError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al cargar los datos'**
+  String get loadError;
+
+  /// No description provided for @validationError.
+  ///
+  /// In es, this message translates to:
+  /// **'Por favor verifica los datos ingresados'**
+  String get validationError;
+
+  /// No description provided for @emptyAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Debe ingresar al menos una cantidad'**
+  String get emptyAmount;
+
+  /// No description provided for @allFilter.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos'**
+  String get allFilter;
+
+  /// No description provided for @today.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get today;
+
+  /// No description provided for @thisWeek.
+  ///
+  /// In es, this message translates to:
+  /// **'Esta semana'**
+  String get thisWeek;
+
+  /// No description provided for @thisMonth.
+  ///
+  /// In es, this message translates to:
+  /// **'Este mes'**
+  String get thisMonth;
+
+  /// No description provided for @thisYear.
+  ///
+  /// In es, this message translates to:
+  /// **'Este año'**
+  String get thisYear;
+
+  /// No description provided for @showAmounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar montos'**
+  String get showAmounts;
+
+  /// No description provided for @hideAmounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar montos'**
+  String get hideAmounts;
+
+  /// No description provided for @new_.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo'**
+  String get new_;
+
+  /// No description provided for @appearance.
+  ///
+  /// In es, this message translates to:
+  /// **'Apariencia'**
+  String get appearance;
+
+  /// No description provided for @language.
+  ///
+  /// In es, this message translates to:
+  /// **'Idioma'**
+  String get language;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In es, this message translates to:
+  /// **'Modo oscuro'**
+  String get darkMode;
+
+  /// No description provided for @darkModeOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema oscuro activado'**
+  String get darkModeOn;
+
+  /// No description provided for @lightModeOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema claro activado'**
+  String get lightModeOn;
+
+  /// No description provided for @selectLanguage.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar idioma'**
+  String get selectLanguage;
+
+  /// No description provided for @dataManagement.
+  ///
+  /// In es, this message translates to:
+  /// **'Gestión de Datos'**
+  String get dataManagement;
+
+  /// No description provided for @exportData.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar datos'**
+  String get exportData;
+
+  /// No description provided for @exportDataSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar respaldo de tus registros'**
+  String get exportDataSubtitle;
+
+  /// No description provided for @importData.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar datos'**
+  String get importData;
+
+  /// No description provided for @importDataSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar desde un respaldo'**
+  String get importDataSubtitle;
+
+  /// No description provided for @dataExportSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos exportados exitosamente'**
+  String get dataExportSuccess;
+
+  /// No description provided for @dataExportError.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al exportar datos'**
+  String get dataExportError;
+
+  /// No description provided for @dangerZone.
+  ///
+  /// In es, this message translates to:
+  /// **'Zona de Peligro'**
+  String get dangerZone;
+
+  /// No description provided for @deleteAllRecords.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar todos los registros'**
+  String get deleteAllRecords;
+
+  /// No description provided for @deleteAllRecordsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar historial manteniendo categorías'**
+  String get deleteAllRecordsSubtitle;
+
+  /// No description provided for @resetApp.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer aplicación'**
+  String get resetApp;
+
+  /// No description provided for @resetAppSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar todo y volver al inicio'**
+  String get resetAppSubtitle;
+
+  /// No description provided for @about.
+  ///
+  /// In es, this message translates to:
+  /// **'Acerca de'**
+  String get about;
+
+  /// No description provided for @version.
+  ///
+  /// In es, this message translates to:
+  /// **'Versión'**
+  String get version;
+
+  /// No description provided for @openSourceProject.
+  ///
+  /// In es, this message translates to:
+  /// **'Proyecto Open Source'**
+  String get openSourceProject;
+
+  /// No description provided for @openSourceDescription.
+  ///
+  /// In es, this message translates to:
+  /// **'Este proyecto es de código abierto. Podés ver el repositorio en:'**
+  String get openSourceDescription;
+
+  /// No description provided for @suggestions.
+  ///
+  /// In es, this message translates to:
+  /// **'Sugerencias:'**
+  String get suggestions;
+
+  /// No description provided for @creator.
+  ///
+  /// In es, this message translates to:
+  /// **'Creador:'**
+  String get creator;
+
+  /// No description provided for @supportProject.
+  ///
+  /// In es, this message translates to:
+  /// **'Apoya el proyecto:'**
+  String get supportProject;
+
+  /// No description provided for @donateUala.
+  ///
+  /// In es, this message translates to:
+  /// **'Si querés apoyar podés donar por Ualá:'**
+  String get donateUala;
+
+  /// No description provided for @aliasCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Alias copiado'**
+  String get aliasCopied;
+
+  /// No description provided for @features.
+  ///
+  /// In es, this message translates to:
+  /// **'Características:'**
+  String get features;
+
+  /// No description provided for @feature1.
+  ///
+  /// In es, this message translates to:
+  /// **'Gestión de dinero físico y digital'**
+  String get feature1;
+
+  /// No description provided for @feature2.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías personalizadas'**
+  String get feature2;
+
+  /// No description provided for @feature3.
+  ///
+  /// In es, this message translates to:
+  /// **'Historial completo de movimientos'**
+  String get feature3;
+
+  /// No description provided for @feature4.
+  ///
+  /// In es, this message translates to:
+  /// **'Estadísticas detalladas'**
+  String get feature4;
+
+  /// No description provided for @feature5.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportación e importación de datos'**
+  String get feature5;
+
+  /// No description provided for @feature6.
+  ///
+  /// In es, this message translates to:
+  /// **'Retroalimentación y soporte'**
+  String get feature6;
+
+  /// No description provided for @dataStoredLocally.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus datos se guardan localmente en tu dispositivo'**
+  String get dataStoredLocally;
+
+  /// No description provided for @close.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar'**
+  String get close;
 }
 
 class _AppLocalizationsDelegate
