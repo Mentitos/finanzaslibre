@@ -73,6 +73,9 @@ class SettingsMenu extends StatelessWidget {
     );
   }
 Widget _buildAppearanceSection(BuildContext context) {
+  // Obtener idioma actual
+  final currentLocale = Localizations.localeOf(context);
+  
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
@@ -86,6 +89,21 @@ Widget _buildAppearanceSection(BuildContext context) {
           ),
         ),
       ),
+      
+      // SELECTOR DE IDIOMA
+      ListTile(
+        leading: const Icon(Icons.language, color: Colors.blue),
+        title: const Text('Idioma'),
+        subtitle: Text(
+          currentLocale.languageCode == 'es' ? 'Español' : 'English',
+        ),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () {
+          _showLanguageDialog(context, currentLocale.languageCode);
+        },
+      ),
+      
+      // MODO OSCURO (ya existente)
       ListTile(
         leading: Icon(
           Theme.of(context).brightness == Brightness.dark
@@ -107,6 +125,48 @@ Widget _buildAppearanceSection(BuildContext context) {
         ),
       ),
     ],
+  );
+}
+
+void _showLanguageDialog(BuildContext context, String currentLanguage) {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Seleccionar idioma'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RadioListTile<String>(
+            title: const Text('Español'),
+            value: 'es',
+            groupValue: currentLanguage,
+            onChanged: (value) {
+              if (value != null) {
+                MyApp.of(context).changeLanguage(value);
+                Navigator.pop(context);
+              }
+            },
+          ),
+          RadioListTile<String>(
+            title: const Text('English'),
+            value: 'en',
+            groupValue: currentLanguage,
+            onChanged: (value) {
+              if (value != null) {
+                MyApp.of(context).changeLanguage(value);
+                Navigator.pop(context);
+              }
+            },
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
+      ],
+    ),
   );
 }
   Widget _buildDataManagementSection(BuildContext context) {
@@ -146,6 +206,7 @@ Widget _buildAppearanceSection(BuildContext context) {
             );
           },
         ),
+        
       ],
     );
   }

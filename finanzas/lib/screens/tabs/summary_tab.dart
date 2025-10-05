@@ -4,7 +4,7 @@ import '../../widgets/record_item.dart';
 import '../../utils/formatters.dart';
 import '../../constants/app_constants.dart';
 import '../statistics_screen.dart';
-
+import '../../l10n/app_localizations.dart'; 
 
 class SummaryTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
@@ -36,115 +36,117 @@ class SummaryTab extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTotalCard(context),
-            const SizedBox(height: AppConstants.defaultPadding),
-            _buildMoneyTypesRow(),
-            const SizedBox(height: AppConstants.defaultPadding),
-            _buildStatsRow(context), // PASAR context
-            const SizedBox(height: AppConstants.largePadding),
-            if (allRecords.isNotEmpty) _buildRecentMovements(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTotalCard(BuildContext context) {
-    final totalAmount = statistics['totalAmount']?.toDouble() ?? 0.0;
-    final isPositive = totalAmount >= 0;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppConstants.largePadding),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isPositive
-              ? [Colors.green.shade400, Colors.green.shade600]
-              : [Colors.red.shade400, Colors.red.shade600],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
-        boxShadow: [
-          BoxShadow(
-            color: (isPositive ? Colors.green : Colors.red).withOpacity(0.3),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+Widget build(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!; // AGREGAR ! aquí
+  
+  return RefreshIndicator(
+    onRefresh: onRefresh,
+    child: SingleChildScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(AppConstants.defaultPadding),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            AppConstants.totalSavingsLabel,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: AppConstants.largeFontSize,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '${AppConstants.currencySymbol}${_formatPrivateAmount(totalAmount)}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (allRecords.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Último movimiento: ${Formatters.formatRelativeDate(allRecords.first.createdAt)}',
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: AppConstants.defaultFontSize,
-              ),
-            ),
-          ],
+          _buildTotalCard(context, l10n),
+          const SizedBox(height: AppConstants.defaultPadding),
+          _buildMoneyTypesRow(l10n),
+          const SizedBox(height: AppConstants.defaultPadding),
+          _buildStatsRow(context, l10n),
+          const SizedBox(height: AppConstants.largePadding),
+          if (allRecords.isNotEmpty) _buildRecentMovements(context, l10n),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildMoneyTypesRow() {
-    final physicalAmount = statistics['totalPhysical']?.toDouble() ?? 0.0;
-    final digitalAmount = statistics['totalDigital']?.toDouble() ?? 0.0;
-
-    return Row(
-      children: [
-        Expanded(
-          child: _buildMoneyCard(
-            title: AppConstants.physicalMoneyLabel,
-            amount: physicalAmount,
-            icon: Icons.account_balance_wallet,
-            color: AppConstants.physicalMoneyColor,
-            onTap: () => onQuickMoneyTap(MoneyType.physical, physicalAmount),
-          ),
-        ),
-        const SizedBox(width: AppConstants.defaultPadding),
-        Expanded(
-          child: _buildMoneyCard(
-            title: AppConstants.digitalMoneyLabel,
-            amount: digitalAmount,
-            icon: Icons.credit_card,
-            color: AppConstants.digitalMoneyColor,
-            onTap: () => onQuickMoneyTap(MoneyType.digital, digitalAmount),
-          ),
+  Widget _buildTotalCard(BuildContext context, AppLocalizations l10n) {
+  final totalAmount = statistics['totalAmount']?.toDouble() ?? 0.0;
+  final isPositive = totalAmount >= 0;
+  
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(AppConstants.largePadding),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: isPositive
+            ? [Colors.green.shade400, Colors.green.shade600]
+            : [Colors.red.shade400, Colors.red.shade600],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
+      boxShadow: [
+        BoxShadow(
+          color: (isPositive ? Colors.green : Colors.red).withOpacity(0.3),
+          spreadRadius: 1,
+          blurRadius: 8,
+          offset: const Offset(0, 4),
         ),
       ],
-    );
-  }
+    ),
+    child: Column(
+      children: [
+        Text(
+          l10n.totalSavings, // SIN ! aquí
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: AppConstants.largeFontSize,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          '${AppConstants.currencySymbol}${_formatPrivateAmount(totalAmount)}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        if (allRecords.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            '${l10n.lastMovement}: ${Formatters.formatRelativeDate(allRecords.first.createdAt)}', // SIN ! aquí
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: AppConstants.defaultFontSize,
+            ),
+          ),
+        ],
+      ],
+    ),
+  );
+}
+
+  Widget _buildMoneyTypesRow(AppLocalizations l10n) {
+  final physicalAmount = statistics['totalPhysical']?.toDouble() ?? 0.0;
+  final digitalAmount = statistics['totalDigital']?.toDouble() ?? 0.0;
+
+  return Row(
+    children: [
+      Expanded(
+        child: _buildMoneyCard(
+          title: l10n.physicalMoney, // CAMBIO AQUÍ
+          amount: physicalAmount,
+          icon: Icons.account_balance_wallet,
+          color: AppConstants.physicalMoneyColor,
+          onTap: () => onQuickMoneyTap(MoneyType.physical, physicalAmount),
+        ),
+      ),
+      const SizedBox(width: AppConstants.defaultPadding),
+      Expanded(
+        child: _buildMoneyCard(
+          title: l10n.digitalMoney, // CAMBIO AQUÍ
+          amount: digitalAmount,
+          icon: Icons.credit_card,
+          color: AppConstants.digitalMoneyColor,
+          onTap: () => onQuickMoneyTap(MoneyType.digital, digitalAmount),
+        ),
+      ),
+    ],
+  );
+}
 
   Widget _buildMoneyCard({
     required String title,
@@ -202,7 +204,7 @@ class SummaryTab extends StatelessWidget {
     );
   }
 
-  Widget _buildStatsRow(BuildContext context) {
+  Widget _buildStatsRow(BuildContext context, AppLocalizations l10n) {
   final totalRecords = statistics['totalRecords'] ?? 0;
   final totalDeposits = statistics['totalDeposits'] ?? 0;
   final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
@@ -231,7 +233,7 @@ class SummaryTab extends StatelessWidget {
           children: [
             _buildStatItem(
               context,
-              title: 'Total Registros',
+              title: l10n.totalRecords, // CAMBIO AQUÍ
               value: '$totalRecords',
               icon: Icons.receipt_long,
               color: Colors.orange,
@@ -239,7 +241,7 @@ class SummaryTab extends StatelessWidget {
             _buildDivider(),
             _buildStatItem(
               context,
-              title: AppConstants.depositLabel,
+              title: l10n.deposit, // CAMBIO AQUÍ
               value: '$totalDeposits',
               icon: Icons.arrow_upward,
               color: AppConstants.depositColor,
@@ -247,7 +249,7 @@ class SummaryTab extends StatelessWidget {
             _buildDivider(),
             _buildStatItem(
               context,
-              title: AppConstants.withdrawalLabel,
+              title: l10n.withdrawal, // CAMBIO AQUÍ
               value: '$totalWithdrawals',
               icon: Icons.arrow_downward,
               color: AppConstants.withdrawalColor,
@@ -256,7 +258,7 @@ class SummaryTab extends StatelessWidget {
         ),
       ),
     ),
-  ); // ESTE PARÉNTESIS CIERRA EL InkWell
+  );
 }
 
   Widget _buildStatItem(
@@ -305,37 +307,37 @@ class SummaryTab extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentMovements(BuildContext context) {
-    final recentRecords = allRecords.take(AppConstants.recentRecordsCount).toList();
+  Widget _buildRecentMovements(BuildContext context, AppLocalizations l10n) {
+  final recentRecords = allRecords.take(AppConstants.recentRecordsCount).toList();
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Últimos Movimientos',
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                TextButton(
-                  onPressed: onViewAllTap,
-                  child: const Text('Ver todos'),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppConstants.defaultPadding),
-            ...recentRecords.map((record) => RecentRecordItem(
-              record: record,
-              onTap: () => onEditRecord(record),
-              categoryColors: categoryColors,
-            )),
-          ],
-        ),
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                l10n.recentMovements, // CAMBIO AQUÍ
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              TextButton(
+                onPressed: onViewAllTap,
+                child: Text(l10n.viewAll), // CAMBIO AQUÍ
+              ),
+            ],
+          ),
+          const SizedBox(height: AppConstants.defaultPadding),
+          ...recentRecords.map((record) => RecentRecordItem(
+            record: record,
+            onTap: () => onEditRecord(record),
+            categoryColors: categoryColors,
+          )),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }

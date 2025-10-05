@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/savings_screen.dart';
 import 'screens/pin_lock_screen.dart';
 import 'services/savings_data_manager.dart';
+import 'l10n/app_localizations.dart'; 
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,11 +46,29 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late ThemeMode _themeMode;
+  Locale _locale = const Locale('es'); // Idioma por defecto
 
   @override
   void initState() {
     super.initState();
-    _themeMode = widget.initialTheme; // Usar el valor cargado
+    _themeMode = widget.initialTheme;
+    _loadLocale();
+  }
+
+  Future<void> _loadLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'es';
+    setState(() {
+      _locale = Locale(languageCode);
+    });
+  }
+
+  void changeLanguage(String languageCode) async {
+    setState(() {
+      _locale = Locale(languageCode);
+    });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language_code', languageCode);
   }
 
   void toggleTheme() async {
@@ -58,7 +78,7 @@ class _MyAppState extends State<MyApp> {
       } else if (_themeMode == ThemeMode.dark) {
         _themeMode = ThemeMode.light;
       } else {
-        _themeMode = ThemeMode.dark; // si estaba en system
+        _themeMode = ThemeMode.dark;
       }
     });
 
@@ -70,17 +90,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mis Ahorros',
-      debugShowCheckedModeBanner: false,
-      theme: _buildLightTheme(),
-      darkTheme: _buildDarkTheme(),
-      themeMode: _themeMode,
-      home: const AuthWrapper(),
-    );
-  }
-  
+Widget build(BuildContext context) {
+  return MaterialApp(
+    title: 'Mis Ahorros',
+    debugShowCheckedModeBanner: false,
+    theme: _buildLightTheme(),
+    darkTheme: _buildDarkTheme(),
+    themeMode: _themeMode,
+    locale: _locale,
+    localizationsDelegates: [  // <-- SIN const aquí
+      AppLocalizations.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: const [
+      Locale('es'),
+      Locale('en'),
+    ],
+    home: const AuthWrapper(),
+  );
+}
+ 
   ThemeData _buildLightTheme() {
     return ThemeData(
       primarySwatch: Colors.green,
@@ -97,7 +128,7 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-  
+ 
   ThemeData _buildDarkTheme() {
     return ThemeData(
       primarySwatch: Colors.green,
