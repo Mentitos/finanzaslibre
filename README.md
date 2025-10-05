@@ -3,8 +3,8 @@ App de ahorros personales que distingue dinero fisico y digital open source
 
 Objetivos:
   - Multiples Usuarios
-  - Modo oscuro
-  - Estadisticas mensuales
+  - Modo oscuro🆗
+  - Estadisticas mensuales🆗
   - Objetivos de ahorro concretos o aislados
 
 
