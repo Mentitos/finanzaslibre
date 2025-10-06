@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Free Finance';
+  String get appTitle => 'Libre Finance';
 
   @override
   String get summary => 'Summary';
@@ -159,7 +159,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryExists => 'Category already exists';
 
   @override
-  String get appName => 'Free Finance';
+  String get appName => 'Libre Finance';
 
   @override
   String get appDescription => 'Your savings management companion';

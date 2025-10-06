@@ -4,6 +4,7 @@ import '../../widgets/record_item.dart';
 import '../../constants/app_constants.dart';
 import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import '../../l10n/app_localizations.dart';
+import '../../l10n/category_translations.dart';
 
 class HistoryTab extends StatelessWidget {
   final List<SavingsRecord> allRecords;
@@ -46,7 +47,7 @@ class HistoryTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-
+    
      return Column(
       children: [
         _buildSearchBar(l10n),
@@ -64,12 +65,14 @@ class HistoryTab extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final record = filteredRecords[index];
                       return RecordItem(
-                        record: record,
-                        onEdit: () => onEditRecord(record),
-                        onDelete: () => _showDeleteConfirmation(context, record, l10n),
-                        showCategory: true,
-                        categoryColors: categoryColors,
-                      );
+  record: record,
+  onEdit: () => onEditRecord(record),
+  onDelete: () => _showDeleteConfirmation(context, record, l10n),
+  showCategory: true,
+  categoryColors: categoryColors,
+  l10n: l10n, // <-- esto faltaba
+);
+
                     },
                   ),
                 ),
@@ -207,7 +210,7 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
         ),
         ...categories.map((category) => PopupMenuItem(
               value: category,
-              child: Text(category),
+              child: Text(l10n.translateCategory(category)),
             )),
       ],
       onSelected: (value) {

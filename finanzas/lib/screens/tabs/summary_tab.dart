@@ -6,6 +6,7 @@ import '../../constants/app_constants.dart';
 import '../statistics_screen.dart';
 import '../../l10n/app_localizations.dart'; 
 
+
 class SummaryTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
   final List<SavingsRecord> allRecords;
@@ -334,6 +335,7 @@ Widget build(BuildContext context) {
             record: record,
             onTap: () => onEditRecord(record),
             categoryColors: categoryColors,
+            l10n: l10n,
           )),
         ],
       ),

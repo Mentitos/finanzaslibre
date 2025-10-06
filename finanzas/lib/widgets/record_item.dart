@@ -1,7 +1,10 @@
+import 'package:finanzas/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import '../models/savings_record.dart';
 import '../utils/formatters.dart';
 import '../constants/app_constants.dart';
+import '../../l10n/category_translations.dart';
+
 
 class RecordItem extends StatelessWidget {
   final SavingsRecord record;
@@ -9,6 +12,7 @@ class RecordItem extends StatelessWidget {
   final VoidCallback onDelete;
   final bool showCategory;
   final Map<String, Color>? categoryColors;
+  final AppLocalizations l10n;
 
   const RecordItem({
     super.key,
@@ -17,10 +21,12 @@ class RecordItem extends StatelessWidget {
     required this.onDelete,
     this.categoryColors,
     this.showCategory = false,
+    required this.l10n,
   });
 
   @override
   Widget build(BuildContext context) {
+    final categoryName = l10n.translateCategory(record.category);
     // Verde para depósitos, rojo para retiros
     final transactionColor = record.type == RecordType.deposit 
         ? Colors.green 
@@ -55,54 +61,49 @@ class RecordItem extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      record.description.isEmpty
-                          ? record.category
-                          : record.description,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    // Arreglado el overflow con Flexible/Expanded
-                    Row(
-                      children: [
-                        if (showCategory) ...[
-                          // Badge con color de categoría
-                          Flexible(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: categoryColor.withOpacity(0.15),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: categoryColor.withOpacity(0.3),
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                record.category,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: categoryColor,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        record.description.isEmpty
+            ? categoryName   // <--- USAR categoryName
+            : record.description,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 15,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      const SizedBox(height: 4),
+      Row(
+        children: [
+          if (showCategory) ...[
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: categoryColor.withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: categoryColor.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  categoryName, // <--- USAR categoryName
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: categoryColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
                         Icon(
                           Icons.access_time,
                           size: 12,
@@ -209,12 +210,14 @@ class RecentRecordItem extends StatelessWidget {
   final SavingsRecord record;
   final VoidCallback onTap;
   final Map<String, Color>? categoryColors;
+  final AppLocalizations l10n;
 
   const RecentRecordItem({
     super.key,
     required this.record,
     required this.onTap,
     this.categoryColors,
+    required this.l10n,
   });
 
   @override
@@ -258,7 +261,7 @@ class RecentRecordItem extends StatelessWidget {
                 ),
               ),
               child: Text(
-                record.category,
+                l10n.translateCategory(record.category),
                 style: TextStyle(
                   fontSize: 10,
                   color: categoryColor,

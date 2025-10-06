@@ -1,6 +1,6 @@
 {
   "@@locale": "en",
-  "appTitle": "Free Finance",
+  "appTitle": "Libre Finance",
   "summary": "Summary",
   "history": "History",
   "categories": "Categories",
@@ -51,8 +51,8 @@
 "invalidCategoryName": "Invalid category name",
 "categoryExists": "Category already exists",
 "@@locale": "en",
-  "appTitle": "Free Finance",
-  "appName": "Free Finance",
+  "appTitle": "Libre Finance",
+  "appName": "Libre Finance",
   "appDescription": "Your savings management companion",
   
   "summary": "Summary",
