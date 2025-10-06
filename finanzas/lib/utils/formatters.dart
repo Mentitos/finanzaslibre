@@ -82,7 +82,7 @@ class Formatters {
         .join(' ');
   }
 
-  /// Trunca un texto si es muy largo
+  /// Achica un texto si es muy largo
   /// Ejemplo: "Este es un texto muy largo..." -> "Este es un texto..."
   static String truncateText(String text, int maxLength, {String suffix = '...'}) {
     if (text.length <= maxLength) return text;

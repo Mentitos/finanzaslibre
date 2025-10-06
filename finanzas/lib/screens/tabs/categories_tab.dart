@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../utils/formatters.dart';
 import '../../constants/app_constants.dart';
 import '../../l10n/app_localizations.dart';
-
+import '../../l10n/category_translations.dart';
 
 class CategoriesTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
@@ -68,7 +68,7 @@ class CategoriesTab extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(child: Text(entry.key)),
+                        Expanded(child: Text(l10n.translateCategory(entry.key))), 
                         Text(
                           '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value)}',
                           style: TextStyle(
@@ -110,7 +110,7 @@ class CategoriesTab extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: categories.map((category) => Chip(
-                label: Text(category),
+                label: Text(l10n.translateCategory(category)), // En lugar de Text(category)
                 avatar: CircleAvatar(
                   backgroundColor: AppConstants.getCategoryColor(category, categoryColors),
                   radius: 8,

@@ -26,7 +26,7 @@ class RecordItem extends StatelessWidget {
         ? Colors.green 
         : Colors.red;
     
-    // Color de categoría solo para el badge
+    // Color de categoría
     final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
     
     return Card(

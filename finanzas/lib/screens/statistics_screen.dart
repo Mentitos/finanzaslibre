@@ -481,7 +481,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ),
           ),
-          const Icon(Icons.arrow_drop_down), // ya no necesita onPressed
+          const Icon(Icons.arrow_drop_down), 
         ],
       ),
     ),

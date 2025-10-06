@@ -98,7 +98,7 @@ Widget build(BuildContext context) {
     darkTheme: _buildDarkTheme(),
     themeMode: _themeMode,
     locale: _locale,
-    localizationsDelegates: [  // <-- SIN const aquí
+    localizationsDelegates: [  // Lenguasge delegates
       AppLocalizations.delegate,
       GlobalMaterialLocalizations.delegate,
       GlobalWidgetsLocalizations.delegate,

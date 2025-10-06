@@ -7,7 +7,7 @@ import '../dialogs/confirmation_dialogs.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import '../../main.dart';
-import '../../l10n/app_localizations.dart'; // AGREGAR IMPORT
+import '../../l10n/app_localizations.dart'; 
 
 class SettingsMenu extends StatelessWidget {
   final SavingsDataManager dataManager;

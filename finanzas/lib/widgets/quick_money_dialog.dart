@@ -362,7 +362,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
               width: 12,
               height: 12,
               decoration: BoxDecoration(
-                color: AppConstants.getCategoryColor(category, widget.categoryColors), // USA categoryColors
+                color: AppConstants.getCategoryColor(category, widget.categoryColors), // Codigo feo tuve que rediseñar esta parte para agregar los colores personalizados
                 shape: BoxShape.circle,
               ),
             ),

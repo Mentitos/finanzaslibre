@@ -1,9 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart'; // Necesario para Color
+import 'package:flutter/material.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/savings_record.dart';
-import 'dart:ui'; // Para Color
+
 
 class SavingsDataManager {
   // --- CLAVES DE PREFERENCIAS ---
@@ -16,7 +15,7 @@ class SavingsDataManager {
   static const String _pinEnabledKey = 'pin_enabled';
   static const String _biometricEnabledKey = 'biometric_enabled';
 
-  // Nueva clave para colores de categorías
+  // Clave para colores de categorías
   static const String _categoryColorsKey = 'category_colors';
 
   static const List<String> _defaultCategories = [
@@ -63,7 +62,7 @@ class SavingsDataManager {
     return false;
   }
 
-  /// Agrega una nueva categoría sin color (compatibilidad con código existente)
+  /// Agrega una nueva categoría sin color (compatibilidad con código antiguo y tests)
   Future<bool> addCategory(String category) async {
     if (category.trim().isEmpty) return false;
 

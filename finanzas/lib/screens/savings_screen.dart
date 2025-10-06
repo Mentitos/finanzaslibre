@@ -8,7 +8,7 @@ import 'tabs/summary_tab.dart';
 import 'tabs/history_tab.dart';
 import 'tabs/categories_tab.dart';
 import 'settings/settings_menu.dart';
-import '../l10n/app_localizations.dart'; // AGREGAR IMPORT
+import '../l10n/app_localizations.dart'; 
 
 class SavingsScreen extends StatefulWidget {
   const SavingsScreen({super.key});
