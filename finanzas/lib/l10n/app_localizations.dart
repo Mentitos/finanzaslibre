@@ -1243,6 +1243,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Eliminar categoría'**
   String get deleteCategory;
+
+  /// No description provided for @currentPin.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN actual'**
+  String get currentPin;
+
+  /// No description provided for @confirmPin.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar PIN'**
+  String get confirmPin;
+
+  /// No description provided for @changePin.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar PIN'**
+  String get changePin;
+
+  /// No description provided for @createPin.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear PIN'**
+  String get createPin;
+
+  /// No description provided for @enterCurrentPin.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa tu PIN actual'**
+  String get enterCurrentPin;
+
+  /// No description provided for @confirmNewPin.
+  ///
+  /// In es, this message translates to:
+  /// **'Confirma tu nuevo PIN'**
+  String get confirmNewPin;
+
+  /// No description provided for @createPinDigits.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea un PIN de 4 dígitos'**
+  String get createPinDigits;
+
+  /// No description provided for @biometricUnlock.
+  ///
+  /// In es, this message translates to:
+  /// **'Desbloqueo biométrico'**
+  String get biometricUnlock;
+
+  /// No description provided for @useFingerprintOrFace.
+  ///
+  /// In es, this message translates to:
+  /// **'Usa huella o Face ID'**
+  String get useFingerprintOrFace;
+
+  /// No description provided for @incorrectPin.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN incorrecto'**
+  String get incorrectPin;
+
+  /// No description provided for @pinsDoNotMatch.
+  ///
+  /// In es, this message translates to:
+  /// **'Los PINs no coinciden'**
+  String get pinsDoNotMatch;
+
+  /// No description provided for @biometricAuthReason.
+  ///
+  /// In es, this message translates to:
+  /// **'Usa tu huella o Face ID para ingresar'**
+  String get biometricAuthReason;
+
+  /// No description provided for @enterPinToContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa tu PIN para continuar'**
+  String get enterPinToContinue;
+
+  /// No description provided for @failedAttempts.
+  ///
+  /// In es, this message translates to:
+  /// **'Intentos fallidos: {count}'**
+  String failedAttempts(Object count);
+
+  /// No description provided for @tooManyAttempts.
+  ///
+  /// In es, this message translates to:
+  /// **'Demasiados intentos'**
+  String get tooManyAttempts;
+
+  /// No description provided for @tooManyAttemptsMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'Has fallado 5 intentos. La app se cerrará.'**
+  String get tooManyAttemptsMessage;
+
+  /// No description provided for @understood.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get understood;
 }
 
 class _AppLocalizationsDelegate

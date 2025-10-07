@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import '../../l10n/app_localizations.dart';
 
 class PinLockScreen extends StatefulWidget {
   final String correctPin;
@@ -61,9 +62,10 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   Future<void> _authenticateWithBiometrics() async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Usa tu huella o Face ID para ingresar',
+        localizedReason: l10n.biometricAuthReason,
         options: const AuthenticationOptions(
           useErrorDialogs: true,
           stickyAuth: true,
@@ -71,7 +73,6 @@ class _PinLockScreenState extends State<PinLockScreen>
       );
 
       if (authenticated && mounted) {
-        // Consideramos la huella como un PIN correcto
         Navigator.of(context).pop(true);
       }
     } on PlatformException catch (e) {
@@ -87,7 +88,9 @@ class _PinLockScreenState extends State<PinLockScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bgColor = Theme.of(context).colorScheme.background;
+    
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -98,9 +101,9 @@ class _PinLockScreenState extends State<PinLockScreen>
               const Spacer(),
               _buildLogo(),
               const SizedBox(height: 32),
-              _buildTitle(),
+              _buildTitle(l10n),
               const SizedBox(height: 8),
-              _buildSubtitle(),
+              _buildSubtitle(l10n),
               const SizedBox(height: 48),
               AnimatedBuilder(
                 animation: _shakeAnimation,
@@ -114,7 +117,7 @@ class _PinLockScreenState extends State<PinLockScreen>
               ),
               if (_attempts > 0) ...[
                 const SizedBox(height: 16),
-                _buildAttemptWarning(),
+                _buildAttemptWarning(l10n),
               ],
               const Spacer(),
               _buildNumPad(),
@@ -142,9 +145,9 @@ class _PinLockScreenState extends State<PinLockScreen>
     );
   }
 
-  Widget _buildTitle() {
+  Widget _buildTitle(AppLocalizations l10n) {
     return Text(
-      'Mis Ahorros',
+      l10n.appName,
       style: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.bold,
@@ -153,9 +156,9 @@ class _PinLockScreenState extends State<PinLockScreen>
     );
   }
 
-  Widget _buildSubtitle() {
+  Widget _buildSubtitle(AppLocalizations l10n) {
     return Text(
-      'Ingresa tu PIN para continuar',
+      l10n.enterPinToContinue,
       style: TextStyle(
         fontSize: 16,
         color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
@@ -182,7 +185,7 @@ class _PinLockScreenState extends State<PinLockScreen>
     );
   }
 
-  Widget _buildAttemptWarning() {
+  Widget _buildAttemptWarning(AppLocalizations l10n) {
     final red = Colors.red;
     return Container(
       padding: const EdgeInsets.all(12),
@@ -197,7 +200,7 @@ class _PinLockScreenState extends State<PinLockScreen>
           Icon(Icons.warning, color: red[700], size: 18),
           const SizedBox(width: 8),
           Text(
-            'Intentos fallidos: $_attempts',
+            l10n.failedAttempts(_attempts),
             style: TextStyle(color: red[700], fontWeight: FontWeight.w500),
           ),
         ],
@@ -305,6 +308,8 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   void _verifyPin() {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_pin == widget.correctPin) {
       Navigator.of(context).pop(true);
     } else {
@@ -314,11 +319,11 @@ class _PinLockScreenState extends State<PinLockScreen>
         _pin = '';
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('PIN incorrecto'),
+        SnackBar(
+          content: Text(l10n.incorrectPin),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
+          duration: const Duration(seconds: 2),
         ),
       );
 
@@ -327,16 +332,18 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   void _showTooManyAttemptsDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: Row(children: const [
-          Icon(Icons.warning, color: Colors.red),
-          SizedBox(width: 8),
-          Text('Demasiados intentos'),
+        title: Row(children: [
+          const Icon(Icons.warning, color: Colors.red),
+          const SizedBox(width: 8),
+          Text(l10n.tooManyAttempts),
         ]),
-        content: const Text('Has fallado 5 intentos. La app se cerrará.'),
+        content: Text(l10n.tooManyAttemptsMessage),
         actions: [
           FilledButton(
             onPressed: () {
@@ -344,7 +351,7 @@ class _PinLockScreenState extends State<PinLockScreen>
               SystemNavigator.pop();
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Entendido'),
+            child: Text(l10n.understood),
           ),
         ],
       ),

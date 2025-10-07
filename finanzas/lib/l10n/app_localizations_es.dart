@@ -600,4 +600,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get deleteCategory => 'Eliminar categoría';
+
+  @override
+  String get currentPin => 'PIN actual';
+
+  @override
+  String get confirmPin => 'Confirmar PIN';
+
+  @override
+  String get changePin => 'Cambiar PIN';
+
+  @override
+  String get createPin => 'Crear PIN';
+
+  @override
+  String get enterCurrentPin => 'Ingresa tu PIN actual';
+
+  @override
+  String get confirmNewPin => 'Confirma tu nuevo PIN';
+
+  @override
+  String get createPinDigits => 'Crea un PIN de 4 dígitos';
+
+  @override
+  String get biometricUnlock => 'Desbloqueo biométrico';
+
+  @override
+  String get useFingerprintOrFace => 'Usa huella o Face ID';
+
+  @override
+  String get incorrectPin => 'PIN incorrecto';
+
+  @override
+  String get pinsDoNotMatch => 'Los PINs no coinciden';
+
+  @override
+  String get biometricAuthReason => 'Usa tu huella o Face ID para ingresar';
+
+  @override
+  String get enterPinToContinue => 'Ingresa tu PIN para continuar';
+
+  @override
+  String failedAttempts(Object count) {
+    return 'Intentos fallidos: $count';
+  }
+
+  @override
+  String get tooManyAttempts => 'Demasiados intentos';
+
+  @override
+  String get tooManyAttemptsMessage =>
+      'Has fallado 5 intentos. La app se cerrará.';
+
+  @override
+  String get understood => 'Entendido';
 }

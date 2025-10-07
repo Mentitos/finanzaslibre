@@ -566,7 +566,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get donateUala =>
-      'If you want to support, you can donate via Ualá or PayPal';
+      'If you want to support, you can donate via PayPal or Ualá(Argentina only)';
 
   @override
   String get aliasCopied => 'Alias copied';
@@ -600,4 +600,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deleteCategory => 'Delete category';
+
+  @override
+  String get currentPin => 'Current PIN';
+
+  @override
+  String get confirmPin => 'Confirm PIN';
+
+  @override
+  String get changePin => 'Change PIN';
+
+  @override
+  String get createPin => 'Create PIN';
+
+  @override
+  String get enterCurrentPin => 'Enter your current PIN';
+
+  @override
+  String get confirmNewPin => 'Confirm your new PIN';
+
+  @override
+  String get createPinDigits => 'Create a 4-digit PIN';
+
+  @override
+  String get biometricUnlock => 'Biometric Unlock';
+
+  @override
+  String get useFingerprintOrFace => 'Use fingerprint or Face ID';
+
+  @override
+  String get incorrectPin => 'Incorrect PIN';
+
+  @override
+  String get pinsDoNotMatch => 'PINs do not match';
+
+  @override
+  String get biometricAuthReason => 'Use your fingerprint or Face ID to enter';
+
+  @override
+  String get enterPinToContinue => 'Enter your PIN to continue';
+
+  @override
+  String failedAttempts(Object count) {
+    return 'Failed attempts: $count';
+  }
+
+  @override
+  String get tooManyAttempts => 'Too many attempts';
+
+  @override
+  String get tooManyAttemptsMessage =>
+      'You have failed 5 attempts. The app will close.';
+
+  @override
+  String get understood => 'Understood';
 }

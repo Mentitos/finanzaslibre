@@ -212,6 +212,26 @@
 "dataStoredLocally": "Tus datos se guardan localmente en tu dispositivo",
 "close": "Cerrar",
 
-"deleteCategory": "Eliminar categoría"
+"deleteCategory": "Eliminar categoría",
+
+
+"currentPin": "PIN actual",
+  "confirmPin": "Confirmar PIN",
+  "changePin": "Cambiar PIN",
+  "createPin": "Crear PIN",
+  "enterCurrentPin": "Ingresa tu PIN actual",
+  "confirmNewPin": "Confirma tu nuevo PIN",
+  "createPinDigits": "Crea un PIN de 4 dígitos",
+  "biometricUnlock": "Desbloqueo biométrico",
+  "useFingerprintOrFace": "Usa huella o Face ID",
+  "incorrectPin": "PIN incorrecto",
+  "pinsDoNotMatch": "Los PINs no coinciden",
+
+  "biometricAuthReason": "Usa tu huella o Face ID para ingresar",
+"enterPinToContinue": "Ingresa tu PIN para continuar",
+"failedAttempts": "Intentos fallidos: {count}",
+"tooManyAttempts": "Demasiados intentos",
+"tooManyAttemptsMessage": "Has fallado 5 intentos. La app se cerrará.",
+"understood": "Entendido"
 
 }
