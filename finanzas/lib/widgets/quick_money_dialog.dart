@@ -378,7 +378,8 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
               ),
             ),
             const SizedBox(width: 8),
-            Text(category),
+            Text(AppLocalizations.of(context)!.translateCategory(category)),
+
           ],
         ),
       )).toList(),
