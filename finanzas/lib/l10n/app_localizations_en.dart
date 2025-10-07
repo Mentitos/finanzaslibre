@@ -736,4 +736,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get withdrawalUpper => 'WITHDRAWAL';
+
+  @override
+  String get systemLanguage => 'System language';
+
+  @override
+  String get system => 'system';
+
+  @override
+  String get systemDefault => 'default system';
 }

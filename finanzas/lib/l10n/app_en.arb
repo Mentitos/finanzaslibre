@@ -267,6 +267,9 @@
 "depositUpper": "DEPOSIT",
 "withdrawalUpper": "WITHDRAWAL",
 
+"systemLanguage": "System language",
+  "system": "system",
+  "systemDefault": "default system",
 
 
 "@transactionCompleted": {

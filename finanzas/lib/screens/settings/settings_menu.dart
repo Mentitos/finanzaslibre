@@ -128,46 +128,77 @@ class SettingsMenu extends StatelessWidget {
   }
 
   void _showLanguageDialog(BuildContext context, String currentLanguage, AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.selectLanguage),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            RadioListTile<String>(
-              title: const Text('Español'),
-              value: 'es',
-              groupValue: currentLanguage,
-              onChanged: (value) {
-                if (value != null) {
-                  MyApp.of(context).changeLanguage(value);
-                  Navigator.pop(context);
-                }
-              },
+  final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text(l10n.selectLanguage),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RadioListTile<String>(
+            title: Text(l10n.systemLanguage),
+            subtitle: Text(
+              // Mostrar idioma detectado del sistema (ej: "Español (sistema)")
+              systemLocale == 'es'
+                  ? 'Español (${l10n.system})'
+                  : systemLocale == 'en'
+                      ? 'English (${l10n.system})'
+                      : 'English (${l10n.systemDefault})',
             ),
-            RadioListTile<String>(
-              title: const Text('English'),
-              value: 'en',
-              groupValue: currentLanguage,
-              onChanged: (value) {
-                if (value != null) {
-                  MyApp.of(context).changeLanguage(value);
-                  Navigator.pop(context);
+            value: 'system',
+            groupValue: currentLanguage,
+            onChanged: (value) {
+              if (value != null) {
+                // Detecta idioma del sistema
+                String locale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+
+                // Si no es español ni inglés, forzar inglés
+                if (locale != 'es' && locale != 'en') {
+                  locale = 'en';
                 }
-              },
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
+
+                MyApp.of(context).changeLanguage(locale);
+                Navigator.pop(context);
+              }
+            },
+          ),
+          const Divider(),
+          RadioListTile<String>(
+            title: const Text('Español'),
+            value: 'es',
+            groupValue: currentLanguage,
+            onChanged: (value) {
+              if (value != null) {
+                MyApp.of(context).changeLanguage(value);
+                Navigator.pop(context);
+              }
+            },
+          ),
+          RadioListTile<String>(
+            title: const Text('English'),
+            value: 'en',
+            groupValue: currentLanguage,
+            onChanged: (value) {
+              if (value != null) {
+                MyApp.of(context).changeLanguage(value);
+                Navigator.pop(context);
+              }
+            },
           ),
         ],
       ),
-    );
-  }
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildDataManagementSection(BuildContext context, AppLocalizations l10n) {
     return Column(

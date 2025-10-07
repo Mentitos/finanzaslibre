@@ -268,6 +268,11 @@
   "depositUpper": "DEPÓSITO",
   "withdrawalUpper": "RETIRO",
 
+ "systemLanguage": "Idioma del sistema",
+  "system": "sistema",
+  "systemDefault": "predeterminado del sistema",
+
+
   "@transactionCompleted": {
     "placeholders": {
       "type": {

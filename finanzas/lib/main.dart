@@ -56,20 +56,40 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _loadLocale() async {
-    final prefs = await SharedPreferences.getInstance();
-    final languageCode = prefs.getString('language_code') ?? 'es';
+  final prefs = await SharedPreferences.getInstance();
+  final languageCode = prefs.getString('language_code') ?? 'system';
+
+  if (languageCode == 'system') {
+    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
+    setState(() {
+      _locale = Locale(effectiveLang);
+    });
+  } else {
     setState(() {
       _locale = Locale(languageCode);
     });
   }
+}
+
 
   void changeLanguage(String languageCode) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('language_code', languageCode);
+
+  if (languageCode == 'system') {
+    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
+    setState(() {
+      _locale = Locale(effectiveLang);
+    });
+  } else {
     setState(() {
       _locale = Locale(languageCode);
     });
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('language_code', languageCode);
   }
+}
+
 
   void toggleTheme() async {
     setState(() {

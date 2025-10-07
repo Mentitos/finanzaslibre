@@ -1501,6 +1501,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'RETIRO'**
   String get withdrawalUpper;
+
+  /// No description provided for @systemLanguage.
+  ///
+  /// In es, this message translates to:
+  /// **'Idioma del sistema'**
+  String get systemLanguage;
+
+  /// No description provided for @system.
+  ///
+  /// In es, this message translates to:
+  /// **'sistema'**
+  String get system;
+
+  /// No description provided for @systemDefault.
+  ///
+  /// In es, this message translates to:
+  /// **'predeterminado del sistema'**
+  String get systemDefault;
 }
 
 class _AppLocalizationsDelegate
