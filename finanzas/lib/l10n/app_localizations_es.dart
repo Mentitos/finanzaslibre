@@ -702,4 +702,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get quick => 'rapido de';
+
+  @override
+  String get newRecord => 'Nuevo Registro';
+
+  @override
+  String get operationType => 'Tipo de operación';
+
+  @override
+  String get amounts => 'Montos';
+
+  @override
+  String get enterAtLeastOneAmount => 'Ingresa al menos un monto';
+
+  @override
+  String get descriptionHintRecord => 'Ej: Ahorro mensual, gastos varios...';
+
+  @override
+  String get additionalNotes => 'Notas adicionales(opcional)';
+
+  @override
+  String get additionalNotesHint => 'Informacion extra...';
+
+  @override
+  String get update => 'Actualizar';
+
+  @override
+  String get mustEnterAtLeastOneAmount => 'Al menos ingresa un monto';
+
+  @override
+  String get depositUpper => 'DEPÓSITO';
+
+  @override
+  String get withdrawalUpper => 'RETIRO';
 }

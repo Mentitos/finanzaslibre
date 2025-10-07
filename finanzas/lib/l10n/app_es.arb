@@ -255,6 +255,19 @@
   "transactionCompleted": "{type} de ${amount} realizado",
   "saving": "Pensando...",
   "quick": "rapido de",
+
+  "newRecord": "Nuevo Registro",
+  "operationType": "Tipo de operación",
+  "amounts": "Montos",
+  "enterAtLeastOneAmount": "Ingresa al menos un monto",
+  "descriptionHintRecord": "Ej: Ahorro mensual, gastos varios...",
+  "additionalNotes": "Notas adicionales(opcional)",
+  "additionalNotesHint": "Informacion extra...",
+  "update": "Actualizar",
+  "mustEnterAtLeastOneAmount": "Al menos ingresa un monto",
+  "depositUpper": "DEPÓSITO",
+  "withdrawalUpper": "RETIRO",
+
   "@transactionCompleted": {
     "placeholders": {
       "type": {

@@ -254,6 +254,21 @@
 "transactionCompleted": "{type} of ${amount} completed",
 "saving": "Thinking...",
 "quick": "quick",
+
+"newRecord": "New Record",
+"operationType": "Operation Type",
+"amounts": "Amounts",
+"enterAtLeastOneAmount": "Enter at least one amount",
+"descriptionHintRecord": "E.g.: Monthly savings, various expenses...",
+"additionalNotes": "Additional Notes (optional)",
+"additionalNotesHint": "Extra information...",
+"update": "Update",
+"mustEnterAtLeastOneAmount": "Please enter at least one amount",
+"depositUpper": "DEPOSIT",
+"withdrawalUpper": "WITHDRAWAL",
+
+
+
 "@transactionCompleted": {
   "placeholders": {
     "type": {

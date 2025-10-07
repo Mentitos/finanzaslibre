@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/savings_record.dart';
 import '../constants/app_constants.dart';
+import '../../l10n/app_localizations.dart';
+import '../../l10n/category_translations.dart';
 
 class RecordDialog extends StatefulWidget {
   final Function(SavingsRecord) onSave;
@@ -72,6 +74,8 @@ class _RecordDialogState extends State<RecordDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -80,7 +84,7 @@ class _RecordDialogState extends State<RecordDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildHeader(context),
+            _buildHeader(context, l10n),
             Flexible(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(20),
@@ -89,28 +93,28 @@ class _RecordDialogState extends State<RecordDialog> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTypeSelector(context),
+                      _buildTypeSelector(context, l10n),
                       const SizedBox(height: 24),
-                      _buildAmountSection(context),
+                      _buildAmountSection(context, l10n),
                       const SizedBox(height: 24),
-                      _buildCategorySelector(context),
+                      _buildCategorySelector(context, l10n),
                       const SizedBox(height: 20),
-                      _buildDescriptionInput(context),
+                      _buildDescriptionInput(context, l10n),
                       const SizedBox(height: 16),
-                      _buildNotesInput(context),
+                      _buildNotesInput(context, l10n),
                     ],
                   ),
                 ),
               ),
             ),
-            _buildActionButtons(context),
+            _buildActionButtons(context, l10n),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -131,7 +135,7 @@ class _RecordDialogState extends State<RecordDialog> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              _isEditing ? 'Editar Registro' : 'Nuevo Registro',
+              _isEditing ? l10n.editRecord : l10n.newRecord,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -146,12 +150,12 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildTypeSelector(BuildContext context) {
+  Widget _buildTypeSelector(BuildContext context, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tipo de operación',
+          l10n.operationType,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -163,7 +167,7 @@ class _RecordDialogState extends State<RecordDialog> {
               child: _buildTypeOption(
                 context,
                 RecordType.deposit,
-                'DEPÓSITO',
+                l10n.depositUpper,
                 Icons.add_circle_outline,
                 Colors.green,
               ),
@@ -173,7 +177,7 @@ class _RecordDialogState extends State<RecordDialog> {
               child: _buildTypeOption(
                 context,
                 RecordType.withdrawal,
-                'RETIRO',
+                l10n.withdrawalUpper,
                 Icons.remove_circle_outline,
                 Colors.red,
               ),
@@ -232,14 +236,14 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildAmountSection(BuildContext context) {
+  Widget _buildAmountSection(BuildContext context, AppLocalizations l10n) {
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Montos',
+          l10n.amounts,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -247,16 +251,18 @@ class _RecordDialogState extends State<RecordDialog> {
         const SizedBox(height: 12),
         _buildAmountField(
           context,
+          l10n,
           controller: _physicalController,
-          label: 'Dinero Físico',
+          label: l10n.physicalMoney,
           icon: Icons.account_balance_wallet,
           color: Colors.blue,
         ),
         const SizedBox(height: 16),
         _buildAmountField(
           context,
+          l10n,
           controller: _digitalController,
-          label: 'Dinero Digital',
+          label: l10n.digitalMoney,
           icon: Icons.credit_card,
           color: Colors.purple,
         ),
@@ -274,7 +280,7 @@ class _RecordDialogState extends State<RecordDialog> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Ingresa al menos un monto',
+                  l10n.enterAtLeastOneAmount,
                   style: TextStyle(fontSize: 12, color: textColor),
                 ),
               ),
@@ -286,7 +292,8 @@ class _RecordDialogState extends State<RecordDialog> {
   }
 
   Widget _buildAmountField(
-    BuildContext context, {
+    BuildContext context,
+    AppLocalizations l10n, {
     required TextEditingController controller,
     required String label,
     required IconData icon,
@@ -386,13 +393,13 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildCategorySelector(BuildContext context) {
+  Widget _buildCategorySelector(BuildContext context, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return DropdownButtonFormField<String>(
       value: _selectedCategory,
       decoration: InputDecoration(
-        labelText: 'Categoría',
+        labelText: l10n.category,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -414,28 +421,29 @@ class _RecordDialogState extends State<RecordDialog> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(category),
+              Text(AppLocalizations.of(context)!.translateCategory(category))
+
             ],
           ),
         );
       }).toList(),
       onChanged: (value) => setState(() => _selectedCategory = value!),
-      validator: (value) => value == null ? 'Selecciona una categoría' : null,
+      validator: (value) => value == null ? l10n.selectCategory : null,
     );
   }
 
-  Widget _buildDescriptionInput(BuildContext context) {
+  Widget _buildDescriptionInput(BuildContext context, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return TextFormField(
       controller: _descriptionController,
       decoration: InputDecoration(
-        labelText: 'Descripción',
+        labelText: l10n.description,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         prefixIcon: const Icon(Icons.description),
-        hintText: 'Ej: Ahorro mensual, gastos varios...',
+        hintText: l10n.descriptionHintRecord,
         filled: true,
         fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
       ),
@@ -445,18 +453,18 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildNotesInput(BuildContext context) {
+  Widget _buildNotesInput(BuildContext context, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return TextFormField(
       controller: _notesController,
       decoration: InputDecoration(
-        labelText: 'Notas adicionales (opcional)',
+        labelText: l10n.additionalNotes,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
         ),
         prefixIcon: const Icon(Icons.note_add),
-        hintText: 'Información extra...',
+        hintText: l10n.additionalNotesHint,
         filled: true,
         fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
       ),
@@ -466,7 +474,7 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context) {
+  Widget _buildActionButtons(BuildContext context, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Container(
@@ -489,14 +497,14 @@ class _RecordDialogState extends State<RecordDialog> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text('Cancelar'),
+              child: Text(l10n.cancel),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
             flex: 2,
             child: FilledButton(
-              onPressed: _isLoading ? null : _saveRecord,
+              onPressed: _isLoading ? null : () => _saveRecord(l10n),
               style: FilledButton.styleFrom(
                 backgroundColor: _selectedType == RecordType.deposit 
                     ? Colors.green 
@@ -516,7 +524,7 @@ class _RecordDialogState extends State<RecordDialog> {
                       ),
                     )
                   : Text(
-                      _isEditing ? 'Actualizar' : 'Guardar',
+                      _isEditing ? l10n.update : l10n.save,
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -530,11 +538,11 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  void _saveRecord() async {
+  void _saveRecord(AppLocalizations l10n) async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Debes ingresar al menos una cantidad'),
+        SnackBar(
+          content: Text(l10n.mustEnterAtLeastOneAmount),
           backgroundColor: Colors.red,
         ),
       );

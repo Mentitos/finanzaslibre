@@ -42,10 +42,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get digitalMoney => 'Digital Money';
 
   @override
-  String get deposit => '(Deposit)';
+  String get deposit => 'Deposit';
 
   @override
-  String get withdrawal => '(Withdrawal)';
+  String get withdrawal => 'Withdrawal';
 
   @override
   String get balance => 'Balance';
@@ -702,4 +702,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quick => 'quick';
+
+  @override
+  String get newRecord => 'New Record';
+
+  @override
+  String get operationType => 'Operation Type';
+
+  @override
+  String get amounts => 'Amounts';
+
+  @override
+  String get enterAtLeastOneAmount => 'Enter at least one amount';
+
+  @override
+  String get descriptionHintRecord =>
+      'E.g.: Monthly savings, various expenses...';
+
+  @override
+  String get additionalNotes => 'Additional Notes (optional)';
+
+  @override
+  String get additionalNotesHint => 'Extra information...';
+
+  @override
+  String get update => 'Update';
+
+  @override
+  String get mustEnterAtLeastOneAmount => 'Please enter at least one amount';
+
+  @override
+  String get depositUpper => 'DEPOSIT';
+
+  @override
+  String get withdrawalUpper => 'WITHDRAWAL';
 }

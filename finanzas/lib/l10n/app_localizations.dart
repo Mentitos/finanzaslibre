@@ -1435,6 +1435,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'rapido de'**
   String get quick;
+
+  /// No description provided for @newRecord.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo Registro'**
+  String get newRecord;
+
+  /// No description provided for @operationType.
+  ///
+  /// In es, this message translates to:
+  /// **'Tipo de operación'**
+  String get operationType;
+
+  /// No description provided for @amounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Montos'**
+  String get amounts;
+
+  /// No description provided for @enterAtLeastOneAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa al menos un monto'**
+  String get enterAtLeastOneAmount;
+
+  /// No description provided for @descriptionHintRecord.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: Ahorro mensual, gastos varios...'**
+  String get descriptionHintRecord;
+
+  /// No description provided for @additionalNotes.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas adicionales(opcional)'**
+  String get additionalNotes;
+
+  /// No description provided for @additionalNotesHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Informacion extra...'**
+  String get additionalNotesHint;
+
+  /// No description provided for @update.
+  ///
+  /// In es, this message translates to:
+  /// **'Actualizar'**
+  String get update;
+
+  /// No description provided for @mustEnterAtLeastOneAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Al menos ingresa un monto'**
+  String get mustEnterAtLeastOneAmount;
+
+  /// No description provided for @depositUpper.
+  ///
+  /// In es, this message translates to:
+  /// **'DEPÓSITO'**
+  String get depositUpper;
+
+  /// No description provided for @withdrawalUpper.
+  ///
+  /// In es, this message translates to:
+  /// **'RETIRO'**
+  String get withdrawalUpper;
 }
 
 class _AppLocalizationsDelegate
