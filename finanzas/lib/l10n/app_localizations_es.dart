@@ -60,7 +60,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lastMovement => 'Último movimiento';
 
   @override
-  String get totalRecords => 'Total Registros';
+  String get totalRecords => 'Total de registros';
 
   @override
   String get recentMovements => 'Últimos Movimientos';
@@ -357,7 +357,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get supportProject => 'Apoya el proyecto:';
 
   @override
-  String get donateUala => 'Si querés apoyar podés donar por Ualá:';
+  String get donateUala => 'Si querés apoyar podés donar por Ualá o Paypal:';
 
   @override
   String get aliasCopied => 'Alias copiado';
@@ -389,4 +389,89 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get close => 'Cerrar';
+
+  @override
+  String get dataExported => 'Datos exportados';
+
+  @override
+  String get exportInstructions =>
+      'Copia estos datos y guárdalos en un lugar seguro:';
+
+  @override
+  String get pasteExportedData => 'Pega aquí los datos exportados:';
+
+  @override
+  String get dataImportedSuccessfully => 'Datos importados exitosamente';
+
+  @override
+  String get errorImportingData => 'Error al importar datos';
+
+  @override
+  String get invalidDataFormat => 'Formato de datos inválido';
+
+  @override
+  String get security => 'Seguridad';
+
+  @override
+  String get pinSecurityTitle => 'PIN de seguridad';
+
+  @override
+  String get pinActiveSubtitle => 'Protección activa con PIN de 4 dígitos';
+
+  @override
+  String get pinInactiveSubtitle => 'Protege tu app con un PIN';
+
+  @override
+  String get changePinTitle => 'Cambiar PIN';
+
+  @override
+  String get changePinSubtitle => 'Modificar tu PIN actual';
+
+  @override
+  String get pinSetupSuccess => 'PIN configurado correctamente';
+
+  @override
+  String get noPinConfigured => 'No hay PIN configurado';
+
+  @override
+  String get pinUpdated => 'PIN actualizado correctamente';
+
+  @override
+  String get pinDisabled => 'PIN deshabilitado';
+
+  @override
+  String get disablePinTitle => 'Desactivar PIN';
+
+  @override
+  String get disablePinSubtitle =>
+      '¿Estás seguro de que quieres desactivar la protección por PIN?\n\nTus datos quedarán sin protección.';
+
+  @override
+  String get disable => 'Desactivar';
+
+  @override
+  String get deleteRecordsTitle => 'Eliminar registros';
+
+  @override
+  String get deleteRecordsSubtitle =>
+      '¿Estás seguro de que quieres eliminar todos los registros?\n\nEsta acción no se puede deshacer. Las categorías se mantendrán.';
+
+  @override
+  String get allRecordsDeleted => 'Todos los registros eliminados';
+
+  @override
+  String get deleteAll => 'Eliminar todo';
+
+  @override
+  String get resetAppTitle => 'Restablecer app';
+
+  @override
+  String get resetAppSubtext =>
+      '¿Estás seguro de que quieres restablecer la aplicación?\n\nEsto eliminará:\n• Todos los registros\n• Todas las categorías personalizadas\n• Toda la configuración\n\nEsta acción NO se puede deshacer.';
+
+  @override
+  String get appReset => 'Aplicación restablecida';
+
+  @override
+  String get reset => 'Restablecer';
 }

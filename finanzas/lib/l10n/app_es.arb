@@ -182,7 +182,7 @@
   "suggestions": "Sugerencias:",
   "creator": "Creador:",
   "supportProject": "Apoya el proyecto:",
-  "donateUala": "Si querés apoyar podés donar por Ualá:",
+  "donateUala": "Si querés apoyar podés donar por Ualá o Paypal:",
   "aliasCopied": "Alias copiado",
   "features": "Características:",
   "feature1": "Gestión de dinero físico y digital",
@@ -192,6 +192,50 @@
   "feature5": "Exportación e importación de datos",
   "feature6": "Retroalimentación y soporte",
   "dataStoredLocally": "Tus datos se guardan localmente en tu dispositivo",
-  "close": "Cerrar"
+  "close": "Cerrar",
+
+  "dataExported": "Datos exportados",
+"totalRecords": "Total de registros",
+"categories": "Categorías",
+"exportInstructions": "Copia estos datos y guárdalos en un lugar seguro:",
+"close": "Cerrar",
+"importData": "Importar datos",
+"pasteExportedData": "Pega aquí los datos exportados:",
+
+
+"cancel": "Cancelar",
+"import": "Importar",
+"dataImportedSuccessfully": "Datos importados exitosamente",
+"errorImportingData": "Error al importar datos",
+"invalidDataFormat": "Formato de datos inválido",
+
+"security": "Seguridad",
+  "pinSecurityTitle": "PIN de seguridad",
+  "pinActiveSubtitle": "Protección activa con PIN de 4 dígitos",
+  "pinInactiveSubtitle": "Protege tu app con un PIN",
+  "changePinTitle": "Cambiar PIN",
+  "changePinSubtitle": "Modificar tu PIN actual",
+  "pinSetupSuccess": "PIN configurado correctamente",
+  "noPinConfigured": "No hay PIN configurado",
+  "pinUpdated": "PIN actualizado correctamente",
+  "pinDisabled": "PIN deshabilitado",
+  "disablePinTitle": "Desactivar PIN",
+  "disablePinSubtitle": "¿Estás seguro de que quieres desactivar la protección por PIN?\n\nTus datos quedarán sin protección.",
+  "cancel": "Cancelar",
+  "disable": "Desactivar",
+
+  
+  "deleteRecordsTitle": "Eliminar registros",
+  "deleteRecordsSubtitle": "¿Estás seguro de que quieres eliminar todos los registros?\n\nEsta acción no se puede deshacer. Las categorías se mantendrán.",
+  "allRecordsDeleted": "Todos los registros eliminados",
+  "deleteAll": "Eliminar todo",
+  "resetAppTitle": "Restablecer app",
+  "resetAppSubtext": "¿Estás seguro de que quieres restablecer la aplicación?\n\nEsto eliminará:\n• Todos los registros\n• Todas las categorías personalizadas\n• Toda la configuración\n\nEsta acción NO se puede deshacer.",
+  "appReset": "Aplicación restablecida",
+  "reset": "Restablecer",
+  "cancel": "Cancelar"
+
+
+
 
 }

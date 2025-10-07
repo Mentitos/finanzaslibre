@@ -182,7 +182,7 @@
   "suggestions": "Suggestions:",
   "creator": "Creator:",
   "supportProject": "Support the project:",
-  "donateUala": "If you want to support, you can donate via Ualá:",
+  "donateUala": "If you want to support, you can donate via Paypal or Uala (Just for Argentina):",
   "aliasCopied": "Alias copied",
   "features": "Features:",
   "feature1": "Physical and digital money management",
@@ -192,7 +192,52 @@
   "feature5": "Data export and import",
   "feature6": "Feedback and support",
   "dataStoredLocally": "Your data is stored locally on your device",
-  "close": "Close"
+  "close": "Close",
+
+  "dataExported": "Data exported",
+"totalRecords": "Total records",
+"categories": "Categories",
+"exportInstructions": "Copy this data and save it in a safe place:",
+"close": "Close",
+"importData": "Import data",
+"pasteExportedData": "Paste the exported data here:",
+
+
+"cancel": "Cancel",
+"import": "Import",
+"dataImportedSuccessfully": "Data imported successfully",
+"errorImportingData": "Error importing data",
+"invalidDataFormat": "Invalid data format",
+
+"security": "Security",
+"pinSecurityTitle": "Security PIN",
+"pinActiveSubtitle": "Active protection with a 4-digit PIN",
+"pinInactiveSubtitle": "Protect your app with a PIN",
+"changePinTitle": "Change PIN",
+"changePinSubtitle": "Modify your current PIN",
+"pinSetupSuccess": "PIN set up successfully",
+"noPinConfigured": "No PIN configured",
+"pinUpdated": "PIN updated successfully",
+"pinDisabled": "PIN disabled",
+"disablePinTitle": "Disable PIN",
+"disablePinSubtitle": "Are you sure you want to disable PIN protection?\n\nYour data will be left unprotected.",
+"cancel": "Cancel",
+"disable": "Disable",
+
+
+  "deleteRecordsTitle": "Delete records",
+  "deleteRecordsSubtitle": "Are you sure you want to delete all records?\n\nThis action cannot be undone. Categories will remain.",
+  "allRecordsDeleted": "All records deleted",
+  "deleteAll": "Delete all",
+  "resetAppTitle": "Reset app",
+  "resetAppSubtext": "Are you sure you want to reset the app?\n\nThis will delete:\n• All records\n• All custom categories\n• All settings\n\nThis action CANNOT be undone.",
+  "appReset": "App reset",
+  "reset": "Reset",
+  "cancel": "Cancel"
+
+
+
+
 
 
 }

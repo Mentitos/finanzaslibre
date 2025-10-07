@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../../services/savings_data_manager.dart';
+import '../../l10n/app_localizations.dart';
 
 class ExportImportDialogs {
   static void showExportDialog(
@@ -8,22 +9,20 @@ class ExportImportDialogs {
     Map<String, dynamic> data,
     int recordsCount,
     int categoriesCount,
-    
+    AppLocalizations l10n, 
   ) {
-      final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-  final containerColor = isDarkMode ? Colors.grey[800] : Colors.grey[200];
-  final textColor = isDarkMode ? Colors.white : Colors.black;
-
-
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final containerColor = isDarkMode ? Colors.grey[800] : Colors.grey[200];
+    final textColor = isDarkMode ? Colors.white : Colors.black;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.check_circle, color: Colors.green),
-            SizedBox(width: 8),
-            Text('Datos exportados'),
+            const Icon(Icons.check_circle, color: Colors.green),
+            const SizedBox(width: 8),
+            Text(l10n.dataExported), // traducido
           ],
         ),
         content: SingleChildScrollView(
@@ -31,35 +30,35 @@ class ExportImportDialogs {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Total de registros: $recordsCount'),
-              Text('Categorías: $categoriesCount'),
+              Text('${l10n.totalRecords}: $recordsCount'), // traducido
+              Text('${l10n.categories}: $categoriesCount'), // traducido
               const SizedBox(height: 16),
-              const Text(
-                'Copia estos datos y guárdalos en un lugar seguro:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+              Text(
+                l10n.exportInstructions, // traducido
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                color: containerColor,
-                borderRadius: BorderRadius.circular(8),
+                  color: containerColor,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: SelectableText(
+                  jsonEncode(data),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: textColor,
+                  ),
+                ),
               ),
-              child: SelectableText(
-                jsonEncode(data),
-                style: TextStyle(
-                fontSize: 12,
-                color: textColor,
-    ),
-  ),
-)
             ],
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cerrar'),
+            child: Text(l10n.close), // traducido
           ),
         ],
       ),
@@ -71,23 +70,24 @@ class ExportImportDialogs {
     SavingsDataManager dataManager,
     Future<void> Function() onDataChanged,
     Function(String message, bool isError) onShowSnackBar,
+    AppLocalizations l10n, 
   ) {
     final controller = TextEditingController();
     
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Importar datos'),
+        title: Text(l10n.importData), // traducido
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Pega aquí los datos exportados:'),
+            Text(l10n.pasteExportedData), // traducido
             const SizedBox(height: 16),
             TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: '{"exportDate": "...", ...}',
+              decoration: InputDecoration(
+                border: const OutlineInputBorder(),
+                hintText: '{"exportDate": "...", ...}', // traducido
               ),
               maxLines: 8,
             ),
@@ -96,7 +96,7 @@ class ExportImportDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel), // traducido
           ),
           FilledButton(
             onPressed: () async {
@@ -108,16 +108,16 @@ class ExportImportDialogs {
                   await onDataChanged();
                   if (dialogContext.mounted) {
                     Navigator.pop(dialogContext);
-                    onShowSnackBar('Datos importados exitosamente', false);
+                    onShowSnackBar(l10n.dataImportedSuccessfully, false); // traducido
                   }
                 } else {
-                  onShowSnackBar('Error al importar datos', true);
+                  onShowSnackBar(l10n.errorImportingData, true); // traducido
                 }
               } catch (e) {
-                onShowSnackBar('Formato de datos inválido', true);
+                onShowSnackBar(l10n.invalidDataFormat, true); // traducido
               }
             },
-            child: const Text('Importar'),
+            child: Text(l10n.import), // traducido
           ),
         ],
       ),

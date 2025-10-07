@@ -203,6 +203,7 @@ class SettingsMenu extends StatelessWidget {
               dataManager,
               onDataChanged,
               onShowSnackBar,
+              l10n,
             );
           },
         ),
@@ -278,6 +279,7 @@ class SettingsMenu extends StatelessWidget {
           data,
           allRecordsCount,
           categoriesCount,
+          l10n,
         );
       }
       onShowSnackBar(l10n.dataExportSuccess, false);
@@ -365,88 +367,110 @@ class SettingsMenu extends StatelessWidget {
               const Text('Matias Gabriel Tello'),
               const SizedBox(height: 16),
               Text(
-                l10n.supportProject,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.purple.withOpacity(0.3)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+  l10n.supportProject,
+  style: const TextStyle(fontWeight: FontWeight.bold),
+),
+const SizedBox(height: 4),
+Container(
+  padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: Colors.purple.withOpacity(0.1),
+    borderRadius: BorderRadius.circular(8),
+    border: Border.all(color: Colors.purple.withOpacity(0.3)),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Icon(Icons.favorite, color: Colors.purple[700], size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              l10n.donateUala,
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 8),
+      InkWell(
+        onTap: () async {
+          const alias = 'MATIASTELLO54.UALA';
+          await Clipboard.setData(const ClipboardData(text: alias));
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(Icons.favorite, color: Colors.purple[700], size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            l10n.donateUala,
-                            style: const TextStyle(fontSize: 13),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () async {
-                        const alias = 'MATIASTELLO54.UALA';
-                        await Clipboard.setData(const ClipboardData(text: alias));
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Row(
-                                children: [
-                                  const Icon(Icons.check_circle, color: Colors.white),
-                                  const SizedBox(width: 8),
-                                  Text('${l10n.aliasCopied}: $alias'),
-                                ],
-                              ),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.purple.withOpacity(0.05),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.purple.withOpacity(0.2)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.account_balance_wallet, 
-                                 color: Colors.purple[700], 
-                                 size: 18),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'MATIASTELLO54.UALA',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.purple,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(Icons.content_copy, 
-                                 color: Colors.purple[700], 
-                                 size: 16),
-                          ],
-                        ),
-                      ),
-                    ),
+                    const Icon(Icons.check_circle, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text('${l10n.aliasCopied}: $alias'),
                   ],
                 ),
+                backgroundColor: Colors.green,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 2),
               ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.purple.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.purple.withOpacity(0.2)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.account_balance_wallet,
+                  color: Colors.purple[700], size: 18),
+              const SizedBox(width: 8),
+              const Text(
+                'MATIASTELLO54.UALA',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.content_copy, color: Colors.purple[700], size: 16),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 12),
+      InkWell(
+  onTap: () async {
+    try {
+      final url = Uri.parse('https://www.paypal.com/paypalme/matiasgabrieltello');
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al abrir PayPal: $e')),
+        );
+      }
+    }
+  },
+  child: const Text(
+    'PayPal: paypal.me/matiasgabrieltello',
+    style: TextStyle(
+      fontSize: 14,
+      color: Colors.blue,
+      decoration: TextDecoration.underline,
+    ),
+  ),
+),
+
+
+    ],
+  ),
+),
               const SizedBox(height: 16),
               Text(
                 l10n.features,

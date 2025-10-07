@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../services/savings_data_manager.dart';
 import '../pin_setup_screen.dart';
+import '../../l10n/app_localizations.dart';
+
 
 class SecuritySection extends StatelessWidget {
   final SavingsDataManager dataManager;
@@ -16,6 +18,8 @@ class SecuritySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return FutureBuilder<bool>(
       future: dataManager.isPinEnabled(),
       builder: (context, snapshot) {
@@ -27,7 +31,7 @@ class SecuritySection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 16, bottom: 8),
               child: Text(
-                'Seguridad',
+                l10n.security, // antes 'Seguridad'
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[700],
@@ -39,18 +43,19 @@ class SecuritySection extends StatelessWidget {
                 isPinEnabled ? Icons.lock : Icons.lock_outline,
                 color: isPinEnabled ? Colors.green : Colors.grey,
               ),
-              title: const Text('PIN de seguridad'),
+              title: Text(l10n.pinSecurityTitle), // antes 'PIN de seguridad'
               subtitle: Text(isPinEnabled 
-                  ? 'Protección activa con PIN de 4 dígitos' 
-                  : 'Protege tu app con un PIN'),
+                  ? l10n.pinActiveSubtitle // antes 'Protección activa con PIN de 4 dígitos'
+                  : l10n.pinInactiveSubtitle // antes 'Protege tu app con un PIN'
+              ),
               trailing: Switch(
                 value: isPinEnabled,
                 onChanged: (value) async {
                   onCloseSettings();
                   if (value) {
-                    await _setupPin(context);
+                    await _setupPin(context, l10n);
                   } else {
-                    await _disablePin(context);
+                    await _disablePin(context, l10n);
                   }
                 },
               ),
@@ -58,11 +63,11 @@ class SecuritySection extends StatelessWidget {
             if (isPinEnabled)
               ListTile(
                 leading: const Icon(Icons.edit, color: Colors.blue),
-                title: const Text('Cambiar PIN'),
-                subtitle: const Text('Modificar tu PIN actual'),
+                title: Text(l10n.changePinTitle), // antes 'Cambiar PIN'
+                subtitle: Text(l10n.changePinSubtitle), // antes 'Modificar tu PIN actual'
                 onTap: () async {
                   onCloseSettings();
-                  await _changePin(context);
+                  await _changePin(context, l10n);
                 },
               ),
           ],
@@ -71,7 +76,7 @@ class SecuritySection extends StatelessWidget {
     );
   }
 
-  Future<void> _setupPin(BuildContext context) async {
+  Future<void> _setupPin(BuildContext context, AppLocalizations l10n) async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
@@ -83,15 +88,15 @@ class SecuritySection extends StatelessWidget {
       await dataManager.savePin(result['pin']);
       await dataManager.setPinEnabled(true);
       await dataManager.setBiometricEnabled(result['biometricEnabled'] ?? false);
-      onShowSnackBar('PIN configurado correctamente', false);
+      onShowSnackBar(l10n.pinSetupSuccess, false); // antes 'PIN configurado correctamente'
     }
   }
 
-  Future<void> _changePin(BuildContext context) async {
+  Future<void> _changePin(BuildContext context, AppLocalizations l10n) async {
     final currentPin = await dataManager.loadPin();
     
     if (currentPin == null) {
-      onShowSnackBar('No hay PIN configurado', true);
+      onShowSnackBar(l10n.noPinConfigured, true); // antes 'No hay PIN configurado'
       return;
     }
 
@@ -108,40 +113,39 @@ class SecuritySection extends StatelessWidget {
     if (result != null) {
       await dataManager.savePin(result['pin']);
       await dataManager.setBiometricEnabled(result['biometricEnabled'] ?? false);
-      onShowSnackBar('PIN actualizado correctamente', false);
+      onShowSnackBar(l10n.pinUpdated, false); // antes 'PIN actualizado correctamente'
     }
   }
 
-  Future<void> _disablePin(BuildContext context) async {
+  Future<void> _disablePin(BuildContext context, AppLocalizations l10n) async {
     final currentPin = await dataManager.loadPin();
     
     if (currentPin == null) {
       await dataManager.setPinEnabled(false);
-      onShowSnackBar('PIN deshabilitado', false);
+      onShowSnackBar(l10n.pinDisabled, false); // antes 'PIN deshabilitado'
       return;
     }
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Desactivar PIN'),
-        content: const Text(
-          '¿Estás seguro de que quieres desactivar la protección por PIN?\n\n'
-          'Tus datos quedarán sin protección.',
+        title: Text(l10n.disablePinTitle), // antes 'Desactivar PIN'
+        content: Text(
+          l10n.disablePinSubtitle, // antes '¿Estás seguro de que quieres desactivar ...'
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel), // antes 'Cancelar'
           ),
           FilledButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
               await dataManager.removePin();
-              onShowSnackBar('PIN deshabilitado', false);
+              onShowSnackBar(l10n.pinDisabled, false); // antes 'PIN deshabilitado'
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.orange),
-            child: const Text('Desactivar'),
+            child: Text(l10n.disable), // antes 'Desactivar'
           ),
         ],
       ),

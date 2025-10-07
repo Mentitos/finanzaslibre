@@ -203,7 +203,7 @@ abstract class AppLocalizations {
   /// No description provided for @totalRecords.
   ///
   /// In es, this message translates to:
-  /// **'Total Registros'**
+  /// **'Total de registros'**
   String get totalRecords;
 
   /// No description provided for @recentMovements.
@@ -791,7 +791,7 @@ abstract class AppLocalizations {
   /// No description provided for @donateUala.
   ///
   /// In es, this message translates to:
-  /// **'Si querés apoyar podés donar por Ualá:'**
+  /// **'Si querés apoyar podés donar por Ualá o Paypal:'**
   String get donateUala;
 
   /// No description provided for @aliasCopied.
@@ -853,6 +853,168 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cerrar'**
   String get close;
+
+  /// No description provided for @dataExported.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos exportados'**
+  String get dataExported;
+
+  /// No description provided for @exportInstructions.
+  ///
+  /// In es, this message translates to:
+  /// **'Copia estos datos y guárdalos en un lugar seguro:'**
+  String get exportInstructions;
+
+  /// No description provided for @pasteExportedData.
+  ///
+  /// In es, this message translates to:
+  /// **'Pega aquí los datos exportados:'**
+  String get pasteExportedData;
+
+  /// No description provided for @dataImportedSuccessfully.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos importados exitosamente'**
+  String get dataImportedSuccessfully;
+
+  /// No description provided for @errorImportingData.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al importar datos'**
+  String get errorImportingData;
+
+  /// No description provided for @invalidDataFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato de datos inválido'**
+  String get invalidDataFormat;
+
+  /// No description provided for @security.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguridad'**
+  String get security;
+
+  /// No description provided for @pinSecurityTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN de seguridad'**
+  String get pinSecurityTitle;
+
+  /// No description provided for @pinActiveSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Protección activa con PIN de 4 dígitos'**
+  String get pinActiveSubtitle;
+
+  /// No description provided for @pinInactiveSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Protege tu app con un PIN'**
+  String get pinInactiveSubtitle;
+
+  /// No description provided for @changePinTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar PIN'**
+  String get changePinTitle;
+
+  /// No description provided for @changePinSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Modificar tu PIN actual'**
+  String get changePinSubtitle;
+
+  /// No description provided for @pinSetupSuccess.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN configurado correctamente'**
+  String get pinSetupSuccess;
+
+  /// No description provided for @noPinConfigured.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay PIN configurado'**
+  String get noPinConfigured;
+
+  /// No description provided for @pinUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN actualizado correctamente'**
+  String get pinUpdated;
+
+  /// No description provided for @pinDisabled.
+  ///
+  /// In es, this message translates to:
+  /// **'PIN deshabilitado'**
+  String get pinDisabled;
+
+  /// No description provided for @disablePinTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivar PIN'**
+  String get disablePinTitle;
+
+  /// No description provided for @disablePinSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que quieres desactivar la protección por PIN?\n\nTus datos quedarán sin protección.'**
+  String get disablePinSubtitle;
+
+  /// No description provided for @disable.
+  ///
+  /// In es, this message translates to:
+  /// **'Desactivar'**
+  String get disable;
+
+  /// No description provided for @deleteRecordsTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar registros'**
+  String get deleteRecordsTitle;
+
+  /// No description provided for @deleteRecordsSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que quieres eliminar todos los registros?\n\nEsta acción no se puede deshacer. Las categorías se mantendrán.'**
+  String get deleteRecordsSubtitle;
+
+  /// No description provided for @allRecordsDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los registros eliminados'**
+  String get allRecordsDeleted;
+
+  /// No description provided for @deleteAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar todo'**
+  String get deleteAll;
+
+  /// No description provided for @resetAppTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer app'**
+  String get resetAppTitle;
+
+  /// No description provided for @resetAppSubtext.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Estás seguro de que quieres restablecer la aplicación?\n\nEsto eliminará:\n• Todos los registros\n• Todas las categorías personalizadas\n• Toda la configuración\n\nEsta acción NO se puede deshacer.'**
+  String get resetAppSubtext;
+
+  /// No description provided for @appReset.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicación restablecida'**
+  String get appReset;
+
+  /// No description provided for @reset.
+  ///
+  /// In es, this message translates to:
+  /// **'Restablecer'**
+  String get reset;
 }
 
 class _AppLocalizationsDelegate
