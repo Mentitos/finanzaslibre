@@ -42,10 +42,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get digitalMoney => 'Digital Money';
 
   @override
-  String get deposit => 'Deposit';
+  String get deposit => '(Deposit)';
 
   @override
-  String get withdrawal => 'Withdrawal';
+  String get withdrawal => '(Withdrawal)';
 
   @override
   String get balance => 'Balance';
@@ -654,4 +654,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get understood => 'Understood';
+
+  @override
+  String get quickDepositWithdrawal => 'Quick Deposit/Withdrawal';
+
+  @override
+  String get currentBalance => 'Current Balance';
+
+  @override
+  String get quickAmounts => 'Quick Amounts';
+
+  @override
+  String get customAmount => 'Custom Amount';
+
+  @override
+  String get enterAmountOrSelectQuick =>
+      'Enter the amount or select a quick one above';
+
+  @override
+  String get enterAmount => 'Enter an amount';
+
+  @override
+  String get enterValidAmount => 'Enter a valid amount';
+
+  @override
+  String get selectCategory => 'Select a category';
+
+  @override
+  String get descriptionOptional => 'Description (optional)';
+
+  @override
+  String get descriptionHint => 'E.g.: Grocery shopping, bill payment...';
+
+  @override
+  String get makeDeposit => 'Deposit';
+
+  @override
+  String get makeWithdrawal => 'Withdraw';
+
+  @override
+  String transactionCompleted(String type, String amount) {
+    return '$type of \$$amount completed';
+  }
+
+  @override
+  String get saving => 'Thinking...';
+
+  @override
+  String get quick => 'quick';
 }

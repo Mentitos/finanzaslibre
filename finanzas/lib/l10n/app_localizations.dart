@@ -1345,6 +1345,96 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Entendido'**
   String get understood;
+
+  /// No description provided for @quickDepositWithdrawal.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingreso/Retiro Rápido'**
+  String get quickDepositWithdrawal;
+
+  /// No description provided for @currentBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'Saldo actual'**
+  String get currentBalance;
+
+  /// No description provided for @quickAmounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cantidades rápidas'**
+  String get quickAmounts;
+
+  /// No description provided for @customAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Monto personalizado'**
+  String get customAmount;
+
+  /// No description provided for @enterAmountOrSelectQuick.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa el monto o selecciona uno rápido arriba'**
+  String get enterAmountOrSelectQuick;
+
+  /// No description provided for @enterAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un monto'**
+  String get enterAmount;
+
+  /// No description provided for @enterValidAmount.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa un monto válido'**
+  String get enterValidAmount;
+
+  /// No description provided for @selectCategory.
+  ///
+  /// In es, this message translates to:
+  /// **'Selecciona una categoría'**
+  String get selectCategory;
+
+  /// No description provided for @descriptionOptional.
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción (opcional)'**
+  String get descriptionOptional;
+
+  /// No description provided for @descriptionHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ej: Compras del súper, pago de servicios...'**
+  String get descriptionHint;
+
+  /// No description provided for @makeDeposit.
+  ///
+  /// In es, this message translates to:
+  /// **'Depositar'**
+  String get makeDeposit;
+
+  /// No description provided for @makeWithdrawal.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirar'**
+  String get makeWithdrawal;
+
+  /// No description provided for @transactionCompleted.
+  ///
+  /// In es, this message translates to:
+  /// **'{type} de \${amount} realizado'**
+  String transactionCompleted(String type, String amount);
+
+  /// No description provided for @saving.
+  ///
+  /// In es, this message translates to:
+  /// **'Pensando...'**
+  String get saving;
+
+  /// No description provided for @quick.
+  ///
+  /// In es, this message translates to:
+  /// **'rapido de'**
+  String get quick;
 }
 
 class _AppLocalizationsDelegate

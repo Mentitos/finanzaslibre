@@ -232,7 +232,39 @@
 "failedAttempts": "Failed attempts: {count}",
 "tooManyAttempts": "Too many attempts",
 "tooManyAttemptsMessage": "You have failed 5 attempts. The app will close.",
-"understood": "Understood"
+"understood": "Understood",
+
+"physicalMoney": "Physical Money",
+"digitalMoney": "Digital Money",
+"quickDepositWithdrawal": "Quick Deposit/Withdrawal",
+"deposit": "(Deposit)",
+"withdrawal": "(Withdrawal)",
+"currentBalance": "Current Balance",
+"quickAmounts": "Quick Amounts",
+"customAmount": "Custom Amount",
+"enterAmountOrSelectQuick": "Enter the amount or select a quick one above",
+"enterAmount": "Enter an amount",
+"enterValidAmount": "Enter a valid amount",
+"category": "Category",
+"selectCategory": "Select a category",
+"descriptionOptional": "Description (optional)",
+"descriptionHint": "E.g.: Grocery shopping, bill payment...",
+"makeDeposit": "Deposit",
+"makeWithdrawal": "Withdraw",
+"transactionCompleted": "{type} of ${amount} completed",
+"saving": "Thinking...",
+"quick": "quick",
+"@transactionCompleted": {
+  "placeholders": {
+    "type": {
+      "type": "String"
+    },
+    "amount": {
+      "type": "String"
+    }
+  }
+}
+
 
 
 

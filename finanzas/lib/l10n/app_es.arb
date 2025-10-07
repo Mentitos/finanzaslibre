@@ -232,6 +232,38 @@
 "failedAttempts": "Intentos fallidos: {count}",
 "tooManyAttempts": "Demasiados intentos",
 "tooManyAttemptsMessage": "Has fallado 5 intentos. La app se cerrará.",
-"understood": "Entendido"
+"understood": "Entendido",
+
+
+"physicalMoney": "Dinero Físico",
+  "digitalMoney": "Dinero Digital",
+  "quickDepositWithdrawal": "Ingreso/Retiro Rápido",
+  "deposit": "Depósito",
+  "withdrawal": "Retiro",
+  "currentBalance": "Saldo actual",
+  "quickAmounts": "Cantidades rápidas",
+  "customAmount": "Monto personalizado",
+  "enterAmountOrSelectQuick": "Ingresa el monto o selecciona uno rápido arriba",
+  "enterAmount": "Ingresa un monto",
+  "enterValidAmount": "Ingresa un monto válido",
+  "category": "Categoría",
+  "selectCategory": "Selecciona una categoría",
+  "descriptionOptional": "Descripción (opcional)",
+  "descriptionHint": "Ej: Compras del súper, pago de servicios...",
+  "makeDeposit": "Depositar",
+  "makeWithdrawal": "Retirar",
+  "transactionCompleted": "{type} de ${amount} realizado",
+  "saving": "Pensando...",
+  "quick": "rapido de",
+  "@transactionCompleted": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 
 }

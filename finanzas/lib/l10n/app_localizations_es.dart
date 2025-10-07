@@ -654,4 +654,52 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get understood => 'Entendido';
+
+  @override
+  String get quickDepositWithdrawal => 'Ingreso/Retiro Rápido';
+
+  @override
+  String get currentBalance => 'Saldo actual';
+
+  @override
+  String get quickAmounts => 'Cantidades rápidas';
+
+  @override
+  String get customAmount => 'Monto personalizado';
+
+  @override
+  String get enterAmountOrSelectQuick =>
+      'Ingresa el monto o selecciona uno rápido arriba';
+
+  @override
+  String get enterAmount => 'Ingresa un monto';
+
+  @override
+  String get enterValidAmount => 'Ingresa un monto válido';
+
+  @override
+  String get selectCategory => 'Selecciona una categoría';
+
+  @override
+  String get descriptionOptional => 'Descripción (opcional)';
+
+  @override
+  String get descriptionHint => 'Ej: Compras del súper, pago de servicios...';
+
+  @override
+  String get makeDeposit => 'Depositar';
+
+  @override
+  String get makeWithdrawal => 'Retirar';
+
+  @override
+  String transactionCompleted(String type, String amount) {
+    return '$type de \$$amount realizado';
+  }
+
+  @override
+  String get saving => 'Pensando...';
+
+  @override
+  String get quick => 'rapido de';
 }
