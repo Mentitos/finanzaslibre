@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import '../l10n/app_localizations.dart';
 
 class Formatters {
   // Formateadores estáticos para reutilizar (sin locale específico)
@@ -46,7 +47,7 @@ class Formatters {
 
   /// Formatea una fecha de manera relativa
   /// Ejemplo: "Hoy", "Ayer", "Hace 3 días", "25/12/2023"
-  static String formatRelativeDate(DateTime dateTime) {
+  static String formatRelativeDate(DateTime dateTime, AppLocalizations l10n) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(dateTime.year, dateTime.month, dateTime.day);
@@ -54,11 +55,11 @@ class Formatters {
     final difference = today.difference(date).inDays;
 
     if (difference == 0) {
-      return 'Hoy ${formatTime(dateTime)}';
+      return '${l10n.today} ${formatTime(dateTime)}';
     } else if (difference == 1) {
-      return 'Ayer ${formatTime(dateTime)}';
+      return '${l10n.yesterday} ${formatTime(dateTime)}';
     } else if (difference <= 7) {
-      return 'Hace $difference días';
+      return l10n.daysAgo(difference);
     } else {
       return formatDate(dateTime);
     }
@@ -92,27 +93,27 @@ class Formatters {
 
   /// Formatea el tiempo transcurrido desde una fecha
   /// Ejemplo: "hace 5 minutos", "hace 2 horas", "hace 3 días"
-  static String formatTimeAgo(DateTime dateTime) {
+  static String formatTimeAgo(DateTime dateTime, AppLocalizations l10n) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
 
     if (difference.inMinutes < 1) {
-      return 'Hace un momento';
+      return l10n.justNow;
     } else if (difference.inMinutes < 60) {
-      return 'Hace ${difference.inMinutes} minutos';
+      return l10n.minutesAgo(difference.inMinutes);
     } else if (difference.inHours < 24) {
-      return 'Hace ${difference.inHours} horas';
+      return l10n.hoursAgo(difference.inHours);
     } else if (difference.inDays < 7) {
-      return 'Hace ${difference.inDays} días';
+      return l10n.daysAgo(difference.inDays);
     } else if (difference.inDays < 30) {
       final weeks = (difference.inDays / 7).floor();
-      return 'Hace $weeks semanas';
+      return l10n.weeksAgo(weeks);
     } else if (difference.inDays < 365) {
       final months = (difference.inDays / 30).floor();
-      return 'Hace $months meses';
+      return l10n.monthsAgo(months);
     } else {
       final years = (difference.inDays / 365).floor();
-      return 'Hace $years años';
+      return l10n.yearsAgo(years);
     }
   }
 
@@ -166,20 +167,21 @@ class Formatters {
     return date1.year == date2.year && date1.month == date2.month;
   }
 
-  /// Obtiene el nombre del mes en español
-  static String getMonthName(int month) {
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+  /// Obtiene el nombre del mes
+  static String getMonthName(int month, AppLocalizations l10n) {
+    final months = [
+      l10n.january, l10n.february, l10n.march, l10n.april,
+      l10n.may, l10n.june, l10n.july, l10n.august,
+      l10n.september, l10n.october, l10n.november, l10n.december
     ];
     return months[month - 1];
   }
 
-  /// Obtiene el nombre del día de la semana en español
-  static String getDayName(int weekday) {
-    const days = [
-      'Lunes', 'Martes', 'Miércoles', 'Jueves', 
-      'Viernes', 'Sábado', 'Domingo'
+  /// Obtiene el nombre del día de la semana
+  static String getDayName(int weekday, AppLocalizations l10n) {
+    final days = [
+      l10n.monday, l10n.tuesday, l10n.wednesday, l10n.thursday,
+      l10n.friday, l10n.saturday, l10n.sunday
     ];
     return days[weekday - 1];
   }

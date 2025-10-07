@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'Libre Finance';
 
   @override
+  String get appName => 'Libre Finance';
+
+  @override
+  String get appDescription => 'Your savings management companion';
+
+  @override
   String get summary => 'Summary';
 
   @override
@@ -22,6 +28,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get statistics => 'Statistics';
+
+  @override
+  String get settings => 'Settings';
 
   @override
   String get totalSavings => 'Total Savings';
@@ -42,136 +51,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get balance => 'Balance';
 
   @override
-  String get addRecord => 'Add Record';
-
-  @override
-  String get deleteRecord => 'Delete record';
-
-  @override
-  String get cancel => 'Cancel';
-
-  @override
-  String get delete => 'Delete';
-
-  @override
-  String get save => 'Save';
-
-  @override
-  String get lastMovement => 'Last movement';
-
-  @override
-  String get totalRecords => 'Total records';
-
-  @override
-  String get recentMovements => 'Recent Movements';
-
-  @override
-  String get viewAll => 'View all';
-
-  @override
   String get income => 'Income';
 
   @override
   String get expenses => 'Expenses';
 
   @override
-  String get searchRecords => 'Search records...';
-
-  @override
-  String get deposits => 'Deposits';
-
-  @override
-  String get withdrawals => 'Withdrawals';
-
-  @override
-  String get category => 'Category';
-
-  @override
-  String get allCategories => 'All categories';
-
-  @override
-  String get noRecords => 'No records';
-
-  @override
-  String get noRecordsSubtitle => 'Start by adding your first transaction';
-
-  @override
-  String get noSearchResults => 'No results';
-
-  @override
-  String get noSearchResultsSubtitle => 'No matches found';
-
-  @override
-  String get noCategoryRecords => 'Empty category';
-
-  @override
-  String get noCategoryRecordsSubtitle => 'No records in this category';
-
-  @override
-  String get deleteConfirmation => 'Delete';
-
-  @override
-  String get savingsByCategory => 'Savings by Category';
-
-  @override
-  String get noDataAvailable => 'No data available';
-
-  @override
-  String get manageCategories => 'Manage Categories';
-
-  @override
-  String get deleteCategory => 'Delete category';
-
-  @override
-  String get deleteCategoryConfirm => 'Delete category';
-
-  @override
-  String get categoryInUse => 'Category in use';
-
-  @override
-  String get recordsWillBeMoved => 'record(s) will be moved to General';
-
-  @override
-  String get currentAmount => 'Current amount';
-
-  @override
-  String get moveAndDelete => 'Move and Delete';
-
-  @override
-  String get newCategory => 'New Category';
-
-  @override
-  String get categoryName => 'Category name';
-
-  @override
-  String get chooseColor => 'Choose a color';
-
-  @override
-  String get categoryPreview => 'Preview of your category';
-
-  @override
-  String get add => 'Add';
-
-  @override
-  String get invalidCategoryName => 'Invalid category name';
-
-  @override
-  String get categoryExists => 'Category already exists';
-
-  @override
-  String get appName => 'Libre Finance';
-
-  @override
-  String get appDescription => 'Your savings management companion';
-
-  @override
-  String get settings => 'Settings';
+  String get addRecord => 'Add Record';
 
   @override
   String get editRecord => 'Edit Record';
 
   @override
+  String get deleteRecord => 'Delete Record';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
   String get edit => 'Edit';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get add => 'Add';
 
   @override
   String get search => 'Search';
@@ -184,6 +91,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get import => 'Import';
+
+  @override
+  String get category => 'Category';
 
   @override
   String get description => 'Description';
@@ -220,6 +130,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Are you sure you want to delete this record?';
 
   @override
+  String get deleteCategoryConfirm => 'Delete category';
+
+  @override
   String get clearAllData => 'Clear all data';
 
   @override
@@ -254,13 +167,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationError => 'Please check the entered data';
 
   @override
+  String get categoryInUse => 'Category in use';
+
+  @override
+  String get categoryExists => 'Category already exists';
+
+  @override
   String get emptyAmount => 'You must enter at least one amount';
 
   @override
   String get allFilter => 'All';
 
   @override
+  String get deposits => 'Deposits';
+
+  @override
+  String get withdrawals => 'Withdrawals';
+
+  @override
   String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
 
   @override
   String get thisWeek => 'This week';
@@ -270,6 +198,111 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get thisYear => 'This year';
+
+  @override
+  String daysAgo(Object count) {
+    return '$count days ago';
+  }
+
+  @override
+  String get justNow => 'Just now';
+
+  @override
+  String minutesAgo(Object count) {
+    return '$count minutes ago';
+  }
+
+  @override
+  String hoursAgo(Object count) {
+    return '$count hours ago';
+  }
+
+  @override
+  String weeksAgo(Object count) {
+    return '$count weeks ago';
+  }
+
+  @override
+  String monthsAgo(Object count) {
+    return '$count months ago';
+  }
+
+  @override
+  String yearsAgo(Object count) {
+    return '$count years ago';
+  }
+
+  @override
+  String get lastMovement => 'Last movement';
+
+  @override
+  String get totalRecords => 'Total Records';
+
+  @override
+  String get recentMovements => 'Recent Movements';
+
+  @override
+  String get viewAll => 'View all';
+
+  @override
+  String get searchRecords => 'Search records...';
+
+  @override
+  String get allCategories => 'All categories';
+
+  @override
+  String get noRecords => 'No records';
+
+  @override
+  String get noRecordsSubtitle => 'Start by adding your first transaction';
+
+  @override
+  String get noSearchResults => 'No results';
+
+  @override
+  String get noSearchResultsSubtitle => 'No matches found';
+
+  @override
+  String get noCategoryRecords => 'Empty category';
+
+  @override
+  String get noCategoryRecordsSubtitle => 'No records in this category';
+
+  @override
+  String get deleteConfirmation => 'Delete?';
+
+  @override
+  String get savingsByCategory => 'Savings by Category';
+
+  @override
+  String get noDataAvailable => 'No data available';
+
+  @override
+  String get manageCategories => 'Manage Categories';
+
+  @override
+  String get recordsWillBeMoved => 'record(s) will be moved to General';
+
+  @override
+  String get currentAmount => 'Current amount';
+
+  @override
+  String get moveAndDelete => 'Move and Delete';
+
+  @override
+  String get newCategory => 'New Category';
+
+  @override
+  String get categoryName => 'Category name';
+
+  @override
+  String get chooseColor => 'Choose a color';
+
+  @override
+  String get categoryPreview => 'Category preview';
+
+  @override
+  String get invalidCategoryName => 'Invalid category name';
 
   @override
   String get showAmounts => 'Show amounts';
@@ -320,77 +353,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataExportError => 'Error exporting data';
 
   @override
-  String get dangerZone => 'Danger Zone';
-
-  @override
-  String get deleteAllRecords => 'Delete all records';
-
-  @override
-  String get deleteAllRecordsSubtitle => 'Clear history keeping categories';
-
-  @override
-  String get resetApp => 'Reset application';
-
-  @override
-  String get resetAppSubtitle => 'Delete everything and start over';
-
-  @override
-  String get about => 'About';
-
-  @override
-  String get version => 'Version';
-
-  @override
-  String get openSourceProject => 'Open Source Project';
-
-  @override
-  String get openSourceDescription =>
-      'This project is open source. You can view the repository at:';
-
-  @override
-  String get suggestions => 'Suggestions:';
-
-  @override
-  String get creator => 'Creator:';
-
-  @override
-  String get supportProject => 'Support the project:';
-
-  @override
-  String get donateUala =>
-      'If you want to support, you can donate via Paypal or Uala (Just for Argentia):';
-
-  @override
-  String get aliasCopied => 'Alias copied';
-
-  @override
-  String get features => 'Features:';
-
-  @override
-  String get feature1 => 'Physical and digital money management';
-
-  @override
-  String get feature2 => 'Custom categories';
-
-  @override
-  String get feature3 => 'Complete transaction history';
-
-  @override
-  String get feature4 => 'Detailed statistics';
-
-  @override
-  String get feature5 => 'Data export and import';
-
-  @override
-  String get feature6 => 'Feedback and support';
-
-  @override
-  String get dataStoredLocally => 'Your data is stored locally on your device';
-
-  @override
-  String get close => 'Close';
-
-  @override
   String get dataExported => 'Data exported';
 
   @override
@@ -408,6 +370,47 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get invalidDataFormat => 'Invalid data format';
+
+  @override
+  String get dangerZone => 'Danger Zone';
+
+  @override
+  String get deleteAllRecords => 'Delete all records';
+
+  @override
+  String get deleteAllRecordsSubtitle => 'Clear history keeping categories';
+
+  @override
+  String get resetApp => 'Reset application';
+
+  @override
+  String get resetAppSubtitle => 'Delete everything and start over';
+
+  @override
+  String get deleteRecordsTitle => 'Delete records';
+
+  @override
+  String get deleteRecordsSubtitle =>
+      'Are you sure you want to delete all records?\n\nThis action cannot be undone. Categories will remain.';
+
+  @override
+  String get allRecordsDeleted => 'All records deleted';
+
+  @override
+  String get deleteAll => 'Delete all';
+
+  @override
+  String get resetAppTitle => 'Reset app';
+
+  @override
+  String get resetAppSubtext =>
+      'Are you sure you want to reset the app?\n\nThis will delete:\n• All records\n• All custom categories\n• All settings\n\nThis action CANNOT be undone.';
+
+  @override
+  String get appReset => 'App reset';
+
+  @override
+  String get reset => 'Reset';
 
   @override
   String get security => 'Security';
@@ -450,28 +453,151 @@ class AppLocalizationsEn extends AppLocalizations {
   String get disable => 'Disable';
 
   @override
-  String get deleteRecordsTitle => 'Delete records';
+  String get day => 'Day';
 
   @override
-  String get deleteRecordsSubtitle =>
-      'Are you sure you want to delete all records?\n\nThis action cannot be undone. Categories will remain.';
+  String get week => 'Week';
 
   @override
-  String get allRecordsDeleted => 'All records deleted';
+  String get month => 'Month';
 
   @override
-  String get deleteAll => 'Delete all';
+  String get specificMonth => 'Specific month';
 
   @override
-  String get resetAppTitle => 'Reset app';
+  String get specificDay => 'Specific day';
 
   @override
-  String get resetAppSubtext =>
-      'Are you sure you want to reset the app?\n\nThis will delete:\n• All records\n• All custom categories\n• All settings\n\nThis action CANNOT be undone.';
+  String get distributionByCategory => 'Distribution by category';
 
   @override
-  String get appReset => 'App reset';
+  String get categoryDetails => 'Category details';
 
   @override
-  String get reset => 'Reset';
+  String get ofTotal => 'of total';
+
+  @override
+  String get selectMonth => 'Select month';
+
+  @override
+  String get year => 'Year';
+
+  @override
+  String get noDataForPeriod => 'No data for this period';
+
+  @override
+  String get january => 'January';
+
+  @override
+  String get february => 'February';
+
+  @override
+  String get march => 'March';
+
+  @override
+  String get april => 'April';
+
+  @override
+  String get may => 'May';
+
+  @override
+  String get june => 'June';
+
+  @override
+  String get july => 'July';
+
+  @override
+  String get august => 'August';
+
+  @override
+  String get september => 'September';
+
+  @override
+  String get october => 'October';
+
+  @override
+  String get november => 'November';
+
+  @override
+  String get december => 'December';
+
+  @override
+  String get monday => 'Monday';
+
+  @override
+  String get tuesday => 'Tuesday';
+
+  @override
+  String get wednesday => 'Wednesday';
+
+  @override
+  String get thursday => 'Thursday';
+
+  @override
+  String get friday => 'Friday';
+
+  @override
+  String get saturday => 'Saturday';
+
+  @override
+  String get sunday => 'Sunday';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String get version => 'Version';
+
+  @override
+  String get openSourceProject => 'Open Source Project';
+
+  @override
+  String get openSourceDescription =>
+      'This project is open source. You can view the repository at';
+
+  @override
+  String get suggestions => 'Suggestions';
+
+  @override
+  String get creator => 'Creator';
+
+  @override
+  String get supportProject => 'Support the Project';
+
+  @override
+  String get donateUala =>
+      'If you want to support, you can donate via Ualá or PayPal';
+
+  @override
+  String get aliasCopied => 'Alias copied';
+
+  @override
+  String get features => 'Features';
+
+  @override
+  String get feature1 => 'Management of physical and digital money';
+
+  @override
+  String get feature2 => 'Customizable categories';
+
+  @override
+  String get feature3 => 'Complete transaction history';
+
+  @override
+  String get feature4 => 'Detailed statistics';
+
+  @override
+  String get feature5 => 'Data export and import';
+
+  @override
+  String get feature6 => 'Feedback and support';
+
+  @override
+  String get dataStoredLocally => 'Your data is stored locally on your device';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get deleteCategory => 'Delete category';
 }

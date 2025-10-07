@@ -112,7 +112,7 @@ class RecordItem extends StatelessWidget {
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
-                            Formatters.formatRelativeDate(record.createdAt),
+                            Formatters.formatRelativeDate(record.createdAt, l10n),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -275,7 +275,7 @@ class RecentRecordItem extends StatelessWidget {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              Formatters.formatRelativeDate(record.createdAt),
+              Formatters.formatRelativeDate(record.createdAt, l10n),
               style: const TextStyle(fontSize: 12),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

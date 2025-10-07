@@ -108,7 +108,7 @@ Widget build(BuildContext context) {
         if (allRecords.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            '${l10n.lastMovement}: ${Formatters.formatRelativeDate(allRecords.first.createdAt)}', // SIN ! aquí
+            '${l10n.lastMovement}: ${Formatters.formatRelativeDate(allRecords.first.createdAt, l10n)}', // SIN ! aquí
             style: const TextStyle(
               color: Colors.white70,
               fontSize: AppConstants.defaultFontSize,

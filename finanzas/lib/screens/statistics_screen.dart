@@ -3,6 +3,8 @@ import 'package:fl_chart/fl_chart.dart';
 import '../models/savings_record.dart';
 import '../constants/app_constants.dart';
 import '../utils/formatters.dart';
+import '../../l10n/app_localizations.dart'; 
+
 
 enum StatisticsPeriod { day, week, month, specificMonth, specificDay }
 
@@ -35,12 +37,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final filteredRecords = _getFilteredRecords();
     final categoryData = _calculateCategoryData(filteredRecords);
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Estadísticas'),
+        title: Text(l10n.statistics),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
@@ -48,13 +51,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildPeriodSelector(),
+            _buildPeriodSelector(l10n),
             const SizedBox(height: 24),
-            _buildSummaryCards(filteredRecords),
+            _buildSummaryCards(filteredRecords, l10n),
             const SizedBox(height: 24),
-            _buildPieChart(categoryData),
+            _buildPieChart(categoryData, l10n),
             const SizedBox(height: 24),
-            _buildCategoryList(categoryData),
+            _buildCategoryList(categoryData, l10n),
           ],
         ),
       ),
@@ -114,7 +117,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return data;
   }
 
-  Widget _buildPeriodSelector() {
+  Widget _buildPeriodSelector(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(8),
@@ -124,7 +127,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               children: [
                 Expanded(
                   child: _buildPeriodButton(
-                    'Día',
+                    l10n.day,
                     StatisticsPeriod.day,
                     Icons.today,
                   ),
@@ -132,7 +135,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildPeriodButton(
-                    'Semana',
+                    l10n.week,
                     StatisticsPeriod.week,
                     Icons.date_range,
                   ),
@@ -140,7 +143,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildPeriodButton(
-                    'Mes',
+                    l10n.month,
                     StatisticsPeriod.month,
                     Icons.calendar_month,
                   ),
@@ -152,7 +155,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               children: [
                 Expanded(
                   child: _buildPeriodButton(
-                    'Mes específico',
+                    l10n.specificMonth,
                     StatisticsPeriod.specificMonth,
                     Icons.event_note,
                   ),
@@ -160,7 +163,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _buildPeriodButton(
-                    'Día específico',
+                    l10n.specificDay,
                     StatisticsPeriod.specificDay,
                     Icons.event,
                   ),
@@ -169,11 +172,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
             if (_selectedPeriod == StatisticsPeriod.specificMonth) ...[
               const SizedBox(height: 12),
-              _buildMonthSelector(),
+              _buildMonthSelector(l10n),
             ],
             if (_selectedPeriod == StatisticsPeriod.specificDay) ...[
               const SizedBox(height: 12),
-              _buildDaySelector(),
+              _buildDaySelector(l10n),
             ],
           ],
         ),
@@ -223,7 +226,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildSummaryCards(List<SavingsRecord> records) {
+  Widget _buildSummaryCards(List<SavingsRecord> records, AppLocalizations l10n) {
     final deposits = records.where((r) => r.type == RecordType.deposit);
     final withdrawals = records.where((r) => r.type == RecordType.withdrawal);
 
@@ -241,7 +244,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       children: [
         Expanded(
           child: _buildSummaryCard(
-            'Ingresos',
+            l10n.income,
             totalDeposits,
             Colors.green,
             Icons.arrow_upward,
@@ -250,7 +253,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         const SizedBox(width: 8),
         Expanded(
           child: _buildSummaryCard(
-            'Gastos',
+            l10n.expenses,
             totalWithdrawals,
             Colors.red,
             Icons.arrow_downward,
@@ -259,7 +262,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         const SizedBox(width: 8),
         Expanded(
           child: _buildSummaryCard(
-            'Balance',
+            l10n.balance,
             balance.abs(),
             balance >= 0 ? Colors.blue : Colors.orange,
             balance >= 0 ? Icons.trending_up : Icons.trending_down,
@@ -299,14 +302,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildPieChart(Map<String, double> categoryData) {
+  Widget _buildPieChart(Map<String, double> categoryData, AppLocalizations l10n) {
     if (categoryData.isEmpty) {
       return Card(
         child: Container(
           height: 300,
           alignment: Alignment.center,
           child: Text(
-            'No hay datos para este período',
+            l10n.noDataForPeriod,
             style: TextStyle(color: Colors.grey[600]),
           ),
         ),
@@ -323,7 +326,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Distribución por categoría',
+              l10n.distributionByCategory,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 24),
@@ -364,13 +367,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildCategoryList(Map<String, double> categoryData) {
+  Widget _buildCategoryList(Map<String, double> categoryData, AppLocalizations l10n) {
     final sortedEntries = categoryData.entries.toList()
       ..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
 
-    if (sortedEntries.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    if (sortedEntries.isEmpty) return const SizedBox.shrink();
 
     final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
 
@@ -381,7 +382,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Detalle por categoría',
+              l10n.categoryDetails,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
@@ -398,8 +399,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: AppConstants.getCategoryColor(
-                                entry.key, widget.categoryColors),
+                            color: AppConstants.getCategoryColor(entry.key, widget.categoryColors),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -426,15 +426,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         value: percentage / 100,
                         backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation(
-                          AppConstants.getCategoryColor(
-                              entry.key, widget.categoryColors),
+                          AppConstants.getCategoryColor(entry.key, widget.categoryColors),
                         ),
                         minHeight: 8,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${percentage.toStringAsFixed(1)}% del total',
+                      '${percentage.toStringAsFixed(1)}% ${l10n.ofTotal}',
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.grey[600],
@@ -450,83 +449,81 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildMonthSelector() {
-  final now = DateTime.now();
-  final selectedMonth = _selectedSpecificMonth ?? now;
-  
-  return InkWell(
-    borderRadius: BorderRadius.circular(8),
-    onTap: () => _selectMonth(context), // ahora toca cualquier parte
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.primary),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.calendar_month, 
-            color: Theme.of(context).colorScheme.primary, 
-            size: 40,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _formatMonthYear(selectedMonth),
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+  Widget _buildMonthSelector(AppLocalizations l10n) {
+    final now = DateTime.now();
+    final selectedMonth = _selectedSpecificMonth ?? now;
+    
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _selectMonth(context, l10n),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Theme.of(context).colorScheme.primary),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.calendar_month, 
+              color: Theme.of(context).colorScheme.primary, 
+              size: 40,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _formatMonthYear(selectedMonth),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-          const Icon(Icons.arrow_drop_down), 
-        ],
+            const Icon(Icons.arrow_drop_down), 
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-
-  Widget _buildDaySelector() {
-  final now = DateTime.now();
-  final selectedDay = _selectedSpecificDay ?? now;
-  
-  return InkWell(
-    borderRadius: BorderRadius.circular(8),
-    onTap: () => _selectDay(context),
-    child: Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Theme.of(context).colorScheme.primary),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.event, 
-            color: Theme.of(context).colorScheme.primary, 
-            size: 40,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              _formatDate(selectedDay),
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
+  Widget _buildDaySelector(AppLocalizations l10n) {
+    final now = DateTime.now();
+    final selectedDay = _selectedSpecificDay ?? now;
+    
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _selectDay(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Theme.of(context).colorScheme.primary),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.event, 
+              color: Theme.of(context).colorScheme.primary, 
+              size: 40,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _formatDate(selectedDay),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-          const Icon(Icons.arrow_drop_down),
-        ],
+            const Icon(Icons.arrow_drop_down),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   String _formatMonthYear(DateTime date) {
     const months = [
@@ -540,7 +537,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
   }
 
-  Future<void> _selectMonth(BuildContext context) async {
+  Future<void> _selectMonth(BuildContext context, AppLocalizations l10n) async {
     final now = DateTime.now();
     final initialDate = _selectedSpecificMonth ?? now;
     
@@ -548,7 +545,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Seleccionar mes'),
+          title: Text(l10n.selectMonth),
           content: SizedBox(
             width: 300,
             height: 300,
@@ -613,6 +610,7 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
     final years = List.generate(
       now.year - 2019,
@@ -628,9 +626,9 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
       children: [
         DropdownButtonFormField<int>(
           value: _selectedYear,
-          decoration: const InputDecoration(
-            labelText: 'Año',
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            labelText: l10n.year,
+            border: const OutlineInputBorder(),
           ),
           items: years.map((year) {
             return DropdownMenuItem(
