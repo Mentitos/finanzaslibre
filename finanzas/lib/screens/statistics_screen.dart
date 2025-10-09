@@ -4,7 +4,7 @@ import '../models/savings_record.dart';
 import '../constants/app_constants.dart';
 import '../utils/formatters.dart';
 import '../../l10n/app_localizations.dart'; 
-
+import '../../l10n/category_translations.dart';
 
 enum StatisticsPeriod { day, week, month, specificMonth, specificDay }
 
@@ -406,7 +406,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            entry.key,
+                            l10n.translateCategory(entry.key),
                             style: const TextStyle(fontWeight: FontWeight.w600),
                           ),
                         ),
@@ -526,11 +526,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   String _formatMonthYear(DateTime date) {
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    return '${months[date.month - 1]} ${date.year}';
+    final l10n = AppLocalizations.of(context)!;
+    return '${Formatters.getMonthName(date.month, l10n)} ${date.year}';
   }
 
   String _formatDate(DateTime date) {
@@ -617,9 +614,10 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
       (index) => 2020 + index,
     );
 
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    final months = [
+      l10n.january, l10n.february, l10n.march, l10n.april,
+      l10n.may, l10n.june, l10n.july, l10n.august,
+      l10n.september, l10n.october, l10n.november, l10n.december
     ];
 
     return Column(
