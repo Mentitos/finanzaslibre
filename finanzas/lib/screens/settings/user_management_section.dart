@@ -22,31 +22,32 @@ class UserManagementSection extends StatefulWidget {
 }
 
 class _UserManagementSectionState extends State<UserManagementSection> {
-  Future<List<User>>? _usersFuture;
+  List<User> _users = [];
+  bool _isLoading = true;
 
-
-    @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Inicializa el Future si aún no ha sido cargado
-    if (_usersFuture == null) {
-      _usersFuture = widget.userManager.getAllUsers();
-    }
+  @override
+  void initState() {
+    super.initState();
+    _loadUsers();
   }
 
-   @override
-  void didUpdateWidget(covariant UserManagementSection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Aunque el UserListPage es un StatelessWidget, a veces los cambios en los props 
-    // se propagan. No es estrictamente necesario, pero ayuda a la robustez.
-    if (widget.userManager != oldWidget.userManager) {
-      _usersFuture = widget.userManager.getAllUsers();
+  Future<void> _loadUsers() async {
+    final users = await widget.userManager.getAllUsers();
+    if (mounted) {
+      setState(() {
+        _users = users;
+        _isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,46 +62,31 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                 ),
           ),
         ),
-        FutureBuilder<List<User>>(
-   future: _usersFuture,
-  builder: (context, snapshot) {
-    if (!snapshot.hasData) {
-      return const Center(child: CircularProgressIndicator());
-    }
+        ..._users.map((user) {
+          final isCurrentUser =
+              widget.userManager.getCurrentUser()?.id == user.id;
+          final isMainWallet = user.id == 'default_user';
 
-    final users = snapshot.data!;
-    return Column(
-      children: [
-              ...users.map((user) {
-                final isCurrentUser =
-                    widget.userManager.getCurrentUser()?.id == user.id;
-                final isMainWallet = user.id == 'default_user';
-
-                return _buildUserTile(
-                  context,
-                  user,
-                  isCurrentUser,
-                  isMainWallet,
-                  l10n,
-                );
-              }),
-              const SizedBox(height: 12),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 8),
-                child: ElevatedButton.icon(
-                  onPressed: () => _showAddUserDialog(context, l10n),
-                  icon: const Icon(Icons.person_add),
-                  label: Text(l10n.addUser),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
-                ),
-              ),
-            ],
-    );
-  },
-)
-
+          return _buildUserTile(
+            context,
+            user,
+            isCurrentUser,
+            isMainWallet,
+            l10n,
+          );
+        }),
+        const SizedBox(height: 12),
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 8),
+          child: ElevatedButton.icon(
+            onPressed: () => _showAddUserDialog(context, l10n),
+            icon: const Icon(Icons.person_add),
+            label: Text(l10n.addUser),
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(double.infinity, 48),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -126,7 +112,8 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                 Expanded(child: Text(user.name)),
                 if (isMainWallet)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.green.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -161,30 +148,25 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   ),
               ],
             ),
-            // Modificar el onTap en _buildUserTile:
+            onTap: () async {
+              if (isCurrentUser) {
+                widget.onShowSnackBar('Ya estabas usando ${user.name}', false);
+                return;
+              }
 
-onTap: () async {
-    // Si ya es el usuario actual, no hacemos nada y simplemente retornamos.
-    if (isCurrentUser) {
-        widget.onShowSnackBar('Ya estabas usando ${user.name}', false);
-        return; 
-    }
-    
-    // Lógica para cambiar de usuario:
-    await widget.userManager.setCurrentUser(user);
-    widget.onUserChanged();
-    setState(() {});
-    
-    if (mounted) {
-        widget.onShowSnackBar(
-            '${l10n.switchedTo} ${user.name}', false);
-    }
-},
+              await widget.userManager.setCurrentUser(user);
+              widget.onUserChanged();
+              await _loadUsers();
+
+              if (mounted) {
+                widget.onShowSnackBar(
+                    '${l10n.switchedTo} ${user.name}', false);
+              }
+            },
             onLongPress: !isMainWallet
                 ? () => _showDeleteUserDialog(context, user, l10n)
                 : null,
           ),
-          // Mostrar indicador visual si es eliminable
           if (!isMainWallet && !isCurrentUser)
             Positioned(
               right: 0,
@@ -209,10 +191,7 @@ onTap: () async {
   Widget _buildProfileAvatar(User user) {
     if (user.profileImagePath != null) {
       return CircleAvatar(
-        backgroundImage: FileImage(
-          // ignore: unnecessary_cast
-          File(user.profileImagePath!),
-        ),
+        backgroundImage: FileImage(File(user.profileImagePath!)),
         radius: 24,
         child: Container(
           decoration: BoxDecoration(
@@ -276,8 +255,8 @@ onTap: () async {
     );
   }
 
-  Future<void> _pickImage(BuildContext context, User user, ImageSource source,
-      AppLocalizations l10n) async {
+  Future<void> _pickImage(
+      BuildContext context, User user, ImageSource source, AppLocalizations l10n) async {
     try {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(
@@ -289,7 +268,7 @@ onTap: () async {
 
       if (pickedFile != null && mounted) {
         await widget.userManager.updateProfileImage(user.id, pickedFile.path);
-        setState(() {});
+        await _loadUsers();
         widget.onShowSnackBar(l10n.profilePhotoUpdated, false);
       }
     } catch (e) {
@@ -299,7 +278,7 @@ onTap: () async {
 
   Future<void> _deleteProfileImage(User user, AppLocalizations l10n) async {
     await widget.userManager.deleteProfileImage(user.id);
-    setState(() {});
+    await _loadUsers();
     widget.onShowSnackBar(l10n.photoRemoved, false);
   }
 
@@ -320,35 +299,28 @@ onTap: () async {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext), // Usar dialogContext
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () async {
-              // ... lógica de validación ...
-
               final userName = controller.text.trim();
+              if (userName.isEmpty) return;
+
               await widget.userManager.createUser(userName);
-              
+
               if (dialogContext.mounted) {
-                Navigator.pop(dialogContext); 
+                Navigator.pop(dialogContext);
               }
 
-              setState(
-                  () => _usersFuture = widget.userManager.getAllUsers());
+              await _loadUsers();
 
-              // 🌟 CORRECCIÓN 1: Llama a onUserChanged al crear un usuario.
-              // Esto forzará la recarga de datos en la pantalla principal.
-              widget.onUserChanged(); 
-
+              widget.onUserChanged();
               if (mounted) {
-                setState(() {});
-                widget.onShowSnackBar(
-                    '${l10n.userCreated}: $userName', false);
+                widget.onShowSnackBar('${l10n.userCreated}: $userName', false);
               }
             },
             child: Text(l10n.create),
-            
           ),
         ],
       ),
@@ -368,29 +340,22 @@ onTap: () async {
             child: Text(l10n.cancel),
           ),
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               await widget.userManager.deleteUser(user.id);
-              
+
               if (dialogContext.mounted) {
-                Navigator.pop(dialogContext); 
+                Navigator.pop(dialogContext);
               }
 
-              setState(
-                  () => _usersFuture = widget.userManager.getAllUsers());
+              await _loadUsers();
+
+              widget.onUserChanged();
 
               if (mounted) {
-                setState(() {});
                 widget.onShowSnackBar(l10n.userDeleted, false);
-                
-                // 🌟 CORRECCIÓN 2: Llama a onUserChanged al eliminar un usuario.
-                // Esto es fundamental si el usuarioManager cambia de usuario activo
-                // automáticamente después de una eliminación (ej. vuelve al default).
-                widget.onUserChanged();
               }
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
             child: Text(l10n.delete),
           ),
         ],
