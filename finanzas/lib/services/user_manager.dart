@@ -117,19 +117,28 @@ class UserManager {
 
   // Eliminar usuario
   Future<void> deleteUser(String userId) async {
+    // ✅ IMPORTANTE: Proteger la billetera principal
+    if (userId == _defaultUserId) {
+      throw Exception('Cannot delete main wallet');
+    }
+
     final users = await getAllUsers();
     users.removeWhere((user) => user.id == userId);
 
     final usersJson = users.map((u) => jsonEncode(u.toJson())).toList();
     await _prefs.setStringList(_usersKey, usersJson);
 
-    // Si eliminamos el usuario actual, cambiar al primero
+    // Si eliminamos el usuario actual, cambiar a la billetera principal
     if (_currentUser?.id == userId) {
-      if (users.isNotEmpty) {
-        await setCurrentUser(users.first);
-      } else {
-        await _ensureDefaultUser();
-      }
+      final mainUser = users.firstWhere(
+        (u) => u.id == _defaultUserId,
+        orElse: () => users.isNotEmpty ? users.first : User(
+          id: _defaultUserId,
+          name: 'Mi Billetera',
+          createdAt: DateTime.now(),
+        ),
+      );
+      await setCurrentUser(mainUser);
     }
   }
 

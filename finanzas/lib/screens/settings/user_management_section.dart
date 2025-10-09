@@ -141,7 +141,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                       '${l10n.switchedTo} ${user.name}', false);
                 }
               },
-        onLongPress: !isMainWallet && !isCurrentUser
+        onLongPress: !isMainWallet  // ✅ CORREGIDO: Solo permite borrar si NO es la billetera principal
             ? () => _showDeleteUserDialog(context, user, l10n)
             : null,
       ),

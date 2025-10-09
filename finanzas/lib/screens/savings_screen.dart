@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/savings_record.dart';
-import '../models/user_model.dart';
+
 import '../services/savings_data_manager.dart';
 import '../services/user_manager.dart';
 import '../widgets/record_dialog.dart';
