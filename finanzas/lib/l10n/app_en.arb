@@ -271,6 +271,27 @@
   "system": "system",
   "systemDefault": "default system",
 
+"users": "Users",
+  "addUser": "Add user",
+  "enterUserName": "Enter user name",
+  "create": "Create",
+  "cancel": "Cancel",
+  "deleteUser": "Delete user",
+  "deleteUserConfirmation": "Are you sure you want to delete user",
+  "delete": "Delete",
+  "userCreated": "User created",
+  "userDeleted": "User deleted",
+  "currentUser": "Current user",
+  "switchedTo": "Switched to",
+  "takePhoto": "Take photo",
+  "selectFromGallery": "Select from gallery",
+  "removePhoto": "Remove photo",
+  "profilePhotoUpdated": "Profile photo updated",
+  "photoRemoved": "Photo removed",
+  "error": "Error",
+
+  
+"principal": "Main",
 
 "@transactionCompleted": {
   "placeholders": {

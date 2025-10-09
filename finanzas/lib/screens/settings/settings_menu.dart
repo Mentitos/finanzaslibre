@@ -8,9 +8,15 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import '../../main.dart';
 import '../../l10n/app_localizations.dart'; 
+import 'user_management_section.dart';
+import '../../models/user_model.dart';
+import '../../services/user_manager.dart';
+
+
 
 class SettingsMenu extends StatelessWidget {
   final SavingsDataManager dataManager;
+  final UserManager userManager;
   final Future<void> Function() onDataChanged;
   final Function(String message, bool isError) onShowSnackBar;
   final int allRecordsCount;
@@ -19,6 +25,7 @@ class SettingsMenu extends StatelessWidget {
   const SettingsMenu({
     super.key,
     required this.dataManager,
+    required this.userManager,
     required this.onDataChanged,
     required this.onShowSnackBar,
     required this.allRecordsCount,
@@ -42,6 +49,15 @@ class SettingsMenu extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context, l10n),
+            const Divider(height: 30),
+            UserManagementSection(
+              userManager: userManager,
+              onUserChanged: () {
+                onDataChanged();
+                Navigator.pop(context);
+              },
+              onShowSnackBar: onShowSnackBar,
+            ),
             const Divider(height: 30),
             _buildAppearanceSection(context, l10n),
             const Divider(height: 30),
@@ -76,7 +92,7 @@ class SettingsMenu extends StatelessWidget {
     );
   }
 
-  Widget _buildAppearanceSection(BuildContext context, AppLocalizations l10n) {
+   Widget _buildAppearanceSection(BuildContext context, AppLocalizations l10n) {
     final currentLocale = Localizations.localeOf(context);
     
     return Column(

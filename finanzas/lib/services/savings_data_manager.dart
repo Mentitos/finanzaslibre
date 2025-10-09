@@ -1,22 +1,20 @@
 import 'dart:convert';
+import 'package:finanzas/services/user_manager.dart';
 import 'package:flutter/material.dart'; 
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/savings_record.dart';
-
 
 class SavingsDataManager {
   // --- CLAVES DE PREFERENCIAS ---
   static const String _recordsKey = 'savings_records';
   static const String _categoriesKey = 'savings_categories';
   static const String _privacyModeKey = 'privacy_mode_enabled';
+  static const String _categoryColorsKey = 'category_colors';
 
-  // Claves de Seguridad
+  // Claves de Seguridad (GLOBALES)
   static const String _pinKey = 'security_pin';
   static const String _pinEnabledKey = 'pin_enabled';
   static const String _biometricEnabledKey = 'biometric_enabled';
-
-  // Clave para colores de categorías
-  static const String _categoryColorsKey = 'category_colors';
 
   static const List<String> _defaultCategories = [
     'General',
@@ -35,15 +33,47 @@ class SavingsDataManager {
 
   static void init() {}
 
+  late SharedPreferences _prefs;
+  UserManager? _userManager;
+  
   // Cache
   List<SavingsRecord>? _cachedRecords;
   List<String>? _cachedCategories;
+
+
+  void clearCache() {
+    _cachedRecords = null;
+    _cachedCategories = null;
+    debugPrint('Cache limpiado');
+  }
+  void setUserManager(UserManager userManager) {
+    _userManager = userManager;
+    clearCache();
+    debugPrint('UserManager conectado a SavingsDataManager');
+  }
+  
+
+  /// ✅ CORREGIDO: Retorna el prefijo del usuario actual
+  String _getUserDataKey(String key) {
+    final currentUser = _userManager?.getCurrentUser();
+    if (currentUser == null) {
+      debugPrint('⚠️ WARNING: No user selected in _getUserDataKey');
+      return key;
+    }
+    final result = '${currentUser.id}_$key';
+    debugPrint('📌 Key generada: $result para usuario: ${currentUser.name}');
+    return result;
+  }
+
+  Future<void> initialize() async {
+    _prefs = await SharedPreferences.getInstance();
+    debugPrint('SavingsDataManager inicializado');
+  }
 
   // ====================================================================
   // ----------------------- METODOS DE CATEGORIAS ----------------------
   // ====================================================================
 
-  /// Agrega una nueva categoría (con color)
   Future<bool> addCategoryWithColor(String category, Color color) async {
     if (category.trim().isEmpty) return false;
 
@@ -53,8 +83,6 @@ class SavingsDataManager {
     if (!categories.contains(trimmedCategory)) {
       categories.add(trimmedCategory);
       await saveCategories(categories);
-
-      // Guardar color asociado
       await saveCategoryColor(trimmedCategory, color);
       return true;
     }
@@ -62,7 +90,6 @@ class SavingsDataManager {
     return false;
   }
 
-  /// Agrega una nueva categoría sin color (compatibilidad con código antiguo y tests)
   Future<bool> addCategory(String category) async {
     if (category.trim().isEmpty) return false;
 
@@ -74,69 +101,65 @@ class SavingsDataManager {
       return await saveCategories(categories);
     }
 
-    return false; // Ya existe
-  }
-
-  /// Guarda el color de una categoría
-  Future<bool> saveCategoryColor(String category, Color color) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final colorsJson = prefs.getString(_categoryColorsKey);
-    Map<String, int> colorMap = {};
-    
-    if (colorsJson != null) {
-      final decoded = json.decode(colorsJson);
-      colorMap = Map<String, int>.from(decoded);
-    }
-    
-    colorMap[category] = color.value;
-    await prefs.setString(_categoryColorsKey, json.encode(colorMap));
-    return true;
-  } catch (e) {
-    debugPrint('Error guardando color: $e');
     return false;
   }
-}
 
-  /// Carga el color de una categoría
-  Future<Color?> loadCategoryColor(String category) async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final colorsJson = prefs.getString(_categoryColorsKey);
-    
-    if (colorsJson != null) {
-      final colorMap = Map<String, int>.from(json.decode(colorsJson));
-      if (colorMap.containsKey(category)) {
-        return Color(colorMap[category]!);
+  Future<bool> saveCategoryColor(String category, Color color) async {
+    try {
+      final key = _getUserDataKey(_categoryColorsKey);
+      final colorsJson = _prefs.getString(key);
+      Map<String, int> colorMap = {};
+      
+      if (colorsJson != null) {
+        final decoded = json.decode(colorsJson);
+        colorMap = Map<String, int>.from(decoded);
       }
+      
+      colorMap[category] = color.value;
+      await _prefs.setString(key, json.encode(colorMap));
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error guardando color: $e');
+      return false;
     }
-  } catch (e) {
-    debugPrint('Error cargando color: $e');
   }
-  return null;
-}
 
-  /// Carga todos los colores de categorías
+  Future<Color?> loadCategoryColor(String category) async {
+    try {
+      final key = _getUserDataKey(_categoryColorsKey);
+      final colorsJson = _prefs.getString(key);
+      
+      if (colorsJson != null) {
+        final colorMap = Map<String, int>.from(json.decode(colorsJson));
+        if (colorMap.containsKey(category)) {
+          return Color(colorMap[category]!);
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error cargando color: $e');
+    }
+    return null;
+  }
+
   Future<Map<String, Color>> loadAllCategoryColors() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    final colorsJson = prefs.getString(_categoryColorsKey);
-    
-    if (colorsJson != null) {
-      final colorMap = Map<String, int>.from(json.decode(colorsJson));
-      return colorMap.map((key, value) => MapEntry(key, Color(value)));
+    try {
+      final key = _getUserDataKey(_categoryColorsKey);
+      final colorsJson = _prefs.getString(key);
+      
+      if (colorsJson != null) {
+        final colorMap = Map<String, int>.from(json.decode(colorsJson));
+        return colorMap.map((k, v) => MapEntry(k, Color(v)));
+      }
+    } catch (e) {
+      debugPrint('❌ Error cargando colores: $e');
     }
-  } catch (e) {
-    debugPrint('Error cargando colores: $e');
+    return {};
   }
-  return {};
-}
+
   // ====================================================================
-  // ------------------------- MÉTODOS DE SEGURIDAD ---------------------
+  // ----------------------- MÉTODOS DE SEGURIDAD (GLOBALES) -----------
   // ====================================================================
 
-  /// Guarda el PIN, habilita la protección por PIN y guarda el estado biométrico.
-  /// **Esta es la función a usar después de la PinSetupScreen.**
   Future<bool> savePinData(String pin, bool biometricEnabled) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -145,108 +168,99 @@ class SavingsDataManager {
       final biometricSuccess = await prefs.setBool(_biometricEnabledKey, biometricEnabled);
       return pinSuccess && enabledSuccess && biometricSuccess;
     } catch (e) {
-      debugPrint('Error guardando datos de seguridad: $e');
+      debugPrint('❌ Error guardando datos de seguridad: $e');
       return false;
     }
   }
 
-  /// Guarda el PIN de seguridad (Reintroducido para compatibilidad)
-  /// Esto también habilita la protección por PIN.
   Future<bool> savePin(String pin) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final pinSuccess = await prefs.setString(_pinKey, pin);
-      final enabledSuccess = await setPinEnabled(true); // Asegura que esté habilitado
+      final enabledSuccess = await setPinEnabled(true);
       return pinSuccess && enabledSuccess;
     } catch (e) {
-      debugPrint('Error guardando PIN: $e');
+      debugPrint('❌ Error guardando PIN: $e');
       return false;
     }
   }
 
-  /// Guarda solo el estado de autenticación biométrica (útil si el PIN ya existe)
   Future<bool> setBiometricEnabled(bool enabled) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return await prefs.setBool(_biometricEnabledKey, enabled);
     } catch (e) {
-      debugPrint('Error guardando estado biométrico: $e');
+      debugPrint('❌ Error guardando estado biométrico: $e');
       return false;
     }
   }
 
-  /// Carga el PIN guardado
   Future<String?> loadPin() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_pinKey);
     } catch (e) {
-      debugPrint('Error cargando PIN: $e');
+      debugPrint('❌ Error cargando PIN: $e');
       return null;
     }
   }
   
-  /// Verifica si el PIN está habilitado
   Future<bool> isPinEnabled() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getBool(_pinEnabledKey) ?? false;
     } catch (e) {
-      debugPrint('Error verificando PIN habilitado: $e');
+      debugPrint('❌ Error verificando PIN habilitado: $e');
       return false;
     }
   }
 
-  /// Verifica si la autenticación biométrica está habilitada
-  /// **Renombrado de isBiometricEnabled para compatibilidad con main.dart**
   Future<bool> loadBiometricEnabled() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getBool(_biometricEnabledKey) ?? false;
     } catch (e) {
-      debugPrint('Error verificando biométrica: $e');
+      debugPrint('❌ Error verificando biométrica: $e');
       return false;
     }
   }
 
-  /// Habilita o deshabilita la protección por PIN (sin cambiar el PIN)
   Future<bool> setPinEnabled(bool enabled) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return await prefs.setBool(_pinEnabledKey, enabled);
     } catch (e) {
-      debugPrint('Error guardando estado del PIN: $e');
+      debugPrint('❌ Error guardando estado del PIN: $e');
       return false;
     }
   }
 
-  /// Elimina el PIN de seguridad y deshabilita la protección
   Future<bool> removePin() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_pinKey);
       await prefs.remove(_pinEnabledKey);
-      await prefs.remove(_biometricEnabledKey); // También quitamos biometría
+      await prefs.remove(_biometricEnabledKey);
       return true;
     } catch (e) {
-      debugPrint('Error eliminando PIN: $e');
+      debugPrint('❌ Error eliminando PIN: $e');
       return false;
     }
   }
 
   // ====================================================================
-  // ------------------------- MÉTODOS DE DATOS -------------------------
+  // ----------------------- MÉTODOS DE DATOS ---------------------------
   // ====================================================================
 
-  /// Carga todos los registros de ahorros
+  /// ✅ CORREGIDO: Usa 'key' en lugar de '_recordsKey'
   Future<List<SavingsRecord>> loadRecords({bool forceReload = false}) async {
     if (_cachedRecords != null && !forceReload) {
       return List.from(_cachedRecords!);
     }
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final String? recordsJson = prefs.getString(_recordsKey);
+      final key = _getUserDataKey(_recordsKey);
+      final String? recordsJson = _prefs.getString(key); // ✅ CORREGIDO
       
       if (recordsJson != null) {
         final List<dynamic> recordsList = json.decode(recordsJson);
@@ -254,49 +268,47 @@ class SavingsDataManager {
             .map((json) => SavingsRecord.fromJson(json))
             .toList();
         
-        // Ordenar por fecha de creación (más reciente primero)
         _cachedRecords!.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+        debugPrint('✅ Se cargaron ${_cachedRecords!.length} registros');
         
         return List.from(_cachedRecords!);
       }
     } catch (e) {
-      debugPrint('Error cargando registros: $e');
+      debugPrint('❌ Error cargando registros: $e');
     }
     
     _cachedRecords = [];
     return [];
   }
 
-  /// Guarda la lista completa de registros
+  /// ✅ CORREGIDO: Usa 'key' en lugar de '_recordsKey'
   Future<bool> saveRecords(List<SavingsRecord> records) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final key = _getUserDataKey(_recordsKey);
       final String recordsJson = json.encode(
         records.map((record) => record.toJson()).toList()
       );
       
-      final success = await prefs.setString(_recordsKey, recordsJson);
+      final success = await _prefs.setString(key, recordsJson); // ✅ CORREGIDO
       
       if (success) {
         _cachedRecords = List.from(records);
-        debugPrint('${records.length} registros guardados exitosamente');
+        debugPrint('✅ ${records.length} registros guardados exitosamente en $key');
       }
       
       return success;
     } catch (e) {
-      debugPrint('Error guardando registros: $e');
+      debugPrint('❌ Error guardando registros: $e');
       return false;
     }
   }
 
-  /// Agrega un nuevo registro
   Future<bool> addRecord(SavingsRecord record) async {
     final records = await loadRecords();
     records.insert(0, record);
     return await saveRecords(records);
   }
 
-  /// Actualiza un registro existente
   Future<bool> updateRecord(SavingsRecord updatedRecord) async {
     final records = await loadRecords();
     final index = records.indexWhere((r) => r.id == updatedRecord.id);
@@ -306,11 +318,10 @@ class SavingsDataManager {
       return await saveRecords(records);
     }
     
-    debugPrint('Registro con id ${updatedRecord.id} no encontrado');
+    debugPrint('❌ Registro con id ${updatedRecord.id} no encontrado');
     return false;
   }
 
-  /// Elimina un registro por ID
   Future<bool> deleteRecord(String id) async {
     final records = await loadRecords();
     final initialLength = records.length;
@@ -320,11 +331,10 @@ class SavingsDataManager {
       return await saveRecords(records);
     }
     
-    debugPrint('Registro con id $id no encontrado');
+    debugPrint('❌ Registro con id $id no encontrado');
     return false;
   }
 
-  /// Busca registros por criterios
   Future<List<SavingsRecord>> searchRecords({
     String? query,
     RecordType? type,
@@ -359,53 +369,47 @@ class SavingsDataManager {
     }).toList();
   }
 
-  /// Carga las categorías disponibles
+  /// ✅ CORREGIDO: Usa 'key' en lugar de '_categoriesKey'
   Future<List<String>> loadCategories({bool forceReload = false}) async {
     if (_cachedCategories != null && !forceReload) {
       return List.from(_cachedCategories!);
     }
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final categories = prefs.getStringList(_categoriesKey);
+      final key = _getUserDataKey(_categoriesKey);
+      final categories = _prefs.getStringList(key); // ✅ CORREGIDO
       
       _cachedCategories = categories ?? List.from(_defaultCategories);
       return List.from(_cachedCategories!);
     } catch (e) {
-      debugPrint('Error cargando categorías: $e');
+      debugPrint('❌ Error cargando categorías: $e');
       _cachedCategories = List.from(_defaultCategories);
       return List.from(_cachedCategories!);
     }
   }
 
-  /// Guarda las categorías
+  /// ✅ CORREGIDO: Usa 'key' en lugar de '_categoriesKey'
   Future<bool> saveCategories(List<String> categories) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final success = await prefs.setStringList(_categoriesKey, categories);
+      final key = _getUserDataKey(_categoriesKey);
+      final success = await _prefs.setStringList(key, categories); // ✅ CORREGIDO
       
       if (success) {
         _cachedCategories = List.from(categories);
-        debugPrint('${categories.length} categorías guardadas exitosamente');
+        debugPrint('✅ ${categories.length} categorías guardadas exitosamente en $key');
       }
       
       return success;
     } catch (e) {
-      debugPrint('Error guardando categorías: $e');
+      debugPrint('❌ Error guardando categorías: $e');
       return false;
     }
   }
 
-  /// Agrega una nueva categoría
-  
-
-  /// Elimina una categoría y mueve sus registros a "General"
   Future<bool> deleteCategory(String category) async {
     try {
-      // Cargar registros actuales
       final records = await loadRecords();
       
-      // Mover todos los registros a "General"
       final updatedRecords = records.map((record) {
         if (record.category == category) {
           return record.copyWith(category: 'General');
@@ -415,7 +419,6 @@ class SavingsDataManager {
       
       await saveRecords(updatedRecords);
       
-      // Eliminar la categoría de la lista
       final categories = await loadCategories();
       if (categories.contains(category) && category != 'General') {
         categories.remove(category);
@@ -423,14 +426,13 @@ class SavingsDataManager {
         return true;
       }
       
-      return false; // No se eliminó (era General o no existía)
+      return false;
     } catch (e) {
-      debugPrint('Error eliminando categoría: $e');
+      debugPrint('❌ Error eliminando categoría: $e');
       return false;
     }
   }
 
-  /// Obtiene estadísticas básicas
   Future<Map<String, dynamic>> getStatistics() async {
     final records = await loadRecords();
     
@@ -474,7 +476,6 @@ class SavingsDataManager {
     };
   }
 
-  /// Exporta los datos a JSON (para backup)
   Future<Map<String, dynamic>> exportData() async {
     final records = await loadRecords();
     final categories = await loadCategories();
@@ -487,7 +488,6 @@ class SavingsDataManager {
     };
   }
 
-  /// Importa datos desde JSON
   Future<bool> importData(Map<String, dynamic> data) async {
     try {
       if (data['records'] != null) {
@@ -504,54 +504,72 @@ class SavingsDataManager {
         await saveCategories(importedCategories);
       }
       
-      debugPrint('Datos importados exitosamente');
+      debugPrint('✅ Datos importados exitosamente');
       return true;
     } catch (e) {
-      debugPrint('Error importando datos: $e');
+      debugPrint('❌ Error importando datos: $e');
       return false;
     }
   }
 
-  /// Limpia todos los datos (para testing o reset)
-  Future<bool> clearAllData() async {
+  Future<bool> clearUserData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_recordsKey);
-      await prefs.remove(_categoriesKey);
-      // Limpiar también las claves de seguridad
-      await prefs.remove(_pinKey);
-      await prefs.remove(_pinEnabledKey);
-      await prefs.remove(_biometricEnabledKey);
+      final currentUser = _userManager?.getCurrentUser();
+      if (currentUser == null) return false;
+
+      final key1 = _getUserDataKey(_recordsKey);
+      final key2 = _getUserDataKey(_categoriesKey);
+      final key3 = _getUserDataKey(_categoryColorsKey);
+
+      await _prefs.remove(key1);
+      await _prefs.remove(key2);
+      await _prefs.remove(key3);
       
       _cachedRecords = null;
       _cachedCategories = null;
       
-      debugPrint('Todos los datos eliminados');
+      debugPrint('✅ Datos del usuario eliminados');
       return true;
     } catch (e) {
-      debugPrint('Error eliminando datos: $e');
+      debugPrint('❌ Error eliminando datos del usuario: $e');
       return false;
     }
   }
 
-  /// Guarda el estado del modo privacidad
+  Future<bool> clearAllData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      
+      _cachedRecords = null;
+      _cachedCategories = null;
+      
+      debugPrint('✅ Todos los datos eliminados');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error eliminando datos: $e');
+      return false;
+    }
+  }
+
+  /// ✅ CORREGIDO: Usa 'key' en lugar de '_privacyModeKey'
   Future<bool> savePrivacyMode(bool enabled) async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      return await prefs.setBool(_privacyModeKey, enabled);
+      final key = _getUserDataKey(_privacyModeKey);
+      return await _prefs.setBool(key, enabled); // ✅ CORREGIDO
     } catch (e) {
-      debugPrint('Error guardando modo privacidad: $e');
+      debugPrint('❌ Error guardando modo privacidad: $e');
       return false;
     }
   }
 
-  /// Carga el estado del modo privacidad
+  /// ✅ CORREGIDO: Usa 'key' en lugar de '_privacyModeKey'
   Future<bool> loadPrivacyMode() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      return prefs.getBool(_privacyModeKey) ?? false;
+      final key = _getUserDataKey(_privacyModeKey);
+      return _prefs.getBool(key) ?? false; // ✅ CORREGIDO
     } catch (e) {
-      debugPrint('Error cargando modo privacidad: $e');
+      debugPrint('❌ Error cargando modo privacidad: $e');
       return false;
     }
   }

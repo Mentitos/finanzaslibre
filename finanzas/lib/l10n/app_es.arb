@@ -272,6 +272,26 @@
   "system": "sistema",
   "systemDefault": "predeterminado del sistema",
 
+  "users": "Usuarios",
+  "addUser": "Agregar usuario",
+  "enterUserName": "Ingresa el nombre del usuario",
+  "create": "Crear",
+  "cancel": "Cancelar",
+  "deleteUser": "Eliminar usuario",
+  "deleteUserConfirmation": "¿Seguro que deseas eliminar al usuario",
+  "delete": "Eliminar",
+  "userCreated": "Usuario creado",
+  "userDeleted": "Usuario eliminado",
+  "currentUser": "Usuario actual",
+  "switchedTo": "Cambiado a",
+  "takePhoto": "Tomar foto",
+  "selectFromGallery": "Seleccionar de la galería",
+  "removePhoto": "Eliminar foto",
+  "profilePhotoUpdated": "Foto de perfil actualizada",
+  "photoRemoved": "Foto eliminada",
+  "error": "Error",
+"principal": "Principal",
+
 
   "@transactionCompleted": {
     "placeholders": {

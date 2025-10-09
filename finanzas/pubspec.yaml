@@ -41,7 +41,10 @@ dependencies:
   local_auth_android: ^1.0.0
   fuzzywuzzy: ^1.2.0
   fl_chart: ^0.69.0
-  
+  uuid: ^4.0.0
+  image_picker: ^1.0.0
+
+
   flutter_localizations:
     sdk: flutter
   

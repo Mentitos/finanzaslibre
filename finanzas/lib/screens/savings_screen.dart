@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/savings_record.dart';
+import '../models/user_model.dart';
 import '../services/savings_data_manager.dart';
+import '../services/user_manager.dart';
 import '../widgets/record_dialog.dart';
 import '../widgets/quick_money_dialog.dart';
 import '../constants/app_constants.dart';
@@ -11,7 +13,12 @@ import 'settings/settings_menu.dart';
 import '../l10n/app_localizations.dart'; 
 
 class SavingsScreen extends StatefulWidget {
-  const SavingsScreen({super.key});
+  final UserManager userManager;
+
+  const SavingsScreen({
+    super.key,
+    required this.userManager,
+  });
 
   @override
   State<SavingsScreen> createState() => _SavingsScreenState();
@@ -20,6 +27,7 @@ class SavingsScreen extends StatefulWidget {
 class _SavingsScreenState extends State<SavingsScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
+  late UserManager _userManager;
   final SavingsDataManager _dataManager = SavingsDataManager();
   final TextEditingController _searchController = TextEditingController();
 
@@ -38,6 +46,8 @@ class _SavingsScreenState extends State<SavingsScreen>
   @override
   void initState() {
     super.initState();
+    _userManager = widget.userManager;
+    _dataManager.setUserManager(_userManager);
     _tabController = TabController(length: 3, vsync: this);
     _loadData();
   }
@@ -213,6 +223,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         categories: _categories,
         categoryColors: _categoryColors,
         currentAmount: currentAmount,
+        userManager: _userManager,
       ),
     );
   }
@@ -226,7 +237,14 @@ class _SavingsScreenState extends State<SavingsScreen>
       ),
       builder: (context) => SettingsMenu(
         dataManager: _dataManager,
-        onDataChanged: _loadData,
+        userManager: _userManager,
+        onDataChanged: () async {
+  // Reconectar UserManager y limpiar caché
+  _dataManager.setUserManager(_userManager);
+  // Luego cargar datos del nuevo usuario
+  await _loadData();
+  setState(() {});
+},
         onShowSnackBar: (message, isError) {
           if (isError) {
             _showErrorSnackBar(message);
@@ -267,10 +285,22 @@ class _SavingsScreenState extends State<SavingsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final currentUser = _userManager.getCurrentUser();
     
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.appName),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.appName),
+            if (currentUser != null)
+              Text(
+                currentUser.name,
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+          ],
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 0,
         actions: [

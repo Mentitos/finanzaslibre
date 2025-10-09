@@ -745,4 +745,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get systemDefault => 'default system';
+
+  @override
+  String get users => 'Users';
+
+  @override
+  String get addUser => 'Add user';
+
+  @override
+  String get enterUserName => 'Enter user name';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get deleteUser => 'Delete user';
+
+  @override
+  String get deleteUserConfirmation => 'Are you sure you want to delete user';
+
+  @override
+  String get userCreated => 'User created';
+
+  @override
+  String get userDeleted => 'User deleted';
+
+  @override
+  String get currentUser => 'Current user';
+
+  @override
+  String get switchedTo => 'Switched to';
+
+  @override
+  String get takePhoto => 'Take photo';
+
+  @override
+  String get selectFromGallery => 'Select from gallery';
+
+  @override
+  String get removePhoto => 'Remove photo';
+
+  @override
+  String get profilePhotoUpdated => 'Profile photo updated';
+
+  @override
+  String get photoRemoved => 'Photo removed';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get principal => 'Main';
 }

@@ -744,4 +744,55 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get systemDefault => 'predeterminado del sistema';
+
+  @override
+  String get users => 'Usuarios';
+
+  @override
+  String get addUser => 'Agregar usuario';
+
+  @override
+  String get enterUserName => 'Ingresa el nombre del usuario';
+
+  @override
+  String get create => 'Crear';
+
+  @override
+  String get deleteUser => 'Eliminar usuario';
+
+  @override
+  String get deleteUserConfirmation => '¿Seguro que deseas eliminar al usuario';
+
+  @override
+  String get userCreated => 'Usuario creado';
+
+  @override
+  String get userDeleted => 'Usuario eliminado';
+
+  @override
+  String get currentUser => 'Usuario actual';
+
+  @override
+  String get switchedTo => 'Cambiado a';
+
+  @override
+  String get takePhoto => 'Tomar foto';
+
+  @override
+  String get selectFromGallery => 'Seleccionar de la galería';
+
+  @override
+  String get removePhoto => 'Eliminar foto';
+
+  @override
+  String get profilePhotoUpdated => 'Foto de perfil actualizada';
+
+  @override
+  String get photoRemoved => 'Foto eliminada';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get principal => 'Principal';
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/savings_record.dart';
+
+import '../services/user_manager.dart';
 import '../constants/app_constants.dart';
 import '../utils/formatters.dart';
 import '../../l10n/app_localizations.dart';
@@ -12,6 +14,7 @@ class QuickMoneyDialog extends StatefulWidget {
   final List<String> categories;
   final Map<String, Color>? categoryColors;
   final double currentAmount;
+  final UserManager? userManager; // OPCIONAL: para mostrar usuario
 
   const QuickMoneyDialog({
     super.key,
@@ -20,6 +23,7 @@ class QuickMoneyDialog extends StatefulWidget {
     required this.categories,
     this.categoryColors,
     required this.currentAmount,
+    this.userManager,
   });
 
   @override
@@ -107,6 +111,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
 
   Widget _buildHeader() {
     final l10n = AppLocalizations.of(context)!;
+    final currentUser = widget.userManager?.getCurrentUser();
     
     return Container(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -142,12 +147,26 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text(
-                  _getMoneyTypeLabel(l10n),
-                  style: TextStyle(
-                    color: _moneyTypeColor,
-                    fontWeight: FontWeight.w500,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      _getMoneyTypeLabel(l10n),
+                      style: TextStyle(
+                        color: _moneyTypeColor,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (currentUser != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        '• ${currentUser.name}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),

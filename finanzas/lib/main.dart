@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/savings_screen.dart';
 import 'screens/pin_lock_screen.dart';
 import 'services/savings_data_manager.dart';
+import 'services/user_manager.dart';
+import 'models/user_model.dart';
 import 'l10n/app_localizations.dart'; 
 import 'package:flutter_localizations/flutter_localizations.dart';
 
@@ -10,10 +12,17 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SavingsDataManager.init();
 
-  // Obtener SharedPreferences primero
-  final prefs = await SharedPreferences.getInstance();
+  // Inicializar UserManager PRIMERO
+  final userManager = UserManager();
+  await userManager.initialize();
 
-  // Cargar preferencia de tema
+  // IMPORTANTE: Inicializar SavingsDataManager AQUÍ
+  final dataManager = SavingsDataManager();
+  await dataManager.initialize();
+  dataManager.setUserManager(userManager);
+
+  // Obtener SharedPreferences para tema
+  final prefs = await SharedPreferences.getInstance();
   final themeModeString = prefs.getString('theme_mode') ?? 'system';
 
   ThemeMode initialTheme;
@@ -28,13 +37,21 @@ void main() async {
       initialTheme = ThemeMode.system;
   }
 
-  runApp(MyApp(initialTheme: initialTheme));
+  runApp(MyApp(
+    initialTheme: initialTheme,
+    userManager: userManager,
+  ));
 }
 
 class MyApp extends StatefulWidget {
   final ThemeMode initialTheme;
+  final UserManager userManager;
 
-  const MyApp({super.key, required this.initialTheme});
+  const MyApp({
+    super.key,
+    required this.initialTheme,
+    required this.userManager,
+  });
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -46,7 +63,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late ThemeMode _themeMode;
-  Locale _locale = const Locale('es'); // Idioma por defecto
+  Locale _locale = const Locale('es');
 
   @override
   void initState() {
@@ -56,40 +73,38 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _loadLocale() async {
-  final prefs = await SharedPreferences.getInstance();
-  final languageCode = prefs.getString('language_code') ?? 'system';
+    final prefs = await SharedPreferences.getInstance();
+    final languageCode = prefs.getString('language_code') ?? 'system';
 
-  if (languageCode == 'system') {
-    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-    String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
-    setState(() {
-      _locale = Locale(effectiveLang);
-    });
-  } else {
-    setState(() {
-      _locale = Locale(languageCode);
-    });
+    if (languageCode == 'system') {
+      final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
+      setState(() {
+        _locale = Locale(effectiveLang);
+      });
+    } else {
+      setState(() {
+        _locale = Locale(languageCode);
+      });
+    }
   }
-}
-
 
   void changeLanguage(String languageCode) async {
-  final prefs = await SharedPreferences.getInstance();
-  await prefs.setString('language_code', languageCode);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language_code', languageCode);
 
-  if (languageCode == 'system') {
-    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-    String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
-    setState(() {
-      _locale = Locale(effectiveLang);
-    });
-  } else {
-    setState(() {
-      _locale = Locale(languageCode);
-    });
+    if (languageCode == 'system') {
+      final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
+      setState(() {
+        _locale = Locale(effectiveLang);
+      });
+    } else {
+      setState(() {
+        _locale = Locale(languageCode);
+      });
+    }
   }
-}
-
 
   void toggleTheme() async {
     setState(() {
@@ -110,28 +125,28 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return MaterialApp(
-    title: 'Mis Ahorros',
-    debugShowCheckedModeBanner: false,
-    theme: _buildLightTheme(),
-    darkTheme: _buildDarkTheme(),
-    themeMode: _themeMode,
-    locale: _locale,
-    localizationsDelegates: [  // Lenguasge delegates
-      AppLocalizations.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    supportedLocales: const [
-      Locale('es'),
-      Locale('en'),
-    ],
-    home: const AuthWrapper(),
-  );
-}
- 
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Mis Ahorros',
+      debugShowCheckedModeBanner: false,
+      theme: _buildLightTheme(),
+      darkTheme: _buildDarkTheme(),
+      themeMode: _themeMode,
+      locale: _locale,
+      localizationsDelegates: [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('es'),
+        Locale('en'),
+      ],
+      home: AuthWrapper(userManager: widget.userManager),
+    );
+  }
+
   ThemeData _buildLightTheme() {
     return ThemeData(
       primarySwatch: Colors.green,
@@ -148,7 +163,7 @@ Widget build(BuildContext context) {
       ),
     );
   }
- 
+
   ThemeData _buildDarkTheme() {
     return ThemeData(
       primarySwatch: Colors.green,
@@ -169,7 +184,12 @@ Widget build(BuildContext context) {
 }
 
 class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({super.key});
+  final UserManager userManager;
+
+  const AuthWrapper({
+    super.key,
+    required this.userManager,
+  });
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
@@ -192,7 +212,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _checkPinStatus() async {
     final pinEnabled = await _dataManager.isPinEnabled();
     final pin = await _dataManager.loadPin();
-    final biometricStatus = await _dataManager.loadBiometricEnabled(); //
+    final biometricStatus = await _dataManager.loadBiometricEnabled();
 
     setState(() {
       _needsPin = pinEnabled && pin != null;
@@ -258,6 +278,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    return const SavingsScreen();
+    return SavingsScreen(userManager: widget.userManager);
   }
 }

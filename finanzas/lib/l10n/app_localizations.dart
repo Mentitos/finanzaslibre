@@ -1519,6 +1519,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'predeterminado del sistema'**
   String get systemDefault;
+
+  /// No description provided for @users.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuarios'**
+  String get users;
+
+  /// No description provided for @addUser.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar usuario'**
+  String get addUser;
+
+  /// No description provided for @enterUserName.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa el nombre del usuario'**
+  String get enterUserName;
+
+  /// No description provided for @create.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear'**
+  String get create;
+
+  /// No description provided for @deleteUser.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar usuario'**
+  String get deleteUser;
+
+  /// No description provided for @deleteUserConfirmation.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Seguro que deseas eliminar al usuario'**
+  String get deleteUserConfirmation;
+
+  /// No description provided for @userCreated.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario creado'**
+  String get userCreated;
+
+  /// No description provided for @userDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario eliminado'**
+  String get userDeleted;
+
+  /// No description provided for @currentUser.
+  ///
+  /// In es, this message translates to:
+  /// **'Usuario actual'**
+  String get currentUser;
+
+  /// No description provided for @switchedTo.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiado a'**
+  String get switchedTo;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Tomar foto'**
+  String get takePhoto;
+
+  /// No description provided for @selectFromGallery.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar de la galería'**
+  String get selectFromGallery;
+
+  /// No description provided for @removePhoto.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar foto'**
+  String get removePhoto;
+
+  /// No description provided for @profilePhotoUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Foto de perfil actualizada'**
+  String get profilePhotoUpdated;
+
+  /// No description provided for @photoRemoved.
+  ///
+  /// In es, this message translates to:
+  /// **'Foto eliminada'**
+  String get photoRemoved;
+
+  /// No description provided for @error.
+  ///
+  /// In es, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No description provided for @principal.
+  ///
+  /// In es, this message translates to:
+  /// **'Principal'**
+  String get principal;
 }
 
 class _AppLocalizationsDelegate
