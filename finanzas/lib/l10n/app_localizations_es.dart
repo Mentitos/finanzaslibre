@@ -795,4 +795,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get principal => 'Principal';
+
+  @override
+  String get accounts => 'Cuentas';
+
+  @override
+  String get userManagement => 'Gestión de Usuarios';
+
+  @override
+  String get manageUsersAndWallets =>
+      'Gestiona usuarios y cambia entre diferentes carteras.';
 }

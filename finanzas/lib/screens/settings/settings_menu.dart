@@ -8,8 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/services.dart';
 import '../../main.dart';
 import '../../l10n/app_localizations.dart'; 
-import 'user_management_section.dart';
-
+import 'user_list_page.dart';
 import '../../services/user_manager.dart';
 
 
@@ -49,16 +48,9 @@ class SettingsMenu extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context, l10n),
+            _buildAccountSection(context, l10n),
             const Divider(height: 30),
-            UserManagementSection(
-              userManager: userManager,
-              onUserChanged: () {
-                onDataChanged();
-                Navigator.pop(context);
-              },
-              onShowSnackBar: onShowSnackBar,
-            ),
-            const Divider(height: 30),
+            
             _buildAppearanceSection(context, l10n),
             const Divider(height: 30),
             SecuritySection(
@@ -214,7 +206,48 @@ class SettingsMenu extends StatelessWidget {
     ),
   );
 }
+// Nuevo método en SettingsMenu
+Widget _buildAccountSection(BuildContext context, AppLocalizations l10n) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.only(left: 16, bottom: 8),
+        child: Text(
+          l10n.accounts, // Usa una clave de localización adecuada, o 'Users'
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[700],
+              ),
+        ),
+      ),
+      ListTile(
+        leading: const Icon(Icons.people, color: Colors.blueGrey),
+        title: Text(l10n.userManagement),
+        subtitle: Text(l10n.manageUsersAndWallets), // Añadir una subtítulo
+        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+        onTap: () {
+          // Cierra la hoja deslizable (SettingsMenu) antes de navegar
+          // si quieres que UserListPage sea una pantalla completa.
+          Navigator.pop(context); 
 
+          // Navega a la nueva página
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (ctx) => UserListPage(
+                userManager: userManager,
+                onShowSnackBar: onShowSnackBar,
+                // Pasamos el callback para que la pantalla principal se recargue al cambiar de usuario.
+                onUserChanged: onDataChanged, 
+              ),
+            ),
+          );
+        },
+      ),
+    ],
+  );
+}
 
   Widget _buildDataManagementSection(BuildContext context, AppLocalizations l10n) {
     return Column(

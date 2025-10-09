@@ -290,6 +290,10 @@
   "photoRemoved": "Photo removed",
   "error": "Error",
 
+
+  "accounts": "Accounts",
+    "userManagement": "User Management",
+    "manageUsersAndWallets": "Manage users and switch between different wallets.",
   
 "principal": "Main",
 

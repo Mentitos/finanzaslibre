@@ -1621,6 +1621,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Principal'**
   String get principal;
+
+  /// No description provided for @accounts.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuentas'**
+  String get accounts;
+
+  /// No description provided for @userManagement.
+  ///
+  /// In es, this message translates to:
+  /// **'Gestión de Usuarios'**
+  String get userManagement;
+
+  /// No description provided for @manageUsersAndWallets.
+  ///
+  /// In es, this message translates to:
+  /// **'Gestiona usuarios y cambia entre diferentes carteras.'**
+  String get manageUsersAndWallets;
 }
 
 class _AppLocalizationsDelegate

@@ -4,7 +4,7 @@ import 'screens/savings_screen.dart';
 import 'screens/pin_lock_screen.dart';
 import 'services/savings_data_manager.dart';
 import 'services/user_manager.dart';
-import 'models/user_model.dart';
+
 import 'l10n/app_localizations.dart'; 
 import 'package:flutter_localizations/flutter_localizations.dart';
 

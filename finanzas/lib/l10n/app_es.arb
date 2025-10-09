@@ -293,6 +293,10 @@
 "principal": "Principal",
 
 
+  "accounts": "Cuentas",
+    "userManagement": "Gestión de Usuarios",
+    "manageUsersAndWallets": "Gestiona usuarios y cambia entre diferentes carteras.",
+
   "@transactionCompleted": {
     "placeholders": {
       "type": {
