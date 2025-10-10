@@ -1,7 +1,5 @@
-// ============================================
-// ARCHIVO: services/user_manager.dart
-// ============================================
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
 import '../models/user_model.dart';
@@ -55,6 +53,35 @@ class UserManager {
     await _prefs.setStringList(_usersKey, jsonList);
   }
 
+  /// Obtener todos los usuarios
+  Future<List<User>> getAllUsers() async {
+    final jsonList = _prefs.getStringList(_usersKey) ?? [];
+    return jsonList
+        .map((json) {
+          final map = jsonDecode(json) as Map<String, dynamic>;
+          return User.fromMap(map);
+        })
+        .toList()
+        .cast<User>();
+  }
+
+  /// Obtener usuario actual
+  Future<User?> getCurrentUser() async {
+    final users = await getAllUsers();
+    final currentUserId = _prefs.getString(_currentUserKey) ?? _defaultUserId;
+
+    try {
+      return users.firstWhere((u) => u.id == currentUserId);
+    } catch (e) {
+      // Si no encuentra el usuario, devuelve el por defecto
+      try {
+        return users.firstWhere((u) => u.id == _defaultUserId);
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+
   /// Obtener usuario actual SIN async (para sincronía)
   User? getCurrentUserSync() {
     try {
@@ -78,35 +105,6 @@ class UserManager {
               return User.fromMap(map);
             })
             .toList();
-        return users.firstWhere((u) => u.id == _defaultUserId);
-      } catch (e) {
-        return null;
-      }
-    }
-  }
-
-  /// Obtener todos los usuarios
-  Future<List<User>> getAllUsers() async {
-    final jsonList = _prefs.getStringList(_usersKey) ?? [];
-    return jsonList
-        .map((json) {
-          final map = jsonDecode(json) as Map<String, dynamic>;
-          return User.fromMap(map);
-        })
-        .toList()
-        .cast<User>();
-  }
-
-  /// Obtener usuario actual
-  Future<User?> getCurrentUser() async {
-    final users = await getAllUsers();
-    final currentUserId = _prefs.getString(_currentUserKey) ?? _defaultUserId;
-
-    try {
-      return users.firstWhere((u) => u.id == currentUserId);
-    } catch (e) {
-      // Si no encuentra el usuario, devuelve el por defecto
-      try {
         return users.firstWhere((u) => u.id == _defaultUserId);
       } catch (e) {
         return null;
@@ -150,7 +148,7 @@ class UserManager {
           await file.delete();
         }
       } catch (e) {
-        print('Error eliminando imagen: $e');
+        debugPrint('Error eliminando imagen: $e');
       }
     }
 
@@ -180,6 +178,7 @@ class UserManager {
       users[userIndex] =
           users[userIndex].copyWith(profileImagePath: imagePath);
       await _saveUsers(users);
+      debugPrint('✅ Imagen de perfil actualizada para usuario: $userId');
     }
   }
 
@@ -196,14 +195,34 @@ class UserManager {
           final file = File(imagePath);
           if (await file.exists()) {
             await file.delete();
+            debugPrint('✅ Imagen eliminada: $imagePath');
           }
         } catch (e) {
-          print('Error eliminando imagen: $e');
+          debugPrint('❌ Error eliminando imagen: $e');
         }
       }
 
       users[userIndex] = users[userIndex].copyWith(profileImagePath: null);
       await _saveUsers(users);
+      debugPrint('✅ Foto de perfil eliminada para usuario: $userId');
+    }
+  }
+
+  /// Actualizar el nombre del usuario
+  Future<void> updateUserName(String userId, String newName) async {
+    if (newName.trim().isEmpty) {
+      throw Exception('El nombre no puede estar vacío');
+    }
+
+    final users = await getAllUsers();
+    final userIndex = users.indexWhere((u) => u.id == userId);
+
+    if (userIndex != -1) {
+      users[userIndex] = users[userIndex].copyWith(name: newName.trim());
+      await _saveUsers(users);
+      debugPrint('✅ Nombre de usuario actualizado a: $newName');
+    } else {
+      throw Exception('Usuario no encontrado');
     }
   }
 
@@ -229,7 +248,7 @@ class UserManager {
               await file.delete();
             }
           } catch (e) {
-            print('Error eliminando imagen: $e');
+            debugPrint('Error eliminando imagen: $e');
           }
         }
       }
@@ -260,55 +279,3 @@ class UserManager {
   /// Verificar si un usuario es el por defecto
   static bool isDefaultUser(String userId) => userId == _defaultUserId;
 }
-
-// ============================================
-// ARCHIVO: models/user_model.dart (asegúrate de que tenga esto)
-// ============================================
-// class User {
-//   final String id;
-//   final String name;
-//   final DateTime createdAt;
-//   final String? profileImagePath;
-//
-//   User({
-//     required this.id,
-//     required this.name,
-//     required this.createdAt,
-//     this.profileImagePath,
-//   });
-//
-//   factory User.fromMap(Map<String, dynamic> map) {
-//     return User(
-//       id: map['id'] as String,
-//       name: map['name'] as String,
-//       createdAt: DateTime.parse(map['createdAt'] as String),
-//       profileImagePath: map['profileImagePath'] as String?,
-//     );
-//   }
-//
-//   Map<String, dynamic> toMap() {
-//     return {
-//       'id': id,
-//       'name': name,
-//       'createdAt': createdAt.toIso8601String(),
-//       'profileImagePath': profileImagePath,
-//     };
-//   }
-//
-//   User copyWith({
-//     String? id,
-//     String? name,
-//     DateTime? createdAt,
-//     String? profileImagePath,
-//   }) {
-//     return User(
-//       id: id ?? this.id,
-//       name: name ?? this.name,
-//       createdAt: createdAt ?? this.createdAt,
-//       profileImagePath: profileImagePath ?? this.profileImagePath,
-//     );
-//   }
-//
-//   @override
-//   String toString() => 'User(id: $id, name: $name)';
-// }

@@ -507,6 +507,57 @@ class SavingsDataManager {
     }
   }
 
+  Future<bool> clearAllDataExceptDefaultUser() async {
+    try {
+      final defaultUserId = UserManager.getDefaultUserId();
+      final allKeys = _prefs.getKeys();
+      
+      debugPrint('🔍 Limpiando datos excepto billetera principal...');
+      debugPrint('📋 Claves encontradas: ${allKeys.length}');
+      
+      for (final key in allKeys) {
+        debugPrint('🔑 Verificando clave: $key');
+        
+        // Mantener claves globales de seguridad
+        if (key == _pinKey || key == _pinEnabledKey || key == _biometricEnabledKey) {
+          debugPrint('  ✓ Manteniendo clave de seguridad: $key');
+          continue;
+        }
+        
+        // Mantener clave de usuario actual
+        if (key == 'current_user_id') {
+          debugPrint('  ✓ Manteniendo clave de usuario actual: $key');
+          continue;
+        }
+        
+        // Mantener lista de usuarios
+        if (key == 'users_list') {
+          debugPrint('  ✓ Manteniendo lista de usuarios: $key');
+          continue;
+        }
+        
+        // Mantener datos del usuario por defecto
+        if (key.contains(defaultUserId)) {
+          debugPrint('  ✓ Manteniendo datos de billetera principal: $key');
+          continue;
+        }
+        
+        // Eliminar claves de otros usuarios
+        debugPrint('  ✗ Eliminando clave de otro usuario: $key');
+        await _prefs.remove(key);
+      }
+      
+      _cachedRecords = null;
+      _cachedCategories = null;
+      
+      debugPrint('✅ Datos eliminados excepto billetera principal');
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error limpiando datos: $e');
+      return false;
+    }
+  }
+
   Future<bool> clearUserData() async {
     try {
       final currentUser = _userManager?.getCurrentUserSync();
@@ -533,16 +584,37 @@ class SavingsDataManager {
 
   Future<bool> clearAllData() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.clear();
+      final defaultUserId = UserManager.getDefaultUserId();
+      final allKeys = _prefs.getKeys().toList();
+      
+      debugPrint('🔍 Reset total: limpiando TODOS los datos excepto usuario por defecto...');
+      
+      // Eliminar todas las claves EXCEPTO usuario por defecto y configuración global
+      for (final key in allKeys) {
+        // Mantener claves globales de seguridad
+        if (key == _pinKey || key == _pinEnabledKey || key == _biometricEnabledKey) {
+          debugPrint('  ✓ Manteniendo: $key');
+          continue;
+        }
+        
+        // Mantener usuario actual y lista de usuarios
+        if (key == 'current_user_id' || key == 'users_list') {
+          debugPrint('  ✓ Manteniendo: $key');
+          continue;
+        }
+        
+        // ELIMINAR TODO LO DEMÁS, incluyendo datos de billetera principal
+        debugPrint('  ✗ Eliminando: $key');
+        await _prefs.remove(key);
+      }
       
       _cachedRecords = null;
       _cachedCategories = null;
       
-      debugPrint('✅ Todos los datos eliminados');
+      debugPrint('✅ Reset total completado - billetera principal vacía');
       return true;
     } catch (e) {
-      debugPrint('❌ Error eliminando datos: $e');
+      debugPrint('❌ Error en reset total: $e');
       return false;
     }
   }

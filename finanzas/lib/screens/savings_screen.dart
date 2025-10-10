@@ -69,7 +69,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       final stats = await _dataManager.getStatistics();
       final privacyMode = await _dataManager.loadPrivacyMode();
       final categoryColors = await _dataManager.loadAllCategoryColors();
-      final currentUser = await _userManager.getCurrentUser(); // ← Cargar usuario
+      final currentUser = await _userManager.getCurrentUserSync(); // ← Cargar usuario
 
       setState(() {
         _allRecords = records;

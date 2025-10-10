@@ -111,7 +111,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
 
   Widget _buildHeader() {
     final l10n = AppLocalizations.of(context)!;
-    final currentUser = widget.userManager?.getCurrentUser();
+    final currentUser = widget.userManager?.getCurrentUserSync();
     
     return Container(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),

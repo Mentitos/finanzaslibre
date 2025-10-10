@@ -153,6 +153,37 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   ),
               ],
             ),
+            trailing: SizedBox(
+              width: 100,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // Botón para editar nombre
+                  IconButton(
+                    icon: const Icon(Icons.edit, size: 20),
+                    onPressed: () => _showEditNameDialog(context, user, l10n),
+                    tooltip: 'Editar nombre',
+                  ),
+                  // Botón para cambiar usuario
+                  if (!isCurrentUser)
+                    IconButton(
+                      icon: const Icon(Icons.check_circle_outline, size: 20),
+                      onPressed: () async {
+                        await widget.userManager.setCurrentUser(user);
+                        widget.onUserChanged();
+                        await _loadUsers();
+                        if (mounted) {
+                          widget.onShowSnackBar(
+                            '${l10n.switchedTo} ${user.name}',
+                            false,
+                          );
+                        }
+                      },
+                      tooltip: 'Usar esta billetera',
+                    ),
+                ],
+              ),
+            ),
             onTap: () async {
               if (isCurrentUser) {
                 widget.onShowSnackBar(
@@ -302,6 +333,66 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     await widget.userManager.deleteProfileImage(user.id);
     await _loadUsers();
     widget.onShowSnackBar(l10n.photoRemoved, false);
+  }
+
+  void _showEditNameDialog(
+    BuildContext context,
+    User user,
+    AppLocalizations l10n,
+  ) {
+    final controller = TextEditingController(text: user.name);
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Editar nombre'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            hintText: 'Ingresa el nuevo nombre',
+            border: const OutlineInputBorder(),
+          ),
+          maxLength: 50,
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final newName = controller.text.trim();
+              if (newName.isEmpty || newName == user.name) {
+                Navigator.pop(dialogContext);
+                return;
+              }
+
+              try {
+                await widget.userManager.updateUserName(user.id, newName);
+                
+                if (dialogContext.mounted) {
+                  Navigator.pop(dialogContext);
+                }
+
+                await _loadUsers();
+                widget.onUserChanged();
+
+                if (mounted) {
+                  widget.onShowSnackBar(
+                    'Nombre actualizado a: $newName',
+                    false,
+                  );
+                }
+              } catch (e) {
+                widget.onShowSnackBar('Error: $e', true);
+              }
+            },
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAddUserDialog(BuildContext context, AppLocalizations l10n) {
