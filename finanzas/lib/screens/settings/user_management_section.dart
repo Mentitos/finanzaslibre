@@ -24,6 +24,7 @@ class UserManagementSection extends StatefulWidget {
 class _UserManagementSectionState extends State<UserManagementSection> {
   List<User> _users = [];
   bool _isLoading = true;
+  User? _currentUser;
 
   @override
   void initState() {
@@ -33,9 +34,12 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
   Future<void> _loadUsers() async {
     final users = await widget.userManager.getAllUsers();
+    final currentUser = await widget.userManager.getCurrentUser();
+    
     if (mounted) {
       setState(() {
         _users = users;
+        _currentUser = currentUser;
         _isLoading = false;
       });
     }
@@ -57,15 +61,14 @@ class _UserManagementSectionState extends State<UserManagementSection> {
           child: Text(
             l10n.users,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[700],
+            ),
           ),
         ),
         ..._users.map((user) {
-          final isCurrentUser =
-              widget.userManager.getCurrentUser()?.id == user.id;
-          final isMainWallet = user.id == 'default_user';
+          final isCurrentUser = _currentUser?.id == user.id;
+          final isMainWallet = user.id == UserManager.getDefaultUserId();
 
           return _buildUserTile(
             context,
@@ -112,8 +115,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                 Expanded(child: Text(user.name)),
                 if (isMainWallet)
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -150,7 +155,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
             ),
             onTap: () async {
               if (isCurrentUser) {
-                widget.onShowSnackBar('Ya estabas usando ${user.name}', false);
+                widget.onShowSnackBar(
+                  'Ya estabas usando ${user.name}',
+                  false,
+                );
                 return;
               }
 
@@ -160,7 +168,9 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
               if (mounted) {
                 widget.onShowSnackBar(
-                    '${l10n.switchedTo} ${user.name}', false);
+                  '${l10n.switchedTo} ${user.name}',
+                  false,
+                );
               }
             },
             onLongPress: !isMainWallet
@@ -210,12 +220,17 @@ class _UserManagementSectionState extends State<UserManagementSection> {
       ),
       child: Icon(
         Icons.person,
-        color: Colors.primaries[user.name.hashCode % Colors.primaries.length],
+        color:
+            Colors.primaries[user.name.hashCode % Colors.primaries.length],
       ),
     );
   }
 
-  void _showImageOptions(BuildContext context, User user, AppLocalizations l10n) {
+  void _showImageOptions(
+    BuildContext context,
+    User user,
+    AppLocalizations l10n,
+  ) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -256,7 +271,11 @@ class _UserManagementSectionState extends State<UserManagementSection> {
   }
 
   Future<void> _pickImage(
-      BuildContext context, User user, ImageSource source, AppLocalizations l10n) async {
+    BuildContext context,
+    User user,
+    ImageSource source,
+    AppLocalizations l10n,
+  ) async {
     try {
       final picker = ImagePicker();
       final pickedFile = await picker.pickImage(
@@ -276,7 +295,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     }
   }
 
-  Future<void> _deleteProfileImage(User user, AppLocalizations l10n) async {
+  Future<void> _deleteProfileImage(
+    User user,
+    AppLocalizations l10n,
+  ) async {
     await widget.userManager.deleteProfileImage(user.id);
     await _loadUsers();
     widget.onShowSnackBar(l10n.photoRemoved, false);
@@ -317,7 +339,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
               widget.onUserChanged();
               if (mounted) {
-                widget.onShowSnackBar('${l10n.userCreated}: $userName', false);
+                widget.onShowSnackBar(
+                  '${l10n.userCreated}: $userName',
+                  false,
+                );
               }
             },
             child: Text(l10n.create),
@@ -328,7 +353,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
   }
 
   void _showDeleteUserDialog(
-      BuildContext context, User user, AppLocalizations l10n) {
+    BuildContext context,
+    User user,
+    AppLocalizations l10n,
+  ) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -342,18 +370,22 @@ class _UserManagementSectionState extends State<UserManagementSection> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              await widget.userManager.deleteUser(user.id);
+              try {
+                await widget.userManager.deleteUser(user.id);
 
-              if (dialogContext.mounted) {
-                Navigator.pop(dialogContext);
-              }
+                if (dialogContext.mounted) {
+                  Navigator.pop(dialogContext);
+                }
 
-              await _loadUsers();
+                await _loadUsers();
 
-              widget.onUserChanged();
+                widget.onUserChanged();
 
-              if (mounted) {
-                widget.onShowSnackBar(l10n.userDeleted, false);
+                if (mounted) {
+                  widget.onShowSnackBar(l10n.userDeleted, false);
+                }
+              } catch (e) {
+                widget.onShowSnackBar('Error: $e', true);
               }
             },
             child: Text(l10n.delete),

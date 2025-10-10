@@ -40,22 +40,21 @@ class SavingsDataManager {
   List<SavingsRecord>? _cachedRecords;
   List<String>? _cachedCategories;
 
-
   void clearCache() {
     _cachedRecords = null;
     _cachedCategories = null;
     debugPrint('Cache limpiado');
   }
+
   void setUserManager(UserManager userManager) {
     _userManager = userManager;
     clearCache();
     debugPrint('UserManager conectado a SavingsDataManager');
   }
-  
 
-  /// ✅ CORREGIDO: Retorna el prefijo del usuario actual
+  /// ✅ CORREGIDO: Retorna el prefijo del usuario actual (SINCRÓNICO)
   String _getUserDataKey(String key) {
-    final currentUser = _userManager?.getCurrentUser();
+    final currentUser = _userManager?.getCurrentUserSync();
     if (currentUser == null) {
       debugPrint('⚠️ WARNING: No user selected in _getUserDataKey');
       return key;
@@ -252,7 +251,6 @@ class SavingsDataManager {
   // ----------------------- MÉTODOS DE DATOS ---------------------------
   // ====================================================================
 
-  /// ✅ CORREGIDO: Usa 'key' en lugar de '_recordsKey'
   Future<List<SavingsRecord>> loadRecords({bool forceReload = false}) async {
     if (_cachedRecords != null && !forceReload) {
       return List.from(_cachedRecords!);
@@ -260,7 +258,7 @@ class SavingsDataManager {
 
     try {
       final key = _getUserDataKey(_recordsKey);
-      final String? recordsJson = _prefs.getString(key); // ✅ CORREGIDO
+      final String? recordsJson = _prefs.getString(key);
       
       if (recordsJson != null) {
         final List<dynamic> recordsList = json.decode(recordsJson);
@@ -281,7 +279,6 @@ class SavingsDataManager {
     return [];
   }
 
-  /// ✅ CORREGIDO: Usa 'key' en lugar de '_recordsKey'
   Future<bool> saveRecords(List<SavingsRecord> records) async {
     try {
       final key = _getUserDataKey(_recordsKey);
@@ -289,7 +286,7 @@ class SavingsDataManager {
         records.map((record) => record.toJson()).toList()
       );
       
-      final success = await _prefs.setString(key, recordsJson); // ✅ CORREGIDO
+      final success = await _prefs.setString(key, recordsJson);
       
       if (success) {
         _cachedRecords = List.from(records);
@@ -369,7 +366,6 @@ class SavingsDataManager {
     }).toList();
   }
 
-  /// ✅ CORREGIDO: Usa 'key' en lugar de '_categoriesKey'
   Future<List<String>> loadCategories({bool forceReload = false}) async {
     if (_cachedCategories != null && !forceReload) {
       return List.from(_cachedCategories!);
@@ -377,7 +373,7 @@ class SavingsDataManager {
 
     try {
       final key = _getUserDataKey(_categoriesKey);
-      final categories = _prefs.getStringList(key); // ✅ CORREGIDO
+      final categories = _prefs.getStringList(key);
       
       _cachedCategories = categories ?? List.from(_defaultCategories);
       return List.from(_cachedCategories!);
@@ -388,11 +384,10 @@ class SavingsDataManager {
     }
   }
 
-  /// ✅ CORREGIDO: Usa 'key' en lugar de '_categoriesKey'
   Future<bool> saveCategories(List<String> categories) async {
     try {
       final key = _getUserDataKey(_categoriesKey);
-      final success = await _prefs.setStringList(key, categories); // ✅ CORREGIDO
+      final success = await _prefs.setStringList(key, categories);
       
       if (success) {
         _cachedCategories = List.from(categories);
@@ -514,7 +509,7 @@ class SavingsDataManager {
 
   Future<bool> clearUserData() async {
     try {
-      final currentUser = _userManager?.getCurrentUser();
+      final currentUser = _userManager?.getCurrentUserSync();
       if (currentUser == null) return false;
 
       final key1 = _getUserDataKey(_recordsKey);
@@ -552,22 +547,20 @@ class SavingsDataManager {
     }
   }
 
-  /// ✅ CORREGIDO: Usa 'key' en lugar de '_privacyModeKey'
   Future<bool> savePrivacyMode(bool enabled) async {
     try {
       final key = _getUserDataKey(_privacyModeKey);
-      return await _prefs.setBool(key, enabled); // ✅ CORREGIDO
+      return await _prefs.setBool(key, enabled);
     } catch (e) {
       debugPrint('❌ Error guardando modo privacidad: $e');
       return false;
     }
   }
 
-  /// ✅ CORREGIDO: Usa 'key' en lugar de '_privacyModeKey'
   Future<bool> loadPrivacyMode() async {
     try {
       final key = _getUserDataKey(_privacyModeKey);
-      return _prefs.getBool(key) ?? false; // ✅ CORREGIDO
+      return _prefs.getBool(key) ?? false;
     } catch (e) {
       debugPrint('❌ Error cargando modo privacidad: $e');
       return false;

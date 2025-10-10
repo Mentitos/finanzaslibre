@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/savings_record.dart';
-
+import '../models/user_model.dart';
 import '../services/savings_data_manager.dart';
 import '../services/user_manager.dart';
 import '../widgets/record_dialog.dart';
@@ -42,6 +42,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   String _searchQuery = '';
   bool _isLoading = true;
   bool _privacyMode = false;
+  User? _currentUser; // ← Añadir esto para cachear el usuario
 
   @override
   void initState() {
@@ -68,6 +69,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       final stats = await _dataManager.getStatistics();
       final privacyMode = await _dataManager.loadPrivacyMode();
       final categoryColors = await _dataManager.loadAllCategoryColors();
+      final currentUser = await _userManager.getCurrentUser(); // ← Cargar usuario
 
       setState(() {
         _allRecords = records;
@@ -75,6 +77,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         _statistics = stats;
         _privacyMode = privacyMode;
         _categoryColors = categoryColors;
+        _currentUser = currentUser; // ← Cachear el usuario
         _applyFilters();
         _isLoading = false;
       });
@@ -239,12 +242,12 @@ class _SavingsScreenState extends State<SavingsScreen>
         dataManager: _dataManager,
         userManager: _userManager,
         onDataChanged: () async {
-  // Reconectar UserManager y limpiar caché
-  _dataManager.setUserManager(_userManager);
-  // Luego cargar datos del nuevo usuario
-  await _loadData();
-  setState(() {});
-},
+          // Reconectar UserManager y limpiar caché
+          _dataManager.setUserManager(_userManager);
+          // Luego cargar datos del nuevo usuario
+          await _loadData();
+          setState(() {});
+        },
         onShowSnackBar: (message, isError) {
           if (isError) {
             _showErrorSnackBar(message);
@@ -285,7 +288,6 @@ class _SavingsScreenState extends State<SavingsScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final currentUser = _userManager.getCurrentUser();
     
     return Scaffold(
       appBar: AppBar(
@@ -294,9 +296,9 @@ class _SavingsScreenState extends State<SavingsScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(l10n.appName),
-            if (currentUser != null)
+            if (_currentUser != null)
               Text(
-                currentUser.name,
+                _currentUser!.name,
                 style: Theme.of(context).textTheme.labelSmall,
               ),
           ],

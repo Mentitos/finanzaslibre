@@ -1,58 +1,48 @@
 class User {
   final String id;
   final String name;
-  final String? profileImagePath;
   final DateTime createdAt;
+  final String? profileImagePath;
 
   User({
     required this.id,
     required this.name,
-    this.profileImagePath,
     required this.createdAt,
+    this.profileImagePath,
   });
 
-  // Convertir a JSON para almacenamiento
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'profileImagePath': profileImagePath,
-      'createdAt': createdAt.toIso8601String(),
-    };
-  }
-
-  // Crear desde JSON
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromMap(Map<String, dynamic> map) {
     return User(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      profileImagePath: json['profileImagePath'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      id: map['id'] as String,
+      name: map['name'] as String,
+      createdAt: DateTime.parse(map['createdAt'] as String),
+      profileImagePath: map['profileImagePath'] as String?,
     );
   }
 
-  // Crear copia con cambios
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'createdAt': createdAt.toIso8601String(),
+      'profileImagePath': profileImagePath,
+    };
+  }
+
   User copyWith({
     String? id,
     String? name,
-    String? profileImagePath,
     DateTime? createdAt,
+    String? profileImagePath,
   }) {
     return User(
       id: id ?? this.id,
       name: name ?? this.name,
-      profileImagePath: profileImagePath ?? this.profileImagePath,
       createdAt: createdAt ?? this.createdAt,
+      profileImagePath: profileImagePath ?? this.profileImagePath,
     );
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is User &&
-          runtimeType == other.runtimeType &&
-          id == other.id;
-
-  @override
-  int get hashCode => id.hashCode;
+  String toString() => 'User(id: $id, name: $name)';
 }

@@ -1,178 +1,314 @@
+// ============================================
+// ARCHIVO: services/user_manager.dart
+// ============================================
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:uuid/uuid.dart';
 import '../models/user_model.dart';
 
 class UserManager {
+  static final UserManager _instance = UserManager._internal();
+  static late SharedPreferences _prefs;
+  static bool _initialized = false;
+
   static const String _usersKey = 'users_list';
-  static const String _currentUserIdKey = 'current_user_id';
+  static const String _currentUserKey = 'current_user_id';
   static const String _defaultUserId = 'default_user';
 
-  late SharedPreferences _prefs;
-  User? _currentUser;
-
-  Future<void> initialize() async {
-    _prefs = await SharedPreferences.getInstance();
-    await _ensureDefaultUser();
-    await _loadCurrentUser();
+  factory UserManager() {
+    return _instance;
   }
 
-  // Garantizar que existe un usuario por defecto
-  Future<void> _ensureDefaultUser() async {
+  UserManager._internal();
+
+  /// Inicializar el UserManager - debe llamarse al inicio de la app
+  static Future<void> initialize() async {
+    if (_initialized) return;
+
+    _prefs = await SharedPreferences.getInstance();
+    await _instance._ensureDefaultUserExists();
+    _initialized = true;
+  }
+
+  /// Asegura que el usuario por defecto siempre exista
+  Future<void> _ensureDefaultUserExists() async {
     final users = await getAllUsers();
-    if (users.isEmpty) {
+
+    final hasDefault = users.any((u) => u.id == _defaultUserId);
+
+    if (!hasDefault) {
       final defaultUser = User(
         id: _defaultUserId,
         name: 'Mi Billetera',
         createdAt: DateTime.now(),
+        profileImagePath: null,
       );
-      await _saveUser(defaultUser);
-      await _setCurrentUser(defaultUser);
+
+      await _saveUsers([...users, defaultUser]);
+      await setCurrentUser(defaultUser);
     }
   }
 
-  // Obtener todos los usuarios
-  Future<List<User>> getAllUsers() async {
+  /// Guardar lista de usuarios en SharedPreferences
+  Future<void> _saveUsers(List<User> users) async {
+    final jsonList = users.map((u) => jsonEncode(u.toMap())).toList();
+    await _prefs.setStringList(_usersKey, jsonList);
+  }
+
+  /// Obtener usuario actual SIN async (para sincronía)
+  User? getCurrentUserSync() {
     try {
-      final usersJson = _prefs.getStringList(_usersKey) ?? [];
-      return usersJson
-          .map((json) => User.fromJson(jsonDecode(json)))
+      final jsonList = _prefs.getStringList(_usersKey) ?? [];
+      final users = jsonList
+          .map((json) {
+            final map = jsonDecode(json) as Map<String, dynamic>;
+            return User.fromMap(map);
+          })
           .toList();
+
+      final currentUserId = _prefs.getString(_currentUserKey) ?? _defaultUserId;
+
+      return users.firstWhere((u) => u.id == currentUserId);
     } catch (e) {
-      print('Error loading users: $e');
-      return [];
-    }
-  }
-
-  // Obtener usuario actual
-  User? getCurrentUser() => _currentUser;
-
-  // Cargar usuario actual desde preferencias
-  Future<void> _loadCurrentUser() async {
-    final currentUserId = _prefs.getString(_currentUserIdKey);
-    if (currentUserId != null) {
-      final users = await getAllUsers();
       try {
-        _currentUser = users.firstWhere(
-          (user) => user.id == currentUserId,
-        );
+        final jsonList = _prefs.getStringList(_usersKey) ?? [];
+        final users = jsonList
+            .map((json) {
+              final map = jsonDecode(json) as Map<String, dynamic>;
+              return User.fromMap(map);
+            })
+            .toList();
+        return users.firstWhere((u) => u.id == _defaultUserId);
       } catch (e) {
-        _currentUser = users.isNotEmpty ? users.first : null;
-        if (_currentUser != null) {
-          await _prefs.setString(_currentUserIdKey, _currentUser!.id);
-        }
-      }
-    } else {
-      final users = await getAllUsers();
-      if (users.isNotEmpty) {
-        _currentUser = users.first;
-        await _prefs.setString(_currentUserIdKey, _currentUser!.id);
+        return null;
       }
     }
   }
 
-  // Crear nuevo usuario
-  Future<User> createUser(String name) async {
+  /// Obtener todos los usuarios
+  Future<List<User>> getAllUsers() async {
+    final jsonList = _prefs.getStringList(_usersKey) ?? [];
+    return jsonList
+        .map((json) {
+          final map = jsonDecode(json) as Map<String, dynamic>;
+          return User.fromMap(map);
+        })
+        .toList()
+        .cast<User>();
+  }
+
+  /// Obtener usuario actual
+  Future<User?> getCurrentUser() async {
+    final users = await getAllUsers();
+    final currentUserId = _prefs.getString(_currentUserKey) ?? _defaultUserId;
+
+    try {
+      return users.firstWhere((u) => u.id == currentUserId);
+    } catch (e) {
+      // Si no encuentra el usuario, devuelve el por defecto
+      try {
+        return users.firstWhere((u) => u.id == _defaultUserId);
+      } catch (e) {
+        return null;
+      }
+    }
+  }
+
+  /// Establecer usuario actual
+  Future<void> setCurrentUser(User user) async {
+    await _prefs.setString(_currentUserKey, user.id);
+  }
+
+  /// Crear nuevo usuario
+  Future<void> createUser(String name) async {
+    final users = await getAllUsers();
+
     final newUser = User(
-      id: const Uuid().v4(),
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: name,
       createdAt: DateTime.now(),
+      profileImagePath: null,
     );
-    await _saveUser(newUser);
-    return newUser;
+
+    await _saveUsers([...users, newUser]);
   }
 
-  // Guardar usuario
-  Future<void> _saveUser(User user) async {
-    final users = await getAllUsers();
-    final index = users.indexWhere((u) => u.id == user.id);
-    
-    if (index >= 0) {
-      users[index] = user;
-    } else {
-      users.add(user);
-    }
-
-    final usersJson = users.map((u) => jsonEncode(u.toJson())).toList();
-    await _prefs.setStringList(_usersKey, usersJson);
-  }
-
-  // Actualizar usuario
-  Future<void> updateUser(User user) async {
-    await _saveUser(user);
-    if (_currentUser?.id == user.id) {
-      _currentUser = user;
-    }
-  }
-
-  // Establecer usuario actual
-  Future<void> setCurrentUser(User user) async {
-    _currentUser = user;
-    await _prefs.setString(_currentUserIdKey, user.id);
-  }
-
-  // Alias para compatibilidad
-  Future<void> _setCurrentUser(User user) => setCurrentUser(user);
-
-  // Eliminar usuario
+  /// Eliminar usuario (excepto el usuario por defecto)
   Future<void> deleteUser(String userId) async {
-    // ✅ IMPORTANTE: Proteger la billetera principal
     if (userId == _defaultUserId) {
-      throw Exception('Cannot delete main wallet');
+      throw Exception('No se puede eliminar la billetera principal');
     }
 
     final users = await getAllUsers();
-    users.removeWhere((user) => user.id == userId);
+    final userToDelete = users.firstWhere((u) => u.id == userId);
 
-    final usersJson = users.map((u) => jsonEncode(u.toJson())).toList();
-    await _prefs.setStringList(_usersKey, usersJson);
+    // Eliminar imagen de perfil si existe
+    if (userToDelete.profileImagePath != null) {
+      try {
+        final file = File(userToDelete.profileImagePath!);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (e) {
+        print('Error eliminando imagen: $e');
+      }
+    }
 
-    // Si eliminamos el usuario actual, cambiar a la billetera principal
-    if (_currentUser?.id == userId) {
-      final mainUser = users.firstWhere(
-        (u) => u.id == _defaultUserId,
-        orElse: () => users.isNotEmpty ? users.first : User(
-          id: _defaultUserId,
-          name: 'Mi Billetera',
-          createdAt: DateTime.now(),
-        ),
-      );
-      await setCurrentUser(mainUser);
+    // Eliminar usuario de la lista
+    users.removeWhere((u) => u.id == userId);
+    await _saveUsers(users);
+
+    // Si el usuario eliminado era el actual, cambiar al usuario por defecto
+    final currentUser = await getCurrentUser();
+    if (currentUser?.id == userId) {
+      final defaultUser = users.firstWhere((u) => u.id == _defaultUserId,
+          orElse: () => users.isNotEmpty ? users.first : User(
+            id: _defaultUserId,
+            name: 'Mi Billetera',
+            createdAt: DateTime.now(),
+          ));
+      await setCurrentUser(defaultUser);
     }
   }
 
-  // Actualizar foto de perfil
+  /// Actualizar imagen de perfil
   Future<void> updateProfileImage(String userId, String imagePath) async {
-    final user = await getUserById(userId);
-    if (user != null) {
-      await updateUser(user.copyWith(profileImagePath: imagePath));
+    final users = await getAllUsers();
+    final userIndex = users.indexWhere((u) => u.id == userId);
+
+    if (userIndex != -1) {
+      users[userIndex] =
+          users[userIndex].copyWith(profileImagePath: imagePath);
+      await _saveUsers(users);
     }
   }
 
-  // Obtener usuario por ID
-  Future<User?> getUserById(String userId) async {
+  /// Eliminar imagen de perfil
+  Future<void> deleteProfileImage(String userId) async {
+    final users = await getAllUsers();
+    final userIndex = users.indexWhere((u) => u.id == userId);
+
+    if (userIndex != -1) {
+      final imagePath = users[userIndex].profileImagePath;
+
+      if (imagePath != null) {
+        try {
+          final file = File(imagePath);
+          if (await file.exists()) {
+            await file.delete();
+          }
+        } catch (e) {
+          print('Error eliminando imagen: $e');
+        }
+      }
+
+      users[userIndex] = users[userIndex].copyWith(profileImagePath: null);
+      await _saveUsers(users);
+    }
+  }
+
+  // ============================================
+  // MÉTODOS DE LIMPIEZA DE DATOS
+  // ============================================
+
+  /// Reset de la app manteniendo la billetera principal
+  /// - Elimina todos los usuarios excepto el por defecto
+  /// - Elimina todos los datos (registros, categorías, etc.)
+  /// - Mantiene el usuario por defecto pero sin datos
+  Future<void> resetAppKeepingDefaultUser() async {
+    final users = await getAllUsers();
+
+    // Eliminar todos los usuarios excepto el por defecto
+    for (final user in users) {
+      if (user.id != _defaultUserId) {
+        // Eliminar imagen de perfil si existe
+        if (user.profileImagePath != null) {
+          try {
+            final file = File(user.profileImagePath!);
+            if (await file.exists()) {
+              await file.delete();
+            }
+          } catch (e) {
+            print('Error eliminando imagen: $e');
+          }
+        }
+      }
+    }
+
+    // Mantener solo el usuario por defecto
+    final defaultUser =
+        users.firstWhere((u) => u.id == _defaultUserId);
+    await _saveUsers([defaultUser]);
+
+    // Asegurar que el usuario por defecto sea el actual
+    await setCurrentUser(defaultUser);
+  }
+
+  /// Obtener información del usuario por defecto
+  Future<User?> getDefaultUser() async {
     final users = await getAllUsers();
     try {
-      return users.firstWhere((user) => user.id == userId);
+      return users.firstWhere((u) => u.id == _defaultUserId);
     } catch (e) {
       return null;
     }
   }
 
-  // Eliminar foto de perfil
-  Future<void> deleteProfileImage(String userId) async {
-    final user = await getUserById(userId);
-    if (user != null && user.profileImagePath != null) {
-      try {
-        final file = File(user.profileImagePath!);
-        if (await file.exists()) {
-          await file.delete();
-        }
-      } catch (e) {
-        print('Error deleting image: $e');
-      }
-      await updateUser(user.copyWith(profileImagePath: null));
-    }
-  }
+  /// Obtener ID del usuario por defecto
+  static String getDefaultUserId() => _defaultUserId;
+
+  /// Verificar si un usuario es el por defecto
+  static bool isDefaultUser(String userId) => userId == _defaultUserId;
 }
+
+// ============================================
+// ARCHIVO: models/user_model.dart (asegúrate de que tenga esto)
+// ============================================
+// class User {
+//   final String id;
+//   final String name;
+//   final DateTime createdAt;
+//   final String? profileImagePath;
+//
+//   User({
+//     required this.id,
+//     required this.name,
+//     required this.createdAt,
+//     this.profileImagePath,
+//   });
+//
+//   factory User.fromMap(Map<String, dynamic> map) {
+//     return User(
+//       id: map['id'] as String,
+//       name: map['name'] as String,
+//       createdAt: DateTime.parse(map['createdAt'] as String),
+//       profileImagePath: map['profileImagePath'] as String?,
+//     );
+//   }
+//
+//   Map<String, dynamic> toMap() {
+//     return {
+//       'id': id,
+//       'name': name,
+//       'createdAt': createdAt.toIso8601String(),
+//       'profileImagePath': profileImagePath,
+//     };
+//   }
+//
+//   User copyWith({
+//     String? id,
+//     String? name,
+//     DateTime? createdAt,
+//     String? profileImagePath,
+//   }) {
+//     return User(
+//       id: id ?? this.id,
+//       name: name ?? this.name,
+//       createdAt: createdAt ?? this.createdAt,
+//       profileImagePath: profileImagePath ?? this.profileImagePath,
+//     );
+//   }
+//
+//   @override
+//   String toString() => 'User(id: $id, name: $name)';
+// }

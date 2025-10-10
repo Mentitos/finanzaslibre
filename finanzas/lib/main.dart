@@ -4,24 +4,21 @@ import 'screens/savings_screen.dart';
 import 'screens/pin_lock_screen.dart';
 import 'services/savings_data_manager.dart';
 import 'services/user_manager.dart';
-
 import 'l10n/app_localizations.dart'; 
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // 1. Inicializar UserManager PRIMERO
+  await UserManager.initialize();
+  
+  // 2. Inicializar SavingsDataManager
   SavingsDataManager.init();
-
-  // Inicializar UserManager PRIMERO
-  final userManager = UserManager();
-  await userManager.initialize();
-
-  // IMPORTANTE: Inicializar SavingsDataManager AQUÍ
   final dataManager = SavingsDataManager();
   await dataManager.initialize();
-  dataManager.setUserManager(userManager);
-
-  // Obtener SharedPreferences para tema
+  
+  // 3. Obtener SharedPreferences para tema
   final prefs = await SharedPreferences.getInstance();
   final themeModeString = prefs.getString('theme_mode') ?? 'system';
 
@@ -39,18 +36,15 @@ void main() async {
 
   runApp(MyApp(
     initialTheme: initialTheme,
-    userManager: userManager,
   ));
 }
 
 class MyApp extends StatefulWidget {
   final ThemeMode initialTheme;
-  final UserManager userManager;
 
   const MyApp({
     super.key,
     required this.initialTheme,
-    required this.userManager,
   });
 
   @override
@@ -143,7 +137,7 @@ class _MyAppState extends State<MyApp> {
         Locale('es'),
         Locale('en'),
       ],
-      home: AuthWrapper(userManager: widget.userManager),
+      home: const AuthWrapper(),
     );
   }
 
@@ -184,12 +178,7 @@ class _MyAppState extends State<MyApp> {
 }
 
 class AuthWrapper extends StatefulWidget {
-  final UserManager userManager;
-
-  const AuthWrapper({
-    super.key,
-    required this.userManager,
-  });
+  const AuthWrapper({super.key});
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
@@ -197,6 +186,8 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   final SavingsDataManager _dataManager = SavingsDataManager();
+  final UserManager _userManager = UserManager();
+  
   bool _isLoading = true;
   bool _isAuthenticated = false;
   bool _needsPin = false;
@@ -278,6 +269,6 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    return SavingsScreen(userManager: widget.userManager);
+    return SavingsScreen(userManager: _userManager);
   }
 }
