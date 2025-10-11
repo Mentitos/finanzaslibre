@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../services/savings_data_manager.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -13,10 +16,6 @@ class ExportImportDialogs {
     AppLocalizations l10n,
     SavingsDataManager dataManager,
   ) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final containerColor = isDarkMode ? Colors.grey[800] : Colors.grey[200];
-    final textColor = isDarkMode ? Colors.white : Colors.black;
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -40,7 +39,7 @@ class ExportImportDialogs {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-              
+
               // Opción 1: JSON
               _buildExportOption(
                 context,
@@ -48,17 +47,20 @@ class ExportImportDialogs {
                 title: 'JSON',
                 subtitle: 'Formato de datos estándar',
                 color: Colors.blue,
-                onTap: () {
-                  _copyToClipboard(
+                onTap: () async {
+                  await _saveToFile(
                     context,
                     jsonEncode(data),
+                    'datos_finanzas.json',
                     l10n,
                   );
-                  Navigator.pop(context);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
                 },
               ),
               const SizedBox(height: 8),
-              
+
               // Opción 2: CSV
               _buildExportOption(
                 context,
@@ -69,13 +71,18 @@ class ExportImportDialogs {
                 onTap: () async {
                   final csvData = await dataManager.exportToCSV();
                   if (context.mounted) {
-                    _copyToClipboard(context, csvData, l10n);
+                    await _saveToFile(
+                      context,
+                      csvData,
+                      'datos_finanzas.csv',
+                      l10n,
+                    );
                     Navigator.pop(context);
                   }
                 },
               ),
               const SizedBox(height: 8),
-              
+
               // Opción 3: Excel
               _buildExportOption(
                 context,
@@ -86,7 +93,12 @@ class ExportImportDialogs {
                 onTap: () async {
                   final excelData = await dataManager.exportToExcel();
                   if (context.mounted) {
-                    _copyToClipboard(context, excelData, l10n);
+                    await _saveToFile(
+                      context,
+                      excelData,
+                      'datos_finanzas.xlsx',
+                      l10n,
+                    );
                     Navigator.pop(context);
                   }
                 },
@@ -156,28 +168,99 @@ class ExportImportDialogs {
     );
   }
 
-  static void _copyToClipboard(
+  static Future<void> _saveToFile(
     BuildContext context,
-    String data,
+    String content,
+    String filename,
     AppLocalizations l10n,
-  ) {
-    Clipboard.setData(ClipboardData(text: data));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            const Expanded(
-              child: Text('Datos copiados al portapapeles'),
+  ) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$filename');
+
+      await file.writeAsString(content);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Archivo guardado'),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: file.path));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Ruta copiada'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Copiar ruta',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.yellow,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Share.shareXFiles([XFile(file.path)]);
+                            },
+                            child: const Text(
+                              'Compartir',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.yellow,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Error: $e')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   static void showImportDialog(
