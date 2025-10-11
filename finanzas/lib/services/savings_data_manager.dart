@@ -33,7 +33,7 @@ class SavingsDataManager {
     _categoriesManager = CategoriesManager(_prefs);
     _securityManager = SecurityManager(_prefs);
     _privacyManager = PrivacyManager(_prefs);
-    _importExportManager = ImportExportManager(_prefs);
+    _importExportManager = ImportExportManager();
     _dataCleanupManager = DataCleanupManager(_prefs);
   }
 
@@ -127,12 +127,18 @@ class SavingsDataManager {
   Future<bool> loadPrivacyMode() =>
       _privacyManager.loadPrivacyMode();
 
-  // --- DELEGACIÓN A IMPORT/EXPORT MANAGER ---
-  Future<Map<String, dynamic>> exportData() =>
-      _importExportManager.exportData(_recordsManager, _categoriesManager);
+ // --- DELEGACIÓN A IMPORT/EXPORT MANAGER ---
+Future<Map<String, dynamic>> exportData() =>
+    _importExportManager.exportData(_recordsManager, _categoriesManager);
 
-  Future<bool> importData(Map<String, dynamic> data) =>
-      _importExportManager.importData(data, _recordsManager, _categoriesManager);
+Future<String> exportToCSV() =>
+    _importExportManager.exportToCSV(_recordsManager, _categoriesManager);
+
+Future<String> exportToExcel() =>
+    _importExportManager.exportToExcel(_recordsManager, _categoriesManager);
+
+Future<bool> importData(Map<String, dynamic> data) =>
+    _importExportManager.importData(data, _recordsManager, _categoriesManager);
 
   // --- DELEGACIÓN A DATA CLEANUP MANAGER ---
   Future<bool> clearAllDataExceptDefaultUser() =>

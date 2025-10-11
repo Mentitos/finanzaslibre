@@ -74,6 +74,7 @@ class DataManagementSection extends StatelessWidget {
           allRecordsCount,
           categoriesCount,
           l10n,
+          dataManager, // ✅ CORREGIDO: cambiar _dataManager por dataManager
         );
       }
       onShowSnackBar(l10n.dataExportSuccess, false);
