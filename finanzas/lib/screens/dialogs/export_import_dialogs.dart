@@ -8,6 +8,47 @@ import '../../services/savings_data_manager.dart';
 import '../../l10n/app_localizations.dart';
 
 class ExportImportDialogs {
+  static Future<Directory> _getExportDirectory() async {
+    late Directory exportDir;
+    
+    if (Platform.isAndroid) {
+      try {
+        final String? downloadsPath = await _getDownloadsPath();
+        if (downloadsPath != null) {
+          exportDir = Directory('$downloadsPath/SavingsExport');
+          if (!await exportDir.exists()) {
+            await exportDir.create(recursive: true);
+          }
+          debugPrint('✅ Carpeta SavingsExport creada en: ${exportDir.path}');
+          return exportDir;
+        }
+      } catch (e) {
+        debugPrint('⚠️ No se pudo acceder a Downloads: $e');
+      }
+      
+      final appDocDir = await getApplicationDocumentsDirectory();
+      exportDir = Directory('${appDocDir.path}/SavingsExport');
+    } else {
+      final appDocDir = await getApplicationDocumentsDirectory();
+      exportDir = Directory('${appDocDir.path}/SavingsExport');
+    }
+    
+    if (!await exportDir.exists()) {
+      await exportDir.create(recursive: true);
+    }
+    
+    debugPrint('✅ Carpeta SavingsExport creada en: ${exportDir.path}');
+    return exportDir;
+  }
+
+  static Future<String?> _getDownloadsPath() async {
+    final directory = Directory('/storage/emulated/0/Download');
+    if (await directory.exists()) {
+      return directory.path;
+    }
+    return null;
+  }
+
   static void showExportDialog(
     BuildContext context,
     Map<String, dynamic> data,
@@ -31,6 +72,27 @@ class ExportImportDialogs {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange[50],
+                  border: Border.all(color: Colors.orange),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info, color: Colors.orange[700]),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Solo los json se pueden importar en esta app',
+                        style: TextStyle(fontSize: 12, color: Colors.orange),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
               Text('${l10n.totalRecords}: $recordsCount'),
               Text('${l10n.categories}: $categoriesCount'),
               const SizedBox(height: 16),
@@ -39,8 +101,6 @@ class ExportImportDialogs {
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 12),
-
-              // Opción 1: JSON
               _buildExportOption(
                 context,
                 icon: Icons.description,
@@ -48,20 +108,16 @@ class ExportImportDialogs {
                 subtitle: 'Formato de datos estándar',
                 color: Colors.blue,
                 onTap: () async {
-                  await _saveToFile(
-                    context,
-                    jsonEncode(data),
-                    'datos_finanzas.json',
-                    l10n,
-                  );
+                  final jsonString = jsonEncode(data);
                   if (context.mounted) {
                     Navigator.pop(context);
+                    if (context.mounted) {
+                      _showJsonDialog(context, jsonString, l10n);
+                    }
                   }
                 },
               ),
               const SizedBox(height: 8),
-
-              // Opción 2: CSV
               _buildExportOption(
                 context,
                 icon: Icons.table_chart,
@@ -77,13 +133,13 @@ class ExportImportDialogs {
                       'datos_finanzas.csv',
                       l10n,
                     );
-                    Navigator.pop(context);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   }
                 },
               ),
               const SizedBox(height: 8),
-
-              // Opción 3: Excel
               _buildExportOption(
                 context,
                 icon: Icons.table_chart_outlined,
@@ -99,7 +155,9 @@ class ExportImportDialogs {
                       'datos_finanzas.xlsx',
                       l10n,
                     );
-                    Navigator.pop(context);
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
                   }
                 },
               ),
@@ -109,6 +167,196 @@ class ExportImportDialogs {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            child: Text(l10n.close),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static void _showJsonDialog(
+    BuildContext context,
+    String jsonString,
+    AppLocalizations l10n,
+  ) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.code, color: Colors.blue),
+            const SizedBox(width: 8),
+            Text('Exportar JSON'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Formato JSON:',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              constraints: const BoxConstraints(maxHeight: 300),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.grey[100],
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(12),
+                child: Text(
+                  jsonString,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Clipboard.setData(ClipboardData(text: jsonString));
+                    if (dialogContext.mounted) {
+                      ScaffoldMessenger.of(dialogContext).showSnackBar(
+                        const SnackBar(
+                          content: Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.white),
+                              SizedBox(width: 8),
+                              Text('JSON copiado al portapapeles'),
+                            ],
+                          ),
+                          backgroundColor: Colors.green,
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.copy),
+                  label: const Text('Copiar'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final exportDir = await _getExportDirectory();
+                      final file = File('${exportDir.path}/datos_finanzas.json');
+                      await file.writeAsString(jsonString);
+                      
+                      debugPrint('✅ JSON guardado en: ${file.path}');
+
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                        
+                        // Mostrar snackbar desde el contexto del diálogo
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                const Icon(Icons.check_circle, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Text('datos_finanzas.json guardado'),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        file.path,
+                                        style: const TextStyle(fontSize: 9, color: Colors.white70),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Wrap(
+                                        spacing: 8,
+                                        children: [
+                                          GestureDetector(
+                                            onTap: () {
+                                              Clipboard.setData(ClipboardData(text: file.path));
+                                              if (dialogContext.mounted) {
+                                                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                                  const SnackBar(
+                                                    content: Text('Ruta copiada'),
+                                                    duration: Duration(seconds: 1),
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                            child: const Text(
+                                              'Copiar ruta',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.yellow,
+                                                fontWeight: FontWeight.bold,
+                                                decoration: TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              Share.shareXFiles([XFile(file.path)]);
+                                            },
+                                            child: const Text(
+                                              'Compartir',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.yellow,
+                                                fontWeight: FontWeight.bold,
+                                                decoration: TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            backgroundColor: Colors.green,
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 6),
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      debugPrint('❌ Error guardando JSON: $e');
+                      if (dialogContext.mounted) {
+                        ScaffoldMessenger.of(dialogContext).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                const Icon(Icons.error, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text('Error: $e')),
+                              ],
+                            ),
+                            backgroundColor: Colors.red,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.download),
+                  label: const Text('Descargar'),
+                ),
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
             child: Text(l10n.close),
           ),
         ],
@@ -175,10 +423,12 @@ class ExportImportDialogs {
     AppLocalizations l10n,
   ) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$filename');
+      final exportDir = await _getExportDirectory();
+      final file = File('${exportDir.path}/$filename');
 
       await file.writeAsString(content);
+
+      debugPrint('✅ Archivo guardado en: ${file.path}');
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -192,20 +442,29 @@ class ExportImportDialogs {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Archivo guardado'),
+                      Text('$filename guardado'),
                       const SizedBox(height: 4),
+                      Text(
+                        file.path,
+                        style: const TextStyle(fontSize: 9, color: Colors.white70),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         children: [
                           GestureDetector(
                             onTap: () {
                               Clipboard.setData(ClipboardData(text: file.path));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Ruta copiada'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Ruta copiada'),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              }
                             },
                             child: const Text(
                               'Copiar ruta',
@@ -240,11 +499,12 @@ class ExportImportDialogs {
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 6),
           ),
         );
       }
     } catch (e) {
+      debugPrint('❌ Error guardando archivo: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -263,7 +523,6 @@ class ExportImportDialogs {
     }
   }
 
-  /// Nueva función para guardar bytes (para Excel)
   static Future<void> _saveToFileBytes(
     BuildContext context,
     List<int> bytes,
@@ -271,10 +530,12 @@ class ExportImportDialogs {
     AppLocalizations l10n,
   ) async {
     try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$filename');
+      final exportDir = await _getExportDirectory();
+      final file = File('${exportDir.path}/$filename');
 
       await file.writeAsBytes(bytes);
+
+      debugPrint('✅ Archivo guardado en: ${file.path}');
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -288,20 +549,29 @@ class ExportImportDialogs {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('Archivo Excel guardado'),
+                      Text('$filename guardado'),
                       const SizedBox(height: 4),
+                      Text(
+                        file.path,
+                        style: const TextStyle(fontSize: 9, color: Colors.white70),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
                       Wrap(
                         spacing: 8,
                         children: [
                           GestureDetector(
                             onTap: () {
                               Clipboard.setData(ClipboardData(text: file.path));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Ruta copiada'),
-                                  duration: Duration(seconds: 1),
-                                ),
-                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Ruta copiada'),
+                                    duration: Duration(seconds: 1),
+                                  ),
+                                );
+                              }
                             },
                             child: const Text(
                               'Copiar ruta',
@@ -336,11 +606,12 @@ class ExportImportDialogs {
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 5),
+            duration: const Duration(seconds: 6),
           ),
         );
       }
     } catch (e) {
+      debugPrint('❌ Error guardando archivo: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -348,7 +619,7 @@ class ExportImportDialogs {
               children: [
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 8),
-                Expanded(child: Text('Error guardando Excel: $e')),
+                Expanded(child: Text('Error: $e')),
               ],
             ),
             backgroundColor: Colors.red,
@@ -374,8 +645,66 @@ class ExportImportDialogs {
         title: Text(l10n.importData),
         content: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                border: Border.all(color: Colors.blue),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info, color: Colors.blue[700]),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Solo se aceptan archivos JSON exportados de esta app',
+                      style: TextStyle(fontSize: 12, color: Colors.blue),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
             Text(l10n.pasteExportedData),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final clipboardData =
+                        await Clipboard.getData('text/plain');
+                    if (clipboardData?.text != null) {
+                      controller.text = clipboardData!.text!;
+                      onShowSnackBar('JSON pegado del portapapeles', false);
+                    } else {
+                      onShowSnackBar('No hay texto en el portapapeles', true);
+                    }
+                  },
+                  icon: const Icon(Icons.paste),
+                  label: const Text('Pegar'),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    try {
+                      final result = await _pickJsonFile();
+                      if (result != null) {
+                        controller.text = result;
+                        onShowSnackBar('Archivo JSON cargado', false);
+                      }
+                    } catch (e) {
+                      debugPrint('Error al seleccionar archivo: $e');
+                      onShowSnackBar('Error al abrir archivo: $e', true);
+                    }
+                  },
+                  icon: const Icon(Icons.folder_open),
+                  label: const Text('Archivo'),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             TextField(
               controller: controller,
@@ -408,7 +737,7 @@ class ExportImportDialogs {
                   onShowSnackBar(l10n.errorImportingData, true);
                 }
               } catch (e) {
-                onShowSnackBar(l10n.invalidDataFormat, true);
+                onShowSnackBar('${l10n.invalidDataFormat}: $e', true);
               }
             },
             child: Text(l10n.import),
@@ -416,5 +745,27 @@ class ExportImportDialogs {
         ],
       ),
     );
+  }
+
+  static Future<String?> _pickJsonFile() async {
+    try {
+      if (Platform.isAndroid) {
+        const platform = MethodChannel('com.example.finanzas/filepicker');
+        
+        try {
+          final String result = await platform.invokeMethod('openJsonPicker');
+          debugPrint('✅ Archivo seleccionado');
+          return result;
+        } on PlatformException catch (e) {
+          debugPrint('❌ Error del método nativo: ${e.message}');
+          return null;
+        }
+      }
+      
+      return null;
+    } catch (e) {
+      debugPrint('Error seleccionando archivo: $e');
+      return null;
+    }
   }
 }
