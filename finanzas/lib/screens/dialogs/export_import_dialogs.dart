@@ -91,11 +91,11 @@ class ExportImportDialogs {
                 subtitle: 'Formato Excel con múltiples hojas',
                 color: Colors.orange,
                 onTap: () async {
-                  final excelData = await dataManager.exportToExcel();
-                  if (context.mounted) {
-                    await _saveToFile(
+                  final excelBytes = await dataManager.exportToExcel();
+                  if (context.mounted && excelBytes.isNotEmpty) {
+                    await _saveToFileBytes(
                       context,
-                      excelData,
+                      excelBytes,
                       'datos_finanzas.xlsx',
                       l10n,
                     );
@@ -253,6 +253,102 @@ class ExportImportDialogs {
                 const Icon(Icons.error, color: Colors.white),
                 const SizedBox(width: 8),
                 Expanded(child: Text('Error: $e')),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Nueva función para guardar bytes (para Excel)
+  static Future<void> _saveToFileBytes(
+    BuildContext context,
+    List<int> bytes,
+    String filename,
+    AppLocalizations l10n,
+  ) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$filename');
+
+      await file.writeAsBytes(bytes);
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('Archivo Excel guardado'),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        spacing: 8,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Clipboard.setData(ClipboardData(text: file.path));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Ruta copiada'),
+                                  duration: Duration(seconds: 1),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              'Copiar ruta',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.yellow,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Share.shareXFiles([XFile(file.path)]);
+                            },
+                            child: const Text(
+                              'Compartir',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.yellow,
+                                fontWeight: FontWeight.bold,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(child: Text('Error guardando Excel: $e')),
               ],
             ),
             backgroundColor: Colors.red,

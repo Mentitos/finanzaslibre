@@ -134,7 +134,7 @@ Future<Map<String, dynamic>> exportData() =>
 Future<String> exportToCSV() =>
     _importExportManager.exportToCSV(_recordsManager, _categoriesManager);
 
-Future<String> exportToExcel() =>
+Future<List<int>> exportToExcel() =>
     _importExportManager.exportToExcel(_recordsManager, _categoriesManager);
 
 Future<bool> importData(Map<String, dynamic> data) =>
