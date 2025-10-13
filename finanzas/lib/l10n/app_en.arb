@@ -290,6 +290,38 @@
   "photoRemoved": "Photo removed",
   "error": "Error",
 
+  "selectExportFormat": "Select export format:",
+  "standardDataFormat": "Standard data format",
+  "simpleSpreadsheetFormat": "Simple spreadsheet format",
+  "excelFormatWithMultipleSheets": "Excel format with multiple sheets",
+  "exportJson": "Export JSON",
+  "jsonFormat": "JSON Format:",
+  "jsonCopiedToClipboard": "JSON copied to clipboard",
+  "fileSaved": "File saved: {filename}",
+  "@fileSaved": {
+    "description": "Message when file is saved",
+    "placeholders": {
+      "filename": {
+        "type": "String"
+      }
+    }
+  },
+  "pathCopied": "Path copied",
+  "onlyJsonCanBeImported": "Only JSON data can be imported in this app",
+  "onlyJsonFilesAccepted": "Only JSON files exported from this app are accepted",
+  "jsonPastedFromClipboard": "JSON pasted from clipboard",
+  "noTextInClipboard": "No text in clipboard",
+  "jsonFileLoaded": "JSON file loaded",
+  "errorOpeningFile": "Error opening file",
+  "paste": "Paste",
+  "file": "File",
+  "download": "Download",
+  "copy": "Copy",
+  "error": "Error",
+
+"copyPath": "Copy path",
+"share": "Share",
+
 
   "accounts": "Accounts",
     "userManagement": "User Management",

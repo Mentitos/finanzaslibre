@@ -293,6 +293,44 @@
 "principal": "Principal",
 
 
+
+
+  "selectExportFormat": "Seleccionar formato de exportacion:",
+"standardDataFormat": "Formato de datos estandar",
+"simpleSpreadsheetFormat": "Formato de hoja de calculo simple",
+"excelFormatWithMultipleSheets": "Formato Excel con multiples hojas",
+"exportJson": "Exportar JSON",
+"jsonFormat": "Formato JSON:",
+"jsonCopiedToClipboard": "JSON copiado al portapapeles",
+"fileSaved": "Archivo guardado: {filename}",
+"@fileSaved": {
+  "description": "Mensaje cuando se guarda un archivo",
+  "placeholders": {
+    "filename": {
+      "type": "String"
+    }
+  }
+},
+"pathCopied": "Ruta copiada",
+"onlyJsonCanBeImported": "Solo se pueden importar datos JSON en esta aplicacion",
+"onlyJsonFilesAccepted": "Solo se aceptan archivos JSON exportados desde esta aplicacion",
+"jsonPastedFromClipboard": "JSON pegado desde el portapapeles",
+"noTextInClipboard": "No hay texto en el portapapeles",
+"jsonFileLoaded": "Archivo JSON cargado",
+"errorOpeningFile": "Error al abrir el archivo",
+"paste": "Pegar",
+"file": "Archivo",
+"download": "Descargar",
+"copy": "Copiar",
+"error": "Error",
+
+"copyPath": "Copiar ruta",
+"share": "Compartir",
+
+
+
+
+
   "accounts": "Cuentas",
     "userManagement": "Gestión de Usuarios",
     "manageUsersAndWallets": "Gestiona usuarios y cambia entre diferentes carteras.",

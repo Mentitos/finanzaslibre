@@ -797,6 +797,74 @@ class AppLocalizationsEs extends AppLocalizations {
   String get principal => 'Principal';
 
   @override
+  String get selectExportFormat => 'Seleccionar formato de exportacion:';
+
+  @override
+  String get standardDataFormat => 'Formato de datos estandar';
+
+  @override
+  String get simpleSpreadsheetFormat => 'Formato de hoja de calculo simple';
+
+  @override
+  String get excelFormatWithMultipleSheets =>
+      'Formato Excel con multiples hojas';
+
+  @override
+  String get exportJson => 'Exportar JSON';
+
+  @override
+  String get jsonFormat => 'Formato JSON:';
+
+  @override
+  String get jsonCopiedToClipboard => 'JSON copiado al portapapeles';
+
+  @override
+  String fileSaved(String filename) {
+    return 'Archivo guardado: $filename';
+  }
+
+  @override
+  String get pathCopied => 'Ruta copiada';
+
+  @override
+  String get onlyJsonCanBeImported =>
+      'Solo se pueden importar datos JSON en esta aplicacion';
+
+  @override
+  String get onlyJsonFilesAccepted =>
+      'Solo se aceptan archivos JSON exportados desde esta aplicacion';
+
+  @override
+  String get jsonPastedFromClipboard => 'JSON pegado desde el portapapeles';
+
+  @override
+  String get noTextInClipboard => 'No hay texto en el portapapeles';
+
+  @override
+  String get jsonFileLoaded => 'Archivo JSON cargado';
+
+  @override
+  String get errorOpeningFile => 'Error al abrir el archivo';
+
+  @override
+  String get paste => 'Pegar';
+
+  @override
+  String get file => 'Archivo';
+
+  @override
+  String get download => 'Descargar';
+
+  @override
+  String get copy => 'Copiar';
+
+  @override
+  String get copyPath => 'Copiar ruta';
+
+  @override
+  String get share => 'Compartir';
+
+  @override
   String get accounts => 'Cuentas';
 
   @override

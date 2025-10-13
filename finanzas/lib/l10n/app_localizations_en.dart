@@ -798,6 +798,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get principal => 'Main';
 
   @override
+  String get selectExportFormat => 'Select export format:';
+
+  @override
+  String get standardDataFormat => 'Standard data format';
+
+  @override
+  String get simpleSpreadsheetFormat => 'Simple spreadsheet format';
+
+  @override
+  String get excelFormatWithMultipleSheets =>
+      'Excel format with multiple sheets';
+
+  @override
+  String get exportJson => 'Export JSON';
+
+  @override
+  String get jsonFormat => 'JSON Format:';
+
+  @override
+  String get jsonCopiedToClipboard => 'JSON copied to clipboard';
+
+  @override
+  String fileSaved(String filename) {
+    return 'File saved: $filename';
+  }
+
+  @override
+  String get pathCopied => 'Path copied';
+
+  @override
+  String get onlyJsonCanBeImported =>
+      'Only JSON data can be imported in this app';
+
+  @override
+  String get onlyJsonFilesAccepted =>
+      'Only JSON files exported from this app are accepted';
+
+  @override
+  String get jsonPastedFromClipboard => 'JSON pasted from clipboard';
+
+  @override
+  String get noTextInClipboard => 'No text in clipboard';
+
+  @override
+  String get jsonFileLoaded => 'JSON file loaded';
+
+  @override
+  String get errorOpeningFile => 'Error opening file';
+
+  @override
+  String get paste => 'Paste';
+
+  @override
+  String get file => 'File';
+
+  @override
+  String get download => 'Download';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get copyPath => 'Copy path';
+
+  @override
+  String get share => 'Share';
+
+  @override
   String get accounts => 'Accounts';
 
   @override

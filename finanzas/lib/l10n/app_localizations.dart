@@ -1622,6 +1622,132 @@ abstract class AppLocalizations {
   /// **'Principal'**
   String get principal;
 
+  /// No description provided for @selectExportFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionar formato de exportacion:'**
+  String get selectExportFormat;
+
+  /// No description provided for @standardDataFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato de datos estandar'**
+  String get standardDataFormat;
+
+  /// No description provided for @simpleSpreadsheetFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato de hoja de calculo simple'**
+  String get simpleSpreadsheetFormat;
+
+  /// No description provided for @excelFormatWithMultipleSheets.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato Excel con multiples hojas'**
+  String get excelFormatWithMultipleSheets;
+
+  /// No description provided for @exportJson.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar JSON'**
+  String get exportJson;
+
+  /// No description provided for @jsonFormat.
+  ///
+  /// In es, this message translates to:
+  /// **'Formato JSON:'**
+  String get jsonFormat;
+
+  /// No description provided for @jsonCopiedToClipboard.
+  ///
+  /// In es, this message translates to:
+  /// **'JSON copiado al portapapeles'**
+  String get jsonCopiedToClipboard;
+
+  /// Mensaje cuando se guarda un archivo
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo guardado: {filename}'**
+  String fileSaved(String filename);
+
+  /// No description provided for @pathCopied.
+  ///
+  /// In es, this message translates to:
+  /// **'Ruta copiada'**
+  String get pathCopied;
+
+  /// No description provided for @onlyJsonCanBeImported.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se pueden importar datos JSON en esta aplicacion'**
+  String get onlyJsonCanBeImported;
+
+  /// No description provided for @onlyJsonFilesAccepted.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se aceptan archivos JSON exportados desde esta aplicacion'**
+  String get onlyJsonFilesAccepted;
+
+  /// No description provided for @jsonPastedFromClipboard.
+  ///
+  /// In es, this message translates to:
+  /// **'JSON pegado desde el portapapeles'**
+  String get jsonPastedFromClipboard;
+
+  /// No description provided for @noTextInClipboard.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay texto en el portapapeles'**
+  String get noTextInClipboard;
+
+  /// No description provided for @jsonFileLoaded.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo JSON cargado'**
+  String get jsonFileLoaded;
+
+  /// No description provided for @errorOpeningFile.
+  ///
+  /// In es, this message translates to:
+  /// **'Error al abrir el archivo'**
+  String get errorOpeningFile;
+
+  /// No description provided for @paste.
+  ///
+  /// In es, this message translates to:
+  /// **'Pegar'**
+  String get paste;
+
+  /// No description provided for @file.
+  ///
+  /// In es, this message translates to:
+  /// **'Archivo'**
+  String get file;
+
+  /// No description provided for @download.
+  ///
+  /// In es, this message translates to:
+  /// **'Descargar'**
+  String get download;
+
+  /// No description provided for @copy.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar'**
+  String get copy;
+
+  /// No description provided for @copyPath.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar ruta'**
+  String get copyPath;
+
+  /// No description provided for @share.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir'**
+  String get share;
+
   /// No description provided for @accounts.
   ///
   /// In es, this message translates to:
