@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   // Información técnica de la aplicación
-  static const String appVersion = '1.1.0';
+  static const String appVersion = '1.2.0';
   
   // Colores de la aplicación
   static const Color primaryColor = Colors.green;

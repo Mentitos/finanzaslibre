@@ -1748,6 +1748,42 @@ abstract class AppLocalizations {
   /// **'Compartir'**
   String get share;
 
+  /// No description provided for @holdToDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Presiona y mantén para eliminar'**
+  String get holdToDelete;
+
+  /// No description provided for @editUserName.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar nombre'**
+  String get editUserName;
+
+  /// No description provided for @useThisWallet.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar esta billetera'**
+  String get useThisWallet;
+
+  /// Mensaje cuando el usuario intenta cambiar a la billetera que ya está usando
+  ///
+  /// In es, this message translates to:
+  /// **'Ya estabas usando {name}'**
+  String alreadyUsingUser(String name);
+
+  /// No description provided for @enterNewUserName.
+  ///
+  /// In es, this message translates to:
+  /// **'Ingresa el nuevo nombre'**
+  String get enterNewUserName;
+
+  /// Mensaje de confirmación cuando se actualiza el nombre del usuario
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre actualizado a: {newName}'**
+  String nameUpdatedTo(String newName);
+
   /// No description provided for @accounts.
   ///
   /// In es, this message translates to:

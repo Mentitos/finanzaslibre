@@ -144,7 +144,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   ),
                 if (!isMainWallet && !isCurrentUser)
                   Text(
-                    'Presiona y mantén para eliminar',
+                    l10n.holdToDelete,
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.orange[700],
@@ -162,7 +162,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),
                     onPressed: () => _showEditNameDialog(context, user, l10n),
-                    tooltip: 'Editar nombre',
+                    tooltip: l10n.editUserName,
                   ),
                   // Botón para cambiar usuario
                   if (!isCurrentUser)
@@ -179,7 +179,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                           );
                         }
                       },
-                      tooltip: 'Usar esta billetera',
+                      tooltip: l10n.useThisWallet,
                     ),
                 ],
               ),
@@ -187,7 +187,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
             onTap: () async {
               if (isCurrentUser) {
                 widget.onShowSnackBar(
-                  'Ya estabas usando ${user.name}',
+                  l10n.alreadyUsingUser(user.name),
                   false,
                 );
                 return;
@@ -345,11 +345,11 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Editar nombre'),
+        title: Text(l10n.editUserName),
         content: TextField(
           controller: controller,
           decoration: InputDecoration(
-            hintText: 'Ingresa el nuevo nombre',
+            hintText: l10n.enterNewUserName,
             border: const OutlineInputBorder(),
           ),
           maxLength: 50,
@@ -380,12 +380,12 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
                 if (mounted) {
                   widget.onShowSnackBar(
-                    'Nombre actualizado a: $newName',
+                    l10n.nameUpdatedTo(newName),
                     false,
                   );
                 }
               } catch (e) {
-                widget.onShowSnackBar('Error: $e', true);
+                widget.onShowSnackBar('${l10n.error}: $e', true);
               }
             },
             child: Text(l10n.save),
@@ -476,7 +476,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   widget.onShowSnackBar(l10n.userDeleted, false);
                 }
               } catch (e) {
-                widget.onShowSnackBar('Error: $e', true);
+                widget.onShowSnackBar('${l10n.error}: $e', true);
               }
             },
             child: Text(l10n.delete),

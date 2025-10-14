@@ -329,6 +329,31 @@
   
 "principal": "Main",
 
+"holdToDelete": "Hold to delete",
+  "editUserName": "Edit name",
+  "useThisWallet": "Use this wallet",
+  "alreadyUsingUser": "You were already using {name}",
+  "@alreadyUsingUser": {
+    "description": "Message when user tries to switch to the wallet already in use",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "enterNewUserName": "Enter the new name",
+  "nameUpdatedTo": "Name updated to: {newName}",
+  "@nameUpdatedTo": {
+    "description": "Confirmation message when user name is updated",
+    "placeholders": {
+      "newName": {
+        "type": "String"
+      }
+    }
+  },
+
+
+
 "@transactionCompleted": {
   "placeholders": {
     "type": {

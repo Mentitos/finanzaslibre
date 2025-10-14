@@ -865,6 +865,28 @@ class AppLocalizationsEs extends AppLocalizations {
   String get share => 'Compartir';
 
   @override
+  String get holdToDelete => 'Presiona y mantén para eliminar';
+
+  @override
+  String get editUserName => 'Editar nombre';
+
+  @override
+  String get useThisWallet => 'Usar esta billetera';
+
+  @override
+  String alreadyUsingUser(String name) {
+    return 'Ya estabas usando $name';
+  }
+
+  @override
+  String get enterNewUserName => 'Ingresa el nuevo nombre';
+
+  @override
+  String nameUpdatedTo(String newName) {
+    return 'Nombre actualizado a: $newName';
+  }
+
+  @override
   String get accounts => 'Cuentas';
 
   @override

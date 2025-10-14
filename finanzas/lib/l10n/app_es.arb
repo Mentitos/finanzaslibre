@@ -328,7 +328,28 @@
 "share": "Compartir",
 
 
-
+"holdToDelete": "Presiona y mantén para eliminar",
+  "editUserName": "Editar nombre",
+  "useThisWallet": "Usar esta billetera",
+  "alreadyUsingUser": "Ya estabas usando {name}",
+  "@alreadyUsingUser": {
+    "description": "Mensaje cuando el usuario intenta cambiar a la billetera que ya está usando",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "enterNewUserName": "Ingresa el nuevo nombre",
+  "nameUpdatedTo": "Nombre actualizado a: {newName}",
+  "@nameUpdatedTo": {
+    "description": "Mensaje de confirmación cuando se actualiza el nombre del usuario",
+    "placeholders": {
+      "newName": {
+        "type": "String"
+      }
+    }
+  },
 
 
   "accounts": "Cuentas",
@@ -345,5 +366,8 @@
       }
     }
   }
+
+
+  
 
 }

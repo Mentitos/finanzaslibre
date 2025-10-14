@@ -866,6 +866,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get share => 'Share';
 
   @override
+  String get holdToDelete => 'Hold to delete';
+
+  @override
+  String get editUserName => 'Edit name';
+
+  @override
+  String get useThisWallet => 'Use this wallet';
+
+  @override
+  String alreadyUsingUser(String name) {
+    return 'You were already using $name';
+  }
+
+  @override
+  String get enterNewUserName => 'Enter the new name';
+
+  @override
+  String nameUpdatedTo(String newName) {
+    return 'Name updated to: $newName';
+  }
+
+  @override
   String get accounts => 'Accounts';
 
   @override
