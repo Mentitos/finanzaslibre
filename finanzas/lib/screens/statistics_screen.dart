@@ -303,7 +303,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildPieChart(Map<String, double> categoryData, AppLocalizations l10n) {
-    if (categoryData.isEmpty) {
+    // Filtrar datos válidos (excluir valores muy cercanos a cero)
+    final validData = categoryData.entries
+        .where((entry) => entry.value.abs() > 0.01)
+        .toList();
+
+    if (validData.isEmpty) {
       return Card(
         child: Container(
           height: 300,
@@ -316,8 +321,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       );
     }
 
-    final sortedEntries = categoryData.entries.toList()
-      ..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
+    final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
+    final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
+
+    // Prevenir división por cero
+    if (total <= 0) {
+      return Card(
+        child: Container(
+          height: 300,
+          alignment: Alignment.center,
+          child: Text(
+            l10n.noDataForPeriod,
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
 
     return Card(
       child: Padding(
@@ -338,10 +357,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   centerSpaceRadius: 60,
                   pieTouchData: PieTouchData(enabled: true),
                   sections: sortedEntries.map((entry) {
-                    final percentage = (entry.value.abs() /
-                            sortedEntries.fold<double>(
-                                0, (sum, e) => sum + e.value.abs())) *
-                        100;
+                    final percentage = (entry.value.abs() / total) * 100;
 
                     return PieChartSectionData(
                       color: AppConstants.getCategoryColor(
@@ -368,12 +384,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildCategoryList(Map<String, double> categoryData, AppLocalizations l10n) {
-    final sortedEntries = categoryData.entries.toList()
-      ..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
+    // Filtrar datos válidos (excluir valores muy cercanos a cero)
+    final validData = categoryData.entries
+        .where((entry) => entry.value.abs() > 0.01)
+        .toList();
 
-    if (sortedEntries.isEmpty) return const SizedBox.shrink();
+    if (validData.isEmpty) return const SizedBox.shrink();
 
+    final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
     final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
+
+    // Prevenir división por cero
+    if (total <= 0) return const SizedBox.shrink();
 
     return Card(
       child: Padding(
@@ -388,6 +410,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             const SizedBox(height: 16),
             ...sortedEntries.map((entry) {
               final percentage = (entry.value.abs() / total) * 100;
+              
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
@@ -423,7 +446,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: percentage / 100,
+                        value: percentage > 0 ? (percentage / 100).clamp(0.0, 1.0) : 0,
                         backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation(
                           AppConstants.getCategoryColor(entry.key, widget.categoryColors),
