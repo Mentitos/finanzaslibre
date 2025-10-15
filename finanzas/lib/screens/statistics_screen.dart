@@ -303,7 +303,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildPieChart(Map<String, double> categoryData, AppLocalizations l10n) {
-    // Filtrar datos válidos (excluir valores muy cercanos a cero)
+    
     final validData = categoryData.entries
         .where((entry) => entry.value.abs() > 0.01)
         .toList();
@@ -324,7 +324,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
     final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
 
-    // Prevenir división por cero
+    
     if (total <= 0) {
       return Card(
         child: Container(
@@ -394,7 +394,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
     final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
 
-    // Prevenir división por cero
+    // Prevenir división por cero (esto me rompia el programa antes de agregar el filtro)
     if (total <= 0) return const SizedBox.shrink();
 
     return Card(

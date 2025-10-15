@@ -22,7 +22,7 @@ class CategoriesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!; // OBTENER TRADUCCIONES
+    final l10n = AppLocalizations.of(context)!; 
     
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -48,12 +48,12 @@ class CategoriesTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.savingsByCategory, // CAMBIO
+              l10n.savingsByCategory, 
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: AppConstants.defaultPadding),
             if (categoryTotalsList.isEmpty)
-              Text(l10n.noDataAvailable) // CAMBIO
+              Text(l10n.noDataAvailable) 
             else
               ...categoryTotalsList.map((entry) => Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
@@ -96,7 +96,7 @@ class CategoriesTab extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  l10n.manageCategories, // CAMBIO
+                  l10n.manageCategories, 
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 IconButton(
@@ -110,7 +110,7 @@ class CategoriesTab extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: categories.map((category) => Chip(
-                label: Text(l10n.translateCategory(category)), // En lugar de Text(category)
+                label: Text(l10n.translateCategory(category)), 
                 avatar: CircleAvatar(
                   backgroundColor: AppConstants.getCategoryColor(category, categoryColors),
                   radius: 8,
@@ -133,7 +133,7 @@ class CategoriesTab extends StatelessWidget {
       builder: (dialogContext) => _CategoryDialog(
         categories: categories,
         onAddCategory: onAddCategory,
-        l10n: l10n, // PASAR l10n
+        l10n: l10n, 
       ),
     );
   }
@@ -154,14 +154,14 @@ class CategoriesTab extends StatelessWidget {
               color: usageCount > 0 ? Colors.orange : Colors.red,
             ),
             const SizedBox(width: 8),
-            Expanded(child: Text(l10n.deleteCategory)), // CAMBIO
+            Expanded(child: Text(l10n.deleteCategory)), 
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${l10n.deleteCategoryConfirm} "$category"?'), // CAMBIO
+            Text('${l10n.deleteCategoryConfirm} "$category"?'), 
             if (usageCount > 0) ...[
               const SizedBox(height: 16),
               Container(
@@ -180,17 +180,17 @@ class CategoriesTab extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            l10n.categoryInUse, // CAMBIO
+                            l10n.categoryInUse, 
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text('• $usageCount ${l10n.recordsWillBeMoved}'), // CAMBIO
+                    Text('• $usageCount ${l10n.recordsWillBeMoved}'), 
                     if (hasAmount)
                       Text(
-                        '• ${l10n.currentAmount}: \$${Formatters.formatCurrency(categoryTotals[category]!.abs())}', // CAMBIO
+                        '• ${l10n.currentAmount}: \$${Formatters.formatCurrency(categoryTotals[category]!.abs())}', 
                       ),
                   ],
                 ),
@@ -201,7 +201,7 @@ class CategoriesTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel), // CAMBIO
+            child: Text(l10n.cancel), 
           ),
           FilledButton(
             onPressed: () {
@@ -211,7 +211,7 @@ class CategoriesTab extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: usageCount > 0 ? Colors.orange : Colors.red,
             ),
-            child: Text(usageCount > 0 ? l10n.moveAndDelete : l10n.delete), // CAMBIO
+            child: Text(usageCount > 0 ? l10n.moveAndDelete : l10n.delete), 
           ),
         ],
       ),
@@ -220,17 +220,15 @@ class CategoriesTab extends StatelessWidget {
 
 }
 
-// Widget separado para el diálogo de agregar categoría con selector de color
-// Widget separado para el diálogo de agregar categoría con selector de color
 class _CategoryDialog extends StatefulWidget {
   final List<String> categories;
   final Function(String, Color) onAddCategory;
-  final AppLocalizations l10n; // AGREGAR
+  final AppLocalizations l10n; 
 
   const _CategoryDialog({
     required this.categories,
     required this.onAddCategory,
-    required this.l10n, // AGREGAR
+    required this.l10n, 
   });
 
   @override
@@ -257,7 +255,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.l10n.newCategory), // CAMBIO
+      title: Text(widget.l10n.newCategory), 
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -266,7 +264,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: widget.l10n.categoryName, // CAMBIO
+                hintText: widget.l10n.categoryName, 
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.category),
               ),
@@ -275,7 +273,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             ),
             const SizedBox(height: 16),
             Text(
-              widget.l10n.chooseColor, // CAMBIO
+              widget.l10n.chooseColor, 
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -338,7 +336,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   Expanded(
                     child: Text(
                       _controller.text.isEmpty
-                          ? widget.l10n.categoryPreview // CAMBIO
+                          ? widget.l10n.categoryPreview 
                           : _controller.text,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
@@ -355,11 +353,11 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(widget.l10n.cancel), // CAMBIO
+          child: Text(widget.l10n.cancel), 
         ),
         FilledButton(
           onPressed: _handleAddCategory,
-          child: Text(widget.l10n.add), // CAMBIO
+          child: Text(widget.l10n.add), 
         ),
       ],
     );
@@ -371,7 +369,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
     if (!AppConstants.isValidCategoryName(name)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.l10n.invalidCategoryName), // CAMBIO
+          content: Text(widget.l10n.invalidCategoryName), 
           backgroundColor: AppConstants.errorColor,
         ),
       );
@@ -381,7 +379,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
     if (widget.categories.contains(name)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.l10n.categoryExists), // CAMBIO
+          content: Text(widget.l10n.categoryExists), 
           backgroundColor: AppConstants.errorColor,
         ),
       );

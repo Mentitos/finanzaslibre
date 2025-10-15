@@ -70,7 +70,7 @@ class HistoryTab extends StatelessWidget {
   onDelete: () => _showDeleteConfirmation(context, record, l10n),
   showCategory: true,
   categoryColors: categoryColors,
-  l10n: l10n, // <-- esto faltaba
+  l10n: l10n, 
 );
 
                     },
@@ -87,7 +87,7 @@ class HistoryTab extends StatelessWidget {
       child: TextField(
         controller: searchController,
         decoration: InputDecoration(
-          hintText: l10n.searchRecords, // CAMBIO
+          hintText: l10n.searchRecords, 
           prefixIcon: const Icon(Icons.search),
           suffixIcon: searchController.text.isNotEmpty
               ? IconButton(
@@ -106,7 +106,7 @@ class HistoryTab extends StatelessWidget {
   }
 
 List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
-  // si query está vacía, devolvemos todo
+  
   if (query.trim().isEmpty) {
     return records;
   }
@@ -128,9 +128,9 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
       padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
       child: Row(
         children: [
-          _buildFilterChip(l10n.deposits, 'deposits'), // CAMBIO
+          _buildFilterChip(l10n.deposits, 'deposits'), 
           const SizedBox(width: AppConstants.smallPadding),
-          _buildFilterChip(l10n.withdrawals, 'withdrawals'), // CAMBIO
+          _buildFilterChip(l10n.withdrawals, 'withdrawals'), 
           const SizedBox(width: AppConstants.defaultPadding),
           Builder(
             builder: (context) => _buildCategoryDropdown(context, l10n),
@@ -190,7 +190,7 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
             Icon(Icons.category, size: 20, color: iconColor),
             const SizedBox(width: 8),
             Text(
-              selectedCategory == 'all' ? l10n.category : selectedCategory, // CAMBIO
+              selectedCategory == 'all' ? l10n.category : selectedCategory, 
               style: TextStyle(
                 fontWeight: selectedCategory == 'all' 
                     ? FontWeight.normal 
@@ -206,7 +206,7 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
       itemBuilder: (context) => [
         PopupMenuItem(
           value: 'all',
-          child: Text(l10n.allCategories), // CAMBIO
+          child: Text(l10n.allCategories), 
         ),
         ...categories.map((category) => PopupMenuItem(
               value: category,
@@ -221,15 +221,15 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
 
 
   Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
-    String title = l10n.noRecords; // CAMBIO
-    String subtitle = l10n.noRecordsSubtitle; // CAMBIO
+    String title = l10n.noRecords; 
+    String subtitle = l10n.noRecordsSubtitle; 
 
     if (searchQuery.isNotEmpty) {
-      title = l10n.noSearchResults; // CAMBIO
-      subtitle = l10n.noSearchResultsSubtitle; // CAMBIO
+      title = l10n.noSearchResults; 
+      subtitle = l10n.noSearchResultsSubtitle; 
     } else if (selectedCategory != 'all') {
-      title = l10n.noCategoryRecords; // CAMBIO
-      subtitle = l10n.noCategoryRecordsSubtitle; // CAMBIO
+      title = l10n.noCategoryRecords; 
+      subtitle = l10n.noCategoryRecordsSubtitle; 
     }
 
     return SingleChildScrollView(
@@ -237,7 +237,7 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
         title: title,
         subtitle: subtitle,
         onActionPressed: searchQuery.isEmpty ? onAddRecordTap : null,
-        actionText: searchQuery.isEmpty ? l10n.addRecord : null, // CAMBIO
+        actionText: searchQuery.isEmpty ? l10n.addRecord : null, 
       ),
     );
   }
@@ -247,14 +247,14 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.deleteRecord), // CAMBIO
+        title: Text(l10n.deleteRecord), 
         content: Text(
-          '${l10n.deleteConfirmation} "${record.description.isEmpty ? record.category : record.description}"?', // CAMBIO
+          '${l10n.deleteConfirmation} "${record.description.isEmpty ? record.category : record.description}"?', 
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel), // CAMBIO
+            child: Text(l10n.cancel), 
           ),
           FilledButton(
             onPressed: () {
@@ -262,7 +262,7 @@ List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
               onDeleteRecord(record.id);
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: Text(l10n.delete), // CAMBIO
+            child: Text(l10n.delete), 
           ),
         ],
       ),

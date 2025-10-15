@@ -19,7 +19,6 @@ class UserManager {
 
   UserManager._internal();
 
-  /// Inicializar el UserManager - debe llamarse al inicio de la app
   static Future<void> initialize() async {
     if (_initialized) return;
 
@@ -28,7 +27,6 @@ class UserManager {
     _initialized = true;
   }
 
-  /// Asegura que el usuario por defecto siempre exista
   Future<void> _ensureDefaultUserExists() async {
     final users = await getAllUsers();
 
@@ -47,13 +45,11 @@ class UserManager {
     }
   }
 
-  /// Guardar lista de usuarios en SharedPreferences
   Future<void> _saveUsers(List<User> users) async {
     final jsonList = users.map((u) => jsonEncode(u.toMap())).toList();
     await _prefs.setStringList(_usersKey, jsonList);
   }
 
-  /// Obtener todos los usuarios
   Future<List<User>> getAllUsers() async {
     final jsonList = _prefs.getStringList(_usersKey) ?? [];
     return jsonList
@@ -65,7 +61,6 @@ class UserManager {
         .cast<User>();
   }
 
-  /// Obtener usuario actual
   Future<User?> getCurrentUser() async {
     final users = await getAllUsers();
     final currentUserId = _prefs.getString(_currentUserKey) ?? _defaultUserId;
@@ -73,7 +68,7 @@ class UserManager {
     try {
       return users.firstWhere((u) => u.id == currentUserId);
     } catch (e) {
-      // Si no encuentra el usuario, devuelve el por defecto
+      
       try {
         return users.firstWhere((u) => u.id == _defaultUserId);
       } catch (e) {
@@ -82,7 +77,6 @@ class UserManager {
     }
   }
 
-  /// Obtener usuario actual SIN async (para sincronía)
   User? getCurrentUserSync() {
     try {
       final jsonList = _prefs.getStringList(_usersKey) ?? [];
@@ -112,12 +106,10 @@ class UserManager {
     }
   }
 
-  /// Establecer usuario actual
   Future<void> setCurrentUser(User user) async {
     await _prefs.setString(_currentUserKey, user.id);
   }
 
-  /// Crear nuevo usuario
   Future<void> createUser(String name) async {
     final users = await getAllUsers();
 
@@ -131,7 +123,6 @@ class UserManager {
     await _saveUsers([...users, newUser]);
   }
 
-  /// Eliminar usuario (excepto el usuario por defecto)
   Future<void> deleteUser(String userId) async {
     if (userId == _defaultUserId) {
       throw Exception('No se puede eliminar la billetera principal');
@@ -140,7 +131,6 @@ class UserManager {
     final users = await getAllUsers();
     final userToDelete = users.firstWhere((u) => u.id == userId);
 
-    // Eliminar imagen de perfil si existe
     if (userToDelete.profileImagePath != null) {
       try {
         final file = File(userToDelete.profileImagePath!);
@@ -152,11 +142,11 @@ class UserManager {
       }
     }
 
-    // Eliminar usuario de la lista
+    
     users.removeWhere((u) => u.id == userId);
     await _saveUsers(users);
 
-    // Si el usuario eliminado era el actual, cambiar al usuario por defecto
+    
     final currentUser = await getCurrentUser();
     if (currentUser?.id == userId) {
       final defaultUser = users.firstWhere((u) => u.id == _defaultUserId,
@@ -169,7 +159,7 @@ class UserManager {
     }
   }
 
-  /// Actualizar imagen de perfil
+  
   Future<void> updateProfileImage(String userId, String imagePath) async {
     final users = await getAllUsers();
     final userIndex = users.indexWhere((u) => u.id == userId);
@@ -182,7 +172,7 @@ class UserManager {
     }
   }
 
-  /// Eliminar imagen de perfil
+  
   Future<void> deleteProfileImage(String userId) async {
     final users = await getAllUsers();
     final userIndex = users.indexWhere((u) => u.id == userId);
@@ -208,7 +198,7 @@ class UserManager {
     }
   }
 
-  /// Actualizar el nombre del usuario
+  
   Future<void> updateUserName(String userId, String newName) async {
     if (newName.trim().isEmpty) {
       throw Exception('El nombre no puede estar vacío');
@@ -230,17 +220,14 @@ class UserManager {
   // MÉTODOS DE LIMPIEZA DE DATOS
   // ============================================
 
-  /// Reset de la app manteniendo la billetera principal
-  /// - Elimina todos los usuarios excepto el por defecto
-  /// - Elimina todos los datos (registros, categorías, etc.)
-  /// - Mantiene el usuario por defecto pero sin datos
+ 
   Future<void> resetAppKeepingDefaultUser() async {
     final users = await getAllUsers();
 
-    // Eliminar todos los usuarios excepto el por defecto
+
     for (final user in users) {
       if (user.id != _defaultUserId) {
-        // Eliminar imagen de perfil si existe
+        
         if (user.profileImagePath != null) {
           try {
             final file = File(user.profileImagePath!);
@@ -254,16 +241,13 @@ class UserManager {
       }
     }
 
-    // Mantener solo el usuario por defecto
     final defaultUser =
         users.firstWhere((u) => u.id == _defaultUserId);
     await _saveUsers([defaultUser]);
 
-    // Asegurar que el usuario por defecto sea el actual
     await setCurrentUser(defaultUser);
   }
 
-  /// Obtener información del usuario por defecto
   Future<User?> getDefaultUser() async {
     final users = await getAllUsers();
     try {
@@ -273,9 +257,7 @@ class UserManager {
     }
   }
 
-  /// Obtener ID del usuario por defecto
   static String getDefaultUserId() => _defaultUserId;
 
-  /// Verificar si un usuario es el por defecto
   static bool isDefaultUser(String userId) => userId == _defaultUserId;
 }

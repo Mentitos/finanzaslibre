@@ -10,15 +10,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // 1. Inicializar UserManager PRIMERO
   await UserManager.initialize();
   
-  // 2. Inicializar SavingsDataManager
   SavingsDataManager.init();
   final dataManager = SavingsDataManager();
   await dataManager.initialize();
   
-  // 3. Obtener SharedPreferences para tema
   final prefs = await SharedPreferences.getInstance();
   final themeModeString = prefs.getString('theme_mode') ?? 'system';
 

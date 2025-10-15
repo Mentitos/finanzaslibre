@@ -46,7 +46,7 @@ class StatCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Icono
+              
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -62,7 +62,7 @@ class StatCard extends StatelessWidget {
               
               const SizedBox(height: 12),
               
-              // Valor principal
+              
               if (isLoading)
                 SizedBox(
                   width: 20,
@@ -85,7 +85,7 @@ class StatCard extends StatelessWidget {
               
               const SizedBox(height: 8),
               
-              // Título
+              
               Text(
                 title,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -96,7 +96,7 @@ class StatCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               ),
               
-              // Subtítulo opcional
+              
               if (subtitle != null) ...[
                 const SizedBox(height: 4),
                 Text(
@@ -118,7 +118,7 @@ class StatCard extends StatelessWidget {
   }
 }
 
-// Widget especializado para mostrar dinero
+
 class MoneyStatCard extends StatelessWidget {
   final String title;
   final double amount;
@@ -161,7 +161,6 @@ class MoneyStatCard extends StatelessWidget {
   }
 }
 
-// Widget para tarjetas de resumen con progreso
 class ProgressStatCard extends StatelessWidget {
   final String title;
   final double currentValue;
@@ -196,7 +195,7 @@ class ProgressStatCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header con icono y título
+              
               Row(
                 children: [
                   Icon(icon, color: color, size: 24),
@@ -215,7 +214,7 @@ class ProgressStatCard extends StatelessWidget {
               
               const SizedBox(height: 12),
               
-              // Progreso
+              
               LinearProgressIndicator(
                 value: progress,
                 backgroundColor: color.withOpacity(0.1),
@@ -224,7 +223,7 @@ class ProgressStatCard extends StatelessWidget {
               
               const SizedBox(height: 8),
               
-              // Valores
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

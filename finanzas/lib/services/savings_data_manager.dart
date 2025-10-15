@@ -18,7 +18,7 @@ class SavingsDataManager {
 
   late SharedPreferences _prefs;
 
-  // Instancias de los managers especializados
+  
   late RecordsManager _recordsManager;
   late CategoriesManager _categoriesManager;
   late SecurityManager _securityManager;

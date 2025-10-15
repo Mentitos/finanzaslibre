@@ -42,7 +42,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   String _searchQuery = '';
   bool _isLoading = true;
   bool _privacyMode = false;
-  User? _currentUser; // ← Añadir esto para cachear el usuario
+  User? _currentUser; 
 
   @override
   void initState() {
@@ -69,7 +69,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       final stats = await _dataManager.getStatistics();
       final privacyMode = await _dataManager.loadPrivacyMode();
       final categoryColors = await _dataManager.loadAllCategoryColors();
-      final currentUser = await _userManager.getCurrentUserSync(); // ← Cargar usuario
+      final currentUser = await _userManager.getCurrentUserSync(); 
 
       setState(() {
         _allRecords = records;
@@ -77,7 +77,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         _statistics = stats;
         _privacyMode = privacyMode;
         _categoryColors = categoryColors;
-        _currentUser = currentUser; // ← Cachear el usuario
+        _currentUser = currentUser; 
         _applyFilters();
         _isLoading = false;
       });
@@ -242,9 +242,9 @@ class _SavingsScreenState extends State<SavingsScreen>
         dataManager: _dataManager,
         userManager: _userManager,
         onDataChanged: () async {
-          // Reconectar UserManager y limpiar caché
+          
           _dataManager.setUserManager(_userManager);
-          // Luego cargar datos del nuevo usuario
+          
           await _loadData();
           setState(() {});
         },

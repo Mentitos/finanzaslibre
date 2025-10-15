@@ -4,8 +4,7 @@ import '../../services/user_manager.dart';
 import '../../l10n/app_localizations.dart';
 
 class ConfirmationDialogs {
-  /// Limpia todos los registros del usuario actual
-  /// sin afectar el perfil del usuario
+ 
   static void showClearRecordsConfirmation(
     BuildContext context,
     SavingsDataManager dataManager,
@@ -53,8 +52,6 @@ class ConfirmationDialogs {
     );
   }
 
-  /// Reset de la app con opción de mantener registros de la billetera principal
-  /// La billetera principal SIEMPRE se mantiene, la opción es si conservar sus registros
   static void showResetAppConfirmation(
     BuildContext context,
     SavingsDataManager dataManager,
@@ -80,7 +77,7 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                // SIEMPRE se mantiene
+                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -138,7 +135,7 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                // Checkbox para mantener registros de la billetera principal
+                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -187,7 +184,7 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                // Resumen de lo que pasará
+                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -280,8 +277,7 @@ class ConfirmationDialogs {
                   final userManager = UserManager();
 
                   if (keepRecords) {
-                    // Reset: mantener billetera principal CON sus registros
-                    // Eliminar otros usuarios y todas las categorías
+                    
                     await userManager.resetAppKeepingDefaultUser();
                     await dataManager.clearAllDataExceptDefaultUser();
                     
@@ -293,7 +289,7 @@ class ConfirmationDialogs {
                       );
                     }
                   } else {
-                    // Reset total: billetera principal vacía como nueva instalación
+                    
                     await userManager.resetAppKeepingDefaultUser();
                     await dataManager.clearAllData();
                     

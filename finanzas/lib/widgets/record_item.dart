@@ -27,12 +27,12 @@ class RecordItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categoryName = l10n.translateCategory(record.category);
-    // Verde para depósitos, rojo para retiros
+    
     final transactionColor = record.type == RecordType.deposit 
         ? Colors.green 
         : Colors.red;
     
-    // Color de categoría
+    
     final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
     
     return Card(
@@ -44,7 +44,7 @@ class RecordItem extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Icono con color de transacción (verde/rojo)
+              
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
@@ -66,7 +66,7 @@ class RecordItem extends StatelessWidget {
     children: [
       Text(
         record.description.isEmpty
-            ? categoryName   // <--- USAR categoryName
+            ? categoryName   
             : record.description,
         style: const TextStyle(
           fontWeight: FontWeight.w600,
@@ -91,7 +91,7 @@ class RecordItem extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  categoryName, // <--- USAR categoryName
+                  categoryName, 
                   style: TextStyle(
                     fontSize: 11,
                     color: categoryColor,
@@ -143,7 +143,7 @@ class RecordItem extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  // Monto con color de transacción (verde/rojo)
+                  
                   Text(
                     '${record.type == RecordType.deposit ? '+' : '-'}\$${Formatters.formatCurrency(record.totalAmount)}',
                     style: TextStyle(
@@ -205,7 +205,7 @@ class RecordItem extends StatelessWidget {
   }
 }
 
-// Widget para "Últimos Movimientos" en la pestaña de resumen
+
 class RecentRecordItem extends StatelessWidget {
   final SavingsRecord record;
   final VoidCallback onTap;
@@ -222,12 +222,12 @@ class RecentRecordItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Verde/rojo para la transacción
+    
     final transactionColor = record.type == RecordType.deposit 
         ? Colors.green 
         : Colors.red;
     
-    // Color de categoría para el badge
+    
     final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
     
     return ListTile(

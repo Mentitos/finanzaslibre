@@ -38,7 +38,7 @@ class SummaryTab extends StatelessWidget {
 
   @override
 Widget build(BuildContext context) {
-  final l10n = AppLocalizations.of(context)!; // AGREGAR ! aquí
+  final l10n = AppLocalizations.of(context)!; 
   
   return RefreshIndicator(
     onRefresh: onRefresh,
@@ -89,7 +89,7 @@ Widget build(BuildContext context) {
     child: Column(
       children: [
         Text(
-          l10n.totalSavings, // SIN ! aquí
+          l10n.totalSavings, 
           style: const TextStyle(
             color: Colors.white,
             fontSize: AppConstants.largeFontSize,
@@ -108,7 +108,7 @@ Widget build(BuildContext context) {
         if (allRecords.isNotEmpty) ...[
           const SizedBox(height: 8),
           Text(
-            '${l10n.lastMovement}: ${Formatters.formatRelativeDate(allRecords.first.createdAt, l10n)}', // SIN ! aquí
+            '${l10n.lastMovement}: ${Formatters.formatRelativeDate(allRecords.first.createdAt, l10n)}', 
             style: const TextStyle(
               color: Colors.white70,
               fontSize: AppConstants.defaultFontSize,
@@ -128,7 +128,7 @@ Widget build(BuildContext context) {
     children: [
       Expanded(
         child: _buildMoneyCard(
-          title: l10n.physicalMoney, // CAMBIO AQUÍ
+          title: l10n.physicalMoney, 
           amount: physicalAmount,
           icon: Icons.account_balance_wallet,
           color: AppConstants.physicalMoneyColor,
@@ -138,7 +138,7 @@ Widget build(BuildContext context) {
       const SizedBox(width: AppConstants.defaultPadding),
       Expanded(
         child: _buildMoneyCard(
-          title: l10n.digitalMoney, // CAMBIO AQUÍ
+          title: l10n.digitalMoney, 
           amount: digitalAmount,
           icon: Icons.credit_card,
           color: AppConstants.digitalMoneyColor,
@@ -183,7 +183,7 @@ Widget build(BuildContext context) {
               Text(
                 title,
                 style: TextStyle(
-                  color: Colors.grey[600], // Este queda igual, funciona en ambos modos
+                  color: Colors.grey[600], 
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -234,7 +234,7 @@ Widget build(BuildContext context) {
           children: [
             _buildStatItem(
               context,
-              title: l10n.totalRecords, // CAMBIO AQUÍ
+              title: l10n.totalRecords, 
               value: '$totalRecords',
               icon: Icons.receipt_long,
               color: Colors.orange,
@@ -242,7 +242,7 @@ Widget build(BuildContext context) {
             _buildDivider(),
             _buildStatItem(
               context,
-              title: l10n.deposit, // CAMBIO AQUÍ
+              title: l10n.deposit, 
               value: '$totalDeposits',
               icon: Icons.arrow_upward,
               color: AppConstants.depositColor,
@@ -250,7 +250,7 @@ Widget build(BuildContext context) {
             _buildDivider(),
             _buildStatItem(
               context,
-              title: l10n.withdrawal, // CAMBIO AQUÍ
+              title: l10n.withdrawal, 
               value: '$totalWithdrawals',
               icon: Icons.arrow_downward,
               color: AppConstants.withdrawalColor,
@@ -263,13 +263,13 @@ Widget build(BuildContext context) {
 }
 
   Widget _buildStatItem(
-    BuildContext context, { // AGREGAR context
+    BuildContext context, { 
     required String title,
     required String value,
     required IconData icon,
     required Color color,
   }) {
-    // Usar color adaptativo para el texto
+    
     final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.black87;
     
     return Expanded(
@@ -291,7 +291,7 @@ Widget build(BuildContext context) {
             title,
             style: TextStyle(
               fontSize: 13,
-              color: textColor.withOpacity(0.7), // USAR COLOR ADAPTATIVO
+              color: textColor.withOpacity(0.7), 
             ),
             textAlign: TextAlign.center,
           ),
@@ -321,12 +321,12 @@ Widget build(BuildContext context) {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                l10n.recentMovements, // CAMBIO AQUÍ
+                l10n.recentMovements, 
                 style: Theme.of(context).textTheme.headlineSmall,
               ),
               TextButton(
                 onPressed: onViewAllTap,
-                child: Text(l10n.viewAll), // CAMBIO AQUÍ
+                child: Text(l10n.viewAll), 
               ),
             ],
           ),

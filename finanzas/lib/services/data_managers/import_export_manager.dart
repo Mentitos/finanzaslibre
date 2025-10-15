@@ -32,13 +32,13 @@ class ImportExportManager {
       final records = await recordsManager.loadRecords();
       final dateFormatter = DateFormat('dd/MM/yyyy HH:mm');
 
-      // Header
+      
       final csvContent = StringBuffer();
       csvContent.writeln(
         'Fecha,Tipo,Cantidad Física,Cantidad Digital,Descripción,Categoría,Notas',
       );
 
-      // Datos
+      
       for (final record in records) {
         final tipo = record.type == RecordType.deposit ? 'Depósito' : 'Retiro';
         final fecha = dateFormatter.format(record.createdAt);
@@ -61,7 +61,7 @@ class ImportExportManager {
     }
   }
 
-  /// Exportar a Excel (.xlsx) con columnas ajustadas
+  /// Exportar a Excel (.xlsx)
   Future<List<int>> exportToExcel(
     RecordsManager recordsManager,
     CategoriesManager categoriesManager,

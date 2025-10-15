@@ -683,13 +683,13 @@ class ExportImportDialogs {
   showDialog(
     context: context,
     builder: (dialogContext) => AlertDialog(
-      scrollable: true, // ✅ Permite que el dialog se adapte al teclado
+      scrollable: true, 
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       title: Text(
         l10n.importData,
         style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color),
       ),
-      content: SingleChildScrollView( // ✅ Evita el overflow
+      content: SingleChildScrollView( 
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,

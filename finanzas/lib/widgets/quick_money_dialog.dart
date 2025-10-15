@@ -14,7 +14,7 @@ class QuickMoneyDialog extends StatefulWidget {
   final List<String> categories;
   final Map<String, Color>? categoryColors;
   final double currentAmount;
-  final UserManager? userManager; // OPCIONAL: para mostrar usuario
+  final UserManager? userManager; 
 
   const QuickMoneyDialog({
     super.key,

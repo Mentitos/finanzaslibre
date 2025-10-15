@@ -21,15 +21,14 @@ class UserListPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.users), // Usaremos 'users' como título de la página
+        title: Text(l10n.users), 
       ),
-      // Usamos SingleChildScrollView para manejar el scroll de la lista de usuarios
+      
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: UserManagementSection(
           userManager: userManager,
-          // onUserChanged aquí todavía notifica a SettingsMenu.onDataChanged
-          // Esto lo controlaremos en SettingsMenu.
+          
           onUserChanged: onUserChanged, 
           onShowSnackBar: onShowSnackBar,
         ),

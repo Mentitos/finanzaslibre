@@ -31,7 +31,7 @@ class _PinLockScreenState extends State<PinLockScreen>
   void initState() {
     super.initState();
 
-    // Shake animation
+    // animacion de sacudir
     _shakeController = AnimationController(
       duration: const Duration(milliseconds: 500),
       vsync: this,

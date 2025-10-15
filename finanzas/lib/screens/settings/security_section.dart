@@ -31,7 +31,7 @@ class SecuritySection extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 16, bottom: 8),
               child: Text(
-                l10n.security, // antes 'Seguridad'
+                l10n.security, 
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.grey[700],
@@ -43,10 +43,10 @@ class SecuritySection extends StatelessWidget {
                 isPinEnabled ? Icons.lock : Icons.lock_outline,
                 color: isPinEnabled ? Colors.green : Colors.grey,
               ),
-              title: Text(l10n.pinSecurityTitle), // antes 'PIN de seguridad'
+              title: Text(l10n.pinSecurityTitle), 
               subtitle: Text(isPinEnabled 
-                  ? l10n.pinActiveSubtitle // antes 'Protección activa con PIN de 4 dígitos'
-                  : l10n.pinInactiveSubtitle // antes 'Protege tu app con un PIN'
+                  ? l10n.pinActiveSubtitle 
+                  : l10n.pinInactiveSubtitle 
               ),
               trailing: Switch(
                 value: isPinEnabled,
@@ -63,8 +63,8 @@ class SecuritySection extends StatelessWidget {
             if (isPinEnabled)
               ListTile(
                 leading: const Icon(Icons.edit, color: Colors.blue),
-                title: Text(l10n.changePinTitle), // antes 'Cambiar PIN'
-                subtitle: Text(l10n.changePinSubtitle), // antes 'Modificar tu PIN actual'
+                title: Text(l10n.changePinTitle), 
+                subtitle: Text(l10n.changePinSubtitle), 
                 onTap: () async {
                   onCloseSettings();
                   await _changePin(context, l10n);
@@ -88,7 +88,7 @@ class SecuritySection extends StatelessWidget {
       await dataManager.savePin(result['pin']);
       await dataManager.setPinEnabled(true);
       await dataManager.setBiometricEnabled(result['biometricEnabled'] ?? false);
-      onShowSnackBar(l10n.pinSetupSuccess, false); // antes 'PIN configurado correctamente'
+      onShowSnackBar(l10n.pinSetupSuccess, false); 
     }
   }
 
@@ -96,7 +96,7 @@ class SecuritySection extends StatelessWidget {
     final currentPin = await dataManager.loadPin();
     
     if (currentPin == null) {
-      onShowSnackBar(l10n.noPinConfigured, true); // antes 'No hay PIN configurado'
+      onShowSnackBar(l10n.noPinConfigured, true); 
       return;
     }
 
@@ -113,7 +113,7 @@ class SecuritySection extends StatelessWidget {
     if (result != null) {
       await dataManager.savePin(result['pin']);
       await dataManager.setBiometricEnabled(result['biometricEnabled'] ?? false);
-      onShowSnackBar(l10n.pinUpdated, false); // antes 'PIN actualizado correctamente'
+      onShowSnackBar(l10n.pinUpdated, false); 
     }
   }
 
@@ -122,30 +122,30 @@ class SecuritySection extends StatelessWidget {
     
     if (currentPin == null) {
       await dataManager.setPinEnabled(false);
-      onShowSnackBar(l10n.pinDisabled, false); // antes 'PIN deshabilitado'
+      onShowSnackBar(l10n.pinDisabled, false);
       return;
     }
 
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.disablePinTitle), // antes 'Desactivar PIN'
+        title: Text(l10n.disablePinTitle), 
         content: Text(
-          l10n.disablePinSubtitle, // antes '¿Estás seguro de que quieres desactivar ...'
+          l10n.disablePinSubtitle, 
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel), // antes 'Cancelar'
+            child: Text(l10n.cancel), 
           ),
           FilledButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
               await dataManager.removePin();
-              onShowSnackBar(l10n.pinDisabled, false); // antes 'PIN deshabilitado'
+              onShowSnackBar(l10n.pinDisabled, false); 
             },
             style: FilledButton.styleFrom(backgroundColor: Colors.orange),
-            child: Text(l10n.disable), // antes 'Desactivar'
+            child: Text(l10n.disable), 
           ),
         ],
       ),

@@ -158,13 +158,13 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  // Botón para editar nombre
+                  
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),
                     onPressed: () => _showEditNameDialog(context, user, l10n),
                     tooltip: l10n.editUserName,
                   ),
-                  // Botón para cambiar usuario
+                  
                   if (!isCurrentUser)
                     IconButton(
                       icon: const Icon(Icons.check_circle_outline, size: 20),

@@ -24,7 +24,7 @@ class AboutSection extends StatelessWidget {
   }
 
   String _getAppVersion() {
-    // Importar AppConstants desde constants/app_constants.dart
+    
     return '1.2.0';
   }
 }
