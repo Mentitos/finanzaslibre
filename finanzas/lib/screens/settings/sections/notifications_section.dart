@@ -11,7 +11,7 @@ class NotificationsSection extends StatefulWidget {
 }
 
 class _NotificationsSectionState extends State<NotificationsSection> {
-  bool _notificationsEnabled = true; // Por defecto activado
+  bool _notificationsEnabled = true; 
   TimeOfDay _selectedTime = const TimeOfDay(hour: 22, minute: 0); // 22:00 por defecto
   final NotificationService _notificationService = NotificationService();
   bool _isLoading = true;
@@ -25,17 +25,17 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     
-    // Si es la primera vez, configurar valores por defecto
+    
     final isFirstTime = prefs.getBool('notifications_first_time') ?? true;
     
     if (isFirstTime) {
-      // Primera vez: activar notificaciones y programarlas
+      
       await prefs.setBool('notifications_first_time', false);
       await prefs.setBool('notifications_enabled', true);
       await prefs.setInt('notification_hour', 22);
       await prefs.setInt('notification_minute', 0);
       
-      // Solicitar permisos y programar
+      
       final granted = await _notificationService.requestPermissions();
       if (granted && mounted) {
         final l10n = AppLocalizations.of(context)!;
@@ -53,7 +53,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         _isLoading = false;
       });
     } else {
-      // Cargar configuración guardada
+      
       final enabled = prefs.getBool('notifications_enabled') ?? true;
       final hour = prefs.getInt('notification_hour') ?? 22;
       final minute = prefs.getInt('notification_minute') ?? 0;
@@ -77,7 +77,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
     final l10n = AppLocalizations.of(context)!;
     
     if (value) {
-      // Solicitar permisos
+      
       final granted = await _notificationService.requestPermissions();
       if (!granted) {
         if (mounted) {
@@ -91,7 +91,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         return;
       }
 
-      // Programar notificación
+      
       await _notificationService.scheduleDailyReminder(
         hour: _selectedTime.hour,
         minute: _selectedTime.minute,
@@ -150,7 +150,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         _selectedTime = picked;
       });
 
-      // Si las notificaciones están activas, reprogramar
+      
       if (_notificationsEnabled) {
         await _notificationService.scheduleDailyReminder(
           hour: _selectedTime.hour,
