@@ -12,7 +12,7 @@ class NotificationsSection extends StatefulWidget {
 
 class _NotificationsSectionState extends State<NotificationsSection> {
   bool _notificationsEnabled = true; 
-  TimeOfDay _selectedTime = const TimeOfDay(hour: 22, minute: 0); // 22:00 por defecto
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 21, minute: 0); // 21:00 por defecto
   final NotificationService _notificationService = NotificationService();
   bool _isLoading = true;
 
@@ -32,7 +32,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       
       await prefs.setBool('notifications_first_time', false);
       await prefs.setBool('notifications_enabled', true);
-      await prefs.setInt('notification_hour', 22);
+      await prefs.setInt('notification_hour', 21);
       await prefs.setInt('notification_minute', 0);
       
       
@@ -40,7 +40,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       if (granted && mounted) {
         final l10n = AppLocalizations.of(context)!;
         await _notificationService.scheduleDailyReminder(
-          hour: 22,
+          hour: 21,
           minute: 0,
           title: l10n.savingsReminderTitle,
           body: l10n.savingsReminderBody,
@@ -49,13 +49,13 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       
       setState(() {
         _notificationsEnabled = granted;
-        _selectedTime = const TimeOfDay(hour: 22, minute: 0);
+        _selectedTime = const TimeOfDay(hour: 21, minute: 0);
         _isLoading = false;
       });
     } else {
       
       final enabled = prefs.getBool('notifications_enabled') ?? true;
-      final hour = prefs.getInt('notification_hour') ?? 22;
+      final hour = prefs.getInt('notification_hour') ?? 21;
       final minute = prefs.getInt('notification_minute') ?? 0;
 
       setState(() {
