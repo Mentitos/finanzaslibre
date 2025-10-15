@@ -9,6 +9,7 @@ import 'sections/data_management_section.dart';
 import 'sections/danger_zone_section.dart';
 import 'sections/about_section.dart';
 import 'security_section.dart';
+import 'sections/notifications_section.dart';
 
 class SettingsMenu extends StatelessWidget {
   final SavingsDataManager dataManager;
@@ -58,6 +59,9 @@ class SettingsMenu extends StatelessWidget {
               onShowSnackBar: onShowSnackBar,
               onCloseSettings: () => Navigator.pop(context),
             ),
+            const Divider(height: 30),
+            const NotificationsSection(),
+            
             const Divider(height: 30),
             DataManagementSection(
               dataManager: dataManager,

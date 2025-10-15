@@ -6,6 +6,7 @@ import 'services/savings_data_manager.dart';
 import 'services/user_manager.dart';
 import 'l10n/app_localizations.dart'; 
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,8 @@ void main() async {
   SavingsDataManager.init();
   final dataManager = SavingsDataManager();
   await dataManager.initialize();
+
+  await NotificationService().initialize();
   
   final prefs = await SharedPreferences.getInstance();
   final themeModeString = prefs.getString('theme_mode') ?? 'system';
