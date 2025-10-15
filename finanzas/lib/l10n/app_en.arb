@@ -322,6 +322,18 @@
 "copyPath": "Copy path",
 "share": "Share",
 
+"notifications": "Notifications",
+"dailyReminder": "Daily reminder",
+"reminderEnabled": "You will receive a reminder every day",
+"reminderDisabled": "Reminders are disabled",
+"reminderTime": "Reminder time",
+"notificationPermissionRequired": "Notification permissions are required",
+"reminderActivatedAt": "Reminder activated for {time}",
+"timeUpdated": "Time updated: {time}",
+"reminderDeactivated": "Reminder deactivated",
+"savingsReminderTitle": "💰 Savings Reminder",
+"savingsReminderBody": "Have you recorded your transactions today?",
+
 
   "accounts": "Accounts",
     "userManagement": "User Management",

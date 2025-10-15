@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../services/notification_service.dart';
+import '../../../l10n/app_localizations.dart';
 
 class NotificationsSection extends StatefulWidget {
   const NotificationsSection({super.key});
@@ -36,12 +37,13 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       
       // Solicitar permisos y programar
       final granted = await _notificationService.requestPermissions();
-      if (granted) {
+      if (granted && mounted) {
+        final l10n = AppLocalizations.of(context)!;
         await _notificationService.scheduleDailyReminder(
           hour: 22,
           minute: 0,
-          title: '💰 Recordatorio de Ahorros',
-          body: '¿Ya registraste tus movimientos de hoy?',
+          title: l10n.savingsReminderTitle,
+          body: l10n.savingsReminderBody,
         );
       }
       
@@ -72,15 +74,17 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   }
 
   Future<void> _toggleNotifications(bool value) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (value) {
       // Solicitar permisos
       final granted = await _notificationService.requestPermissions();
       if (!granted) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Se necesitan permisos para mostrar notificaciones'),
-              duration: Duration(seconds: 3),
+            SnackBar(
+              content: Text(l10n.notificationPermissionRequired),
+              duration: const Duration(seconds: 3),
             ),
           );
         }
@@ -91,8 +95,8 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       await _notificationService.scheduleDailyReminder(
         hour: _selectedTime.hour,
         minute: _selectedTime.minute,
-        title: '💰 Recordatorio de Ahorros',
-        body: '¿Ya registraste tus movimientos de hoy?',
+        title: l10n.savingsReminderTitle,
+        body: l10n.savingsReminderBody,
       );
 
       setState(() {
@@ -100,11 +104,10 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       });
 
       if (mounted) {
+        final timeStr = '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Recordatorio activado para las ${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}'
-            ),
+            content: Text(l10n.reminderActivatedAt(timeStr)),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -117,9 +120,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Recordatorio desactivado'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(l10n.reminderDeactivated),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -129,6 +132,8 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   }
 
   Future<void> _selectTime() async {
+    final l10n = AppLocalizations.of(context)!;
+    
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
@@ -150,16 +155,15 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         await _notificationService.scheduleDailyReminder(
           hour: _selectedTime.hour,
           minute: _selectedTime.minute,
-          title: '💰 Recordatorio de Ahorros',
-          body: '¿Ya registraste tus movimientos de hoy?',
+          title: l10n.savingsReminderTitle,
+          body: l10n.savingsReminderBody,
         );
 
         if (mounted) {
+          final timeStr = '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Hora actualizada: ${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}'
-              ),
+              content: Text(l10n.timeUpdated(timeStr)),
               duration: const Duration(seconds: 2),
             ),
           );
@@ -172,6 +176,8 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -187,7 +193,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         Padding(
           padding: const EdgeInsets.only(left: 16, bottom: 8),
           child: Text(
-            'Notificaciones',
+            l10n.notifications,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
               color: Colors.grey[700],
@@ -204,11 +210,11 @@ class _NotificationsSectionState extends State<NotificationsSection> {
               ? Colors.orange 
               : Colors.grey,
           ),
-          title: const Text('Recordatorio diario'),
+          title: Text(l10n.dailyReminder),
           subtitle: Text(
             _notificationsEnabled 
-              ? 'Recibirás un recordatorio cada día' 
-              : 'Los recordatorios están desactivados'
+              ? l10n.reminderEnabled
+              : l10n.reminderDisabled
           ),
           value: _notificationsEnabled,
           onChanged: _toggleNotifications,
@@ -217,7 +223,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         if (_notificationsEnabled)
           ListTile(
             leading: const Icon(Icons.access_time, color: Colors.orange),
-            title: const Text('Hora del recordatorio'),
+            title: Text(l10n.reminderTime),
             subtitle: Text(
               '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
               style: const TextStyle(

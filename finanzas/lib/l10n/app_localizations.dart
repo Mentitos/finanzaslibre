@@ -1748,6 +1748,72 @@ abstract class AppLocalizations {
   /// **'Compartir'**
   String get share;
 
+  /// No description provided for @notifications.
+  ///
+  /// In es, this message translates to:
+  /// **'Notificaciones'**
+  String get notifications;
+
+  /// No description provided for @dailyReminder.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio diario'**
+  String get dailyReminder;
+
+  /// No description provided for @reminderEnabled.
+  ///
+  /// In es, this message translates to:
+  /// **'Recibirás un recordatorio cada día'**
+  String get reminderEnabled;
+
+  /// No description provided for @reminderDisabled.
+  ///
+  /// In es, this message translates to:
+  /// **'Los recordatorios están desactivados'**
+  String get reminderDisabled;
+
+  /// No description provided for @reminderTime.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora del recordatorio'**
+  String get reminderTime;
+
+  /// No description provided for @notificationPermissionRequired.
+  ///
+  /// In es, this message translates to:
+  /// **'Se necesitan permisos para mostrar notificaciones'**
+  String get notificationPermissionRequired;
+
+  /// No description provided for @reminderActivatedAt.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio activado para las {time}'**
+  String reminderActivatedAt(Object time);
+
+  /// No description provided for @timeUpdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora actualizada: {time}'**
+  String timeUpdated(Object time);
+
+  /// No description provided for @reminderDeactivated.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio desactivado'**
+  String get reminderDeactivated;
+
+  /// No description provided for @savingsReminderTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'💰 Recordatorio de Ahorros'**
+  String get savingsReminderTitle;
+
+  /// No description provided for @savingsReminderBody.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Ya registraste tus movimientos de hoy?'**
+  String get savingsReminderBody;
+
   /// No description provided for @holdToDelete.
   ///
   /// In es, this message translates to:

@@ -326,6 +326,17 @@
 
 "copyPath": "Copiar ruta",
 "share": "Compartir",
+"notifications": "Notificaciones",
+"dailyReminder": "Recordatorio diario",
+"reminderEnabled": "Recibirás un recordatorio cada día",
+"reminderDisabled": "Los recordatorios están desactivados",
+"reminderTime": "Hora del recordatorio",
+"notificationPermissionRequired": "Se necesitan permisos para mostrar notificaciones",
+"reminderActivatedAt": "Recordatorio activado para las {time}",
+"timeUpdated": "Hora actualizada: {time}",
+"reminderDeactivated": "Recordatorio desactivado",
+"savingsReminderTitle": "💰 Recordatorio de Ahorros",
+"savingsReminderBody": "¿Ya registraste tus movimientos de hoy?",
 
 
 "holdToDelete": "Presiona y mantén para eliminar",

@@ -866,6 +866,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get share => 'Share';
 
   @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get dailyReminder => 'Daily reminder';
+
+  @override
+  String get reminderEnabled => 'You will receive a reminder every day';
+
+  @override
+  String get reminderDisabled => 'Reminders are disabled';
+
+  @override
+  String get reminderTime => 'Reminder time';
+
+  @override
+  String get notificationPermissionRequired =>
+      'Notification permissions are required';
+
+  @override
+  String reminderActivatedAt(Object time) {
+    return 'Reminder activated for $time';
+  }
+
+  @override
+  String timeUpdated(Object time) {
+    return 'Time updated: $time';
+  }
+
+  @override
+  String get reminderDeactivated => 'Reminder deactivated';
+
+  @override
+  String get savingsReminderTitle => '💰 Savings Reminder';
+
+  @override
+  String get savingsReminderBody =>
+      'Have you recorded your transactions today?';
+
+  @override
   String get holdToDelete => 'Hold to delete';
 
   @override
