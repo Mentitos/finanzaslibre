@@ -60,7 +60,7 @@ class SettingsMenu extends StatelessWidget {
               onCloseSettings: () => Navigator.pop(context),
             ),
             const Divider(height: 30),
-            const NotificationsSection(),
+            NotificationsSection(),
             
             const Divider(height: 30),
             DataManagementSection(
