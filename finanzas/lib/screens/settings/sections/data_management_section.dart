@@ -28,13 +28,7 @@ class DataManagementSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 16, bottom: 8),
-          child: Text(
-            l10n.dataManagement,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
-            ),
-          ),
+          
         ),
         ListTile(
           leading: const Icon(Icons.file_download, color: Colors.blue),

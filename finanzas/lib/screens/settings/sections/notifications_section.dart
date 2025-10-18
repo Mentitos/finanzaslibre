@@ -93,6 +93,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
     final duration = _notificationService.getTimeUntilNextNotification(hour, minute);
     final timeText = _notificationService.formatTimeRemaining(duration);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     OverlayEntry? overlayEntry;
     
@@ -119,10 +120,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.orange.shade400,
-                    Colors.orange.shade600,
-                  ],
+                  colors: isDark 
+                    ? [Colors.orange.shade700, Colors.orange.shade900]
+                    : [Colors.orange.shade400, Colors.orange.shade600],
                 ),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
@@ -277,15 +277,22 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
   Future<void> _selectTimeZone() async {
     final availableZones = _notificationService.getAvailableTimeZones();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     final selected = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: isDark ? Colors.grey[900] : null,
         title: Row(
           children: [
             Icon(Icons.public, color: Colors.orange.shade700),
             const SizedBox(width: 12),
-            const Text('Zona horaria'),
+            Text(
+              'Zona horaria',
+              style: TextStyle(
+                color: isDark ? Colors.white : null,
+              ),
+            ),
           ],
         ),
         contentPadding: const EdgeInsets.fromLTRB(0, 20, 0, 0),
@@ -303,20 +310,24 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                     decoration: BoxDecoration(
-                      color: isSelected ? Colors.blue.shade50 : Colors.grey.shade50,
+                      color: isSelected 
+                        ? (isDark ? Colors.blue.shade900.withOpacity(0.3) : Colors.blue.shade50)
+                        : (isDark ? Colors.grey[850] : Colors.grey.shade50),
                       border: Border(
                         left: BorderSide(
-                          color: isSelected ? Colors.blue : Colors.grey.shade300,
+                          color: isSelected ? Colors.blue : (isDark ? Colors.grey[700]! : Colors.grey.shade300),
                           width: 4,
                         ),
-                        bottom: BorderSide(color: Colors.grey.shade300),
+                        bottom: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey.shade300),
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           isSelected ? Icons.check_circle : Icons.settings_suggest,
-                          color: isSelected ? Colors.blue : Colors.grey.shade600,
+                          color: isSelected 
+                            ? Colors.blue 
+                            : (isDark ? Colors.grey[400] : Colors.grey.shade600),
                           size: 22,
                         ),
                         const SizedBox(width: 16),
@@ -329,7 +340,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                  color: isSelected ? Colors.blue.shade900 : Colors.black87,
+                                  color: isSelected 
+                                    ? (isDark ? Colors.blue.shade300 : Colors.blue.shade900)
+                                    : (isDark ? Colors.white : Colors.black87),
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -337,7 +350,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                                 'Detectar zona horaria del dispositivo',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: Colors.grey.shade600,
+                                  color: isDark ? Colors.grey[400] : Colors.grey.shade600,
                                 ),
                               ),
                             ],
@@ -357,7 +370,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.orange.shade50 : null,
+                    color: isSelected 
+                      ? (isDark ? Colors.orange.shade900.withOpacity(0.3) : Colors.orange.shade50)
+                      : null,
                     border: Border(
                       left: BorderSide(
                         color: isSelected ? Colors.orange : Colors.transparent,
@@ -369,7 +384,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                     children: [
                       Icon(
                         isSelected ? Icons.check_circle : Icons.circle_outlined,
-                        color: isSelected ? Colors.orange : Colors.grey.shade400,
+                        color: isSelected 
+                          ? Colors.orange 
+                          : (isDark ? Colors.grey[600] : Colors.grey.shade400),
                         size: 20,
                       ),
                       const SizedBox(width: 16),
@@ -379,7 +396,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected ? Colors.orange.shade900 : Colors.black87,
+                            color: isSelected 
+                              ? (isDark ? Colors.orange.shade300 : Colors.orange.shade900)
+                              : (isDark ? Colors.white : Colors.black87),
                           ),
                         ),
                       ),
@@ -430,32 +449,10 @@ class _NotificationsSectionState extends State<NotificationsSection> {
     }
   }
 
-  Future<void> _toggleSystemTimeZone(bool value) async {
-    if (value) {
-      await _notificationService.initialize();
-    }
-    
-    setState(() {
-      _useSystemTimeZone = value;
-      _selectedTimeZone = _notificationService.getCurrentTimeZone();
-    });
-
-    if (_notificationsEnabled) {
-      final l10n = AppLocalizations.of(context)!;
-      await _notificationService.scheduleDailyReminder(
-        hour: _selectedTime.hour,
-        minute: _selectedTime.minute,
-        title: l10n.savingsReminderTitle,
-        body: l10n.savingsReminderBody,
-      );
-    }
-
-    await _saveSettings();
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     if (_isLoading) {
       return const Center(
@@ -478,21 +475,6 @@ class _NotificationsSectionState extends State<NotificationsSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 16, bottom: 8),
-          child: Row(
-            children: [
-              Text(
-                l10n.notifications,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-        ),
-        
         SwitchListTile(
           secondary: Icon(
             _notificationsEnabled 
@@ -500,7 +482,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
               : Icons.notifications_off_outlined,
             color: _notificationsEnabled 
               ? Colors.orange 
-              : Colors.grey,
+              : (isDark ? Colors.grey[600] : Colors.grey),
           ),
           title: Text(l10n.dailyReminder),
           subtitle: Text(
@@ -537,7 +519,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: _useSystemTimeZone ? Colors.blue.shade700 : Colors.orange.shade700,
+                color: _useSystemTimeZone 
+                  ? (isDark ? Colors.blue.shade300 : Colors.blue.shade700)
+                  : (isDark ? Colors.orange.shade300 : Colors.orange.shade700),
               ),
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -549,20 +533,30 @@ class _NotificationsSectionState extends State<NotificationsSection> {
               margin: const EdgeInsets.only(left: 72, right: 16, top: 4, bottom: 8),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.orange.shade50,
+                color: isDark 
+                  ? Colors.orange.shade900.withOpacity(0.2)
+                  : Colors.orange.shade50,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange.shade200),
+                border: Border.all(
+                  color: isDark 
+                    ? Colors.orange.shade700.withOpacity(0.5)
+                    : Colors.orange.shade200,
+                ),
               ),
               child: Row(
                 children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.orange.shade700),
+                  Icon(
+                    Icons.info_outline, 
+                    size: 16, 
+                    color: isDark ? Colors.orange.shade300 : Colors.orange.shade700,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       _selectedTimeZone,
                       style: TextStyle(
                         fontSize: 11,
-                        color: Colors.orange.shade800,
+                        color: isDark ? Colors.orange.shade200 : Colors.orange.shade800,
                       ),
                     ),
                   ),

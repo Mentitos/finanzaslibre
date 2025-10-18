@@ -60,6 +60,9 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
       );
     }
 
+    final theme = Theme.of(context);
+    final primaryColor = theme.primaryColor;
+
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
       itemBuilder: (context) {
@@ -69,26 +72,35 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
           return PopupMenuItem<String>(
             value: user.id,
             enabled: !isCurrentUser,
-            child: Row(
-              children: [
-                _buildUserAvatar(user, size: 32),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    user.name,
-                    style: TextStyle(
-                      fontWeight: isCurrentUser ? FontWeight.bold : FontWeight.normal,
-                      color: isCurrentUser ? Theme.of(context).primaryColor : null,
+            // 🔥 SOLUCIÓN FINAL: Usamos DefaultTextStyle para anular cualquier negrita heredada
+            child: DefaultTextStyle(
+              style: DefaultTextStyle.of(context).style.copyWith(
+                fontWeight: FontWeight.normal, // Forzamos Normal para todos los items
+                fontSize: 14, 
+              ),
+              child: Row(
+                children: [
+                  _buildUserAvatar(user, size: 32),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      user.name,
+                      style: TextStyle(
+                        // Mantenemos FontWeight.normal explícito para el nombre
+                        fontWeight: FontWeight.normal, 
+                        // Usamos PrimaryColor para destacar el seleccionado con color.
+                        color: isCurrentUser ? primaryColor : null,
+                      ),
                     ),
                   ),
-                ),
-                if (isCurrentUser)
-                  Icon(
-                    Icons.check_circle,
-                    color: Theme.of(context).primaryColor,
-                    size: 20,
-                  ),
-              ],
+                  if (isCurrentUser)
+                    Icon(
+                      Icons.check_circle,
+                      color: primaryColor,
+                      size: 20,
+                    ),
+                ],
+              ),
             ),
           );
         }).toList();
@@ -120,8 +132,10 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
               constraints: const BoxConstraints(maxWidth: 100),
               child: Text(
                 _currentUser!.name,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontSize: 14,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  fontSize: 11,
+                  // Aseguramos que el texto del botón tampoco sea bold.
+                  fontWeight: FontWeight.normal, 
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -129,7 +143,7 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
             Icon(
               Icons.arrow_drop_down,
               size: 14,
-              color: Theme.of(context).textTheme.labelSmall?.color,
+              color: theme.textTheme.labelSmall?.color,
             ),
           ],
         ),
@@ -148,7 +162,7 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
     return CircleAvatar(
       radius: size / 2,
       backgroundColor: Colors.primaries[user.name.hashCode % Colors.primaries.length]
-          .withOpacity(0.3),
+            .withOpacity(0.3),
       child: Icon(
         Icons.person,
         color: Colors.primaries[user.name.hashCode % Colors.primaries.length],

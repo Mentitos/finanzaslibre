@@ -24,13 +24,7 @@ class DangerZoneSection extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(left: 16, bottom: 8),
-          child: Text(
-            l10n.dangerZone,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Colors.red[700],
-            ),
-          ),
+          
         ),
         ListTile(
           leading: const Icon(Icons.delete_sweep, color: Colors.orange),

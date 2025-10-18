@@ -10,7 +10,7 @@ import '../constants/app_constants.dart';
 import 'tabs/summary_tab.dart';
 import 'tabs/history_tab.dart';
 import 'tabs/categories_tab.dart';
-import 'settings/settings_menu.dart';
+import 'settings/settings_screen.dart';
 import '../l10n/app_localizations.dart';
 
 class SavingsScreen extends StatefulWidget {
@@ -44,7 +44,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   bool _isLoading = true;
   bool _privacyMode = false;
   User? _currentUser;
-
+//ignorar eso de advertencia de indefinido y tal
   @override
   void initState() {
     super.initState();
@@ -233,29 +233,27 @@ class _SavingsScreenState extends State<SavingsScreen>
   }
 
   void _showSettingsMenu() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SettingsMenu(
-        dataManager: _dataManager,
-        userManager: _userManager,
-        onDataChanged: () async {
-          _dataManager.setUserManager(_userManager);
-          await _loadData();
-          setState(() {});
-        },
-        onShowSnackBar: (message, isError) {
-          if (isError) {
-            _showErrorSnackBar(message);
-          } else {
-            _showSuccessSnackBar(message);
-          }
-        },
-        allRecordsCount: _allRecords.length,
-        categoriesCount: _categories.length,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SettingsScreen(
+          dataManager: _dataManager,
+          userManager: _userManager,
+          onDataChanged: () async {
+            _dataManager.setUserManager(_userManager);
+            await _loadData();
+            setState(() {});
+          },
+          onShowSnackBar: (message, isError) {
+            if (isError) {
+              _showErrorSnackBar(message);
+            } else {
+              _showSuccessSnackBar(message);
+            }
+          },
+          allRecordsCount: _allRecords.length,
+          categoriesCount: _categories.length,
+        ),
       ),
     );
   }

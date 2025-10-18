@@ -48,6 +48,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
 
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -60,9 +61,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
           padding: const EdgeInsets.only(left: 16, bottom: 8),
           child: Text(
             l10n.users,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            style: theme.textTheme.titleMedium?.copyWith(
+              // 🔥 CORRECCIÓN 1: Dejar la negrita, pero usar el color del tema
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
+              color: theme.textTheme.titleMedium?.color, 
             ),
           ),
         ),
@@ -101,8 +103,14 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     bool isMainWallet,
     AppLocalizations l10n,
   ) {
+    final theme = Theme.of(context);
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      // Resaltar el usuario actual con un color de fondo sutil
+      color: isCurrentUser 
+          ? theme.colorScheme.primary.withOpacity(theme.brightness == Brightness.dark ? 0.1 : 0.05)
+          : theme.cardColor,
       child: Stack(
         children: [
           ListTile(
@@ -112,7 +120,16 @@ class _UserManagementSectionState extends State<UserManagementSection> {
             ),
             title: Row(
               children: [
-                Expanded(child: Text(user.name)),
+                Expanded(
+                  // Mejorar el contraste del nombre del usuario actual
+                  child: Text(
+                    user.name,
+                    style: TextStyle(
+                      // Opcionalmente, usar primaryColor aquí para el nombre también
+                      color: isCurrentUser ? theme.colorScheme.primary : theme.textTheme.titleMedium?.color,
+                    ),
+                  ),
+                ),
                 if (isMainWallet)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -120,14 +137,15 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.2),
+                      color: Colors.green.withOpacity(theme.brightness == Brightness.dark ? 0.4 : 0.2),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       l10n.principal,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
-                        color: Colors.green,
+                        // Usar el color del tema para el texto 'Principal' para asegurar contraste
+                        color: theme.brightness == Brightness.dark ? Colors.lightGreenAccent : Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -140,14 +158,19 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                 if (isCurrentUser)
                   Text(
                     l10n.currentUser,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    // 🔥 CORRECCIÓN 2: Quitar la negrita y usar el color de acento
+                    style: TextStyle(
+                      fontWeight: FontWeight.normal,
+                      color: theme.colorScheme.primary,
+                    ),
                   ),
                 if (!isMainWallet && !isCurrentUser)
                   Text(
                     l10n.holdToDelete,
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.orange[700],
+                      // Usar un color que contraste bien en modo oscuro
+                      color: theme.brightness == Brightness.dark ? Colors.orange[300] : Colors.orange[700],
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -167,7 +190,12 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   
                   if (!isCurrentUser)
                     IconButton(
-                      icon: const Icon(Icons.check_circle_outline, size: 20),
+                      icon: Icon(
+                        Icons.check_circle_outline, 
+                        size: 20, 
+                        // Usar primaryColor para el icono
+                        color: theme.colorScheme.primary, 
+                      ),
                       onPressed: () async {
                         await widget.userManager.setCurrentUser(user);
                         widget.onUserChanged();
@@ -216,7 +244,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               child: Container(
                 width: 4,
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.5),
+                  color: Colors.red.withOpacity(theme.brightness == Brightness.dark ? 0.7 : 0.5),
                   borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(12),
                     bottomRight: Radius.circular(12),
@@ -229,6 +257,11 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     );
   }
 
+  // Métodos _buildProfileAvatar, _showImageOptions, _pickImage, _deleteProfileImage,
+  // _showEditNameDialog, _showAddUserDialog, y _showDeleteUserDialog (sin cambios)
+  // ... (El resto de tus métodos siguen aquí) ...
+  
+  // Incluir el resto de los métodos aquí para un código completo.
   Widget _buildProfileAvatar(User user) {
     if (user.profileImagePath != null) {
       return CircleAvatar(

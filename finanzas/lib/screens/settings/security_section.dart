@@ -30,13 +30,7 @@ class SecuritySection extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(left: 16, bottom: 8),
-              child: Text(
-                l10n.security, 
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
+              
             ),
             ListTile(
               leading: Icon(
