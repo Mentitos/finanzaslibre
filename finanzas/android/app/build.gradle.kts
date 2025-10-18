@@ -1,3 +1,4 @@
+
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -7,7 +8,6 @@ val keystoreProperties = Properties().apply {
         load(FileInputStream(keystorePropertiesFile))
     }
 }
-
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -51,8 +51,8 @@ android {
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true         // activa R8 para reducir tamaño
+            isShrinkResources = true    
         }
     }
 }
