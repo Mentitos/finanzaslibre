@@ -324,6 +324,15 @@
 "copy": "Copiar",
 "error": "Error",
 
+
+"manageUsersWallets": "Administrar billeteras de usuarios",
+  "preferences": "Preferencias",
+  "appearanceNotificationsSecurity": "Apariencia, notificaciones y seguridad",
+  "data": "Datos",
+  "exportImportManageData": "Exportar, importar y administrar tus datos",
+  "dataManagementTitle": "Administracion de datos",
+  "dangerZoneTitle": "Zona de peligro",
+
 "copyPath": "Copiar ruta",
 "share": "Compartir",
 "notifications": "Notificaciones",

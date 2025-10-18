@@ -46,7 +46,7 @@ class SettingsScreen extends StatelessWidget {
             icon: Icons.people,
             iconColor: Colors.blue,
             title: l10n.users,
-            subtitle: 'Gestionar usuarios y billeteras',
+            subtitle: l10n.manageUsersWallets,
             onTap: () {
               Navigator.push(
                 context,
@@ -67,8 +67,8 @@ class SettingsScreen extends StatelessWidget {
             context: context,
             icon: Icons.tune,
             iconColor: Colors.purple,
-            title: 'Preferencias',
-            subtitle: 'Apariencia, notificaciones y seguridad',
+            title: l10n.preferences,
+            subtitle: l10n.appearanceNotificationsSecurity,
             onTap: () {
               Navigator.push(
                 context,
@@ -88,8 +88,8 @@ class SettingsScreen extends StatelessWidget {
             context: context,
             icon: Icons.storage,
             iconColor: Colors.orange,
-            title: 'Datos',
-            subtitle: 'Exportar, importar y gestionar datos',
+            title: l10n.data,
+            subtitle: l10n.exportImportManageData,
             onTap: () {
               Navigator.push(
                 context,
@@ -106,9 +106,6 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 12),
-
-          // Notificaciones
-          
 
           const Divider(height: 40),
 
@@ -206,7 +203,7 @@ class _PreferencesSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Preferencias'),
+        title: Text(l10n.preferences),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: ListView(
@@ -224,7 +221,7 @@ class _PreferencesSettingsScreen extends StatelessWidget {
                       Icon(Icons.palette, color: Colors.purple),
                       const SizedBox(width: 8),
                       Text(
-                        'Apariencia',
+                        l10n.appearance,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ],
@@ -236,10 +233,6 @@ class _PreferencesSettingsScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-
-          // Notificaciones
-          
-          
 
           // Seguridad
           Card(
@@ -253,7 +246,7 @@ class _PreferencesSettingsScreen extends StatelessWidget {
                       Icon(Icons.security, color: Colors.red),
                       const SizedBox(width: 8),
                       Text(
-                        'Seguridad',
+                        l10n.security,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ],
@@ -269,9 +262,9 @@ class _PreferencesSettingsScreen extends StatelessWidget {
             ),
           ),
 
+          const SizedBox(height: 16),
 
-        const SizedBox(height: 16),
-
+          // Notificaciones
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -283,7 +276,7 @@ class _PreferencesSettingsScreen extends StatelessWidget {
                       Icon(Icons.notifications, color: Colors.orange),
                       const SizedBox(width: 8),
                       Text(
-                        'Notificaciones',
+                        l10n.notifications,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ],
@@ -294,7 +287,6 @@ class _PreferencesSettingsScreen extends StatelessWidget {
               ),
             ),
           ),
-
         ],
       ),
     );
@@ -322,7 +314,7 @@ class _DataSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Datos'),
+        title: Text(l10n.data),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: ListView(
@@ -339,7 +331,7 @@ class _DataSettingsScreen extends StatelessWidget {
                       Icon(Icons.import_export, color: Colors.orange),
                       const SizedBox(width: 8),
                       Text(
-                        'Gestión de datos',
+                        l10n.dataManagementTitle,
                         style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ],
@@ -359,7 +351,6 @@ class _DataSettingsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Card(
-            color: Colors.red.shade50,
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -370,10 +361,8 @@ class _DataSettingsScreen extends StatelessWidget {
                       Icon(Icons.warning, color: Colors.red),
                       const SizedBox(width: 8),
                       Text(
-                        'Zona de peligro',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          color: Colors.red.shade700,
-                        ),
+                        l10n.dangerZoneTitle,
+                        style: Theme.of(context).textTheme.titleLarge,
                       ),
                     ],
                   ),

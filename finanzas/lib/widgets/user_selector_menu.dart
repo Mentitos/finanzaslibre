@@ -62,11 +62,14 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
 
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    // Color que se adapta al modo: verde en claro, blanco en oscuro
     final highlightColor = isDarkMode ? Colors.white : theme.primaryColor;
 
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
+      // ¡ESTO ES LO NUEVO! Recargar usuarios cada vez que se abre el menú
+      onOpened: () {
+        _loadUsers();
+      },
       itemBuilder: (context) {
         return _allUsers.map((user) {
           final isCurrentUser = user.id == _currentUser?.id;
@@ -88,7 +91,6 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
                       user.name,
                       style: TextStyle(
                         fontWeight: FontWeight.normal,
-                        // Usamos el color adaptativo
                         color: isCurrentUser ? highlightColor : null,
                       ),
                     ),
@@ -135,7 +137,6 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 11,
                   fontWeight: FontWeight.normal,
-                  // Color blanco en modo oscuro para mejor legibilidad
                   color: isDarkMode ? Colors.white : null,
                 ),
                 overflow: TextOverflow.ellipsis,

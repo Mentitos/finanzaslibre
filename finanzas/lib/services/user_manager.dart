@@ -110,18 +110,24 @@ class UserManager {
     await _prefs.setString(_currentUserKey, user.id);
   }
 
-  Future<void> createUser(String name) async {
-    final users = await getAllUsers();
+  // En user_manager.dart
 
-    final newUser = User(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
-      createdAt: DateTime.now(),
-      profileImagePath: null,
-    );
+Future<String> createUser(String name) async {
+  final users = await getAllUsers();
 
-    await _saveUsers([...users, newUser]);
-  }
+  final newUserId = DateTime.now().millisecondsSinceEpoch.toString();
+  final newUser = User(
+    id: newUserId,
+    name: name,
+    createdAt: DateTime.now(),
+    profileImagePath: null,
+  );
+
+  await _saveUsers([...users, newUser]);
+  
+  // Devolver el ID del nuevo usuario
+  return newUserId;
+}
 
   Future<void> deleteUser(String userId) async {
     if (userId == _defaultUserId) {

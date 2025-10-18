@@ -62,7 +62,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
           child: Text(
             l10n.users,
             style: theme.textTheme.titleMedium?.copyWith(
-              // 🔥 CORRECCIÓN 1: Dejar la negrita, pero usar el color del tema
               fontWeight: FontWeight.bold,
               color: theme.textTheme.titleMedium?.color, 
             ),
@@ -107,7 +106,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      // Resaltar el usuario actual con un color de fondo sutil
       color: isCurrentUser 
           ? theme.colorScheme.primary.withOpacity(theme.brightness == Brightness.dark ? 0.1 : 0.05)
           : theme.cardColor,
@@ -121,11 +119,9 @@ class _UserManagementSectionState extends State<UserManagementSection> {
             title: Row(
               children: [
                 Expanded(
-                  // Mejorar el contraste del nombre del usuario actual
                   child: Text(
                     user.name,
                     style: TextStyle(
-                      // Opcionalmente, usar primaryColor aquí para el nombre también
                       color: isCurrentUser ? theme.colorScheme.primary : theme.textTheme.titleMedium?.color,
                     ),
                   ),
@@ -144,7 +140,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                       l10n.principal,
                       style: TextStyle(
                         fontSize: 12,
-                        // Usar el color del tema para el texto 'Principal' para asegurar contraste
                         color: theme.brightness == Brightness.dark ? Colors.lightGreenAccent : Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
@@ -158,7 +153,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                 if (isCurrentUser)
                   Text(
                     l10n.currentUser,
-                    // 🔥 CORRECCIÓN 2: Quitar la negrita y usar el color de acento
                     style: TextStyle(
                       fontWeight: FontWeight.normal,
                       color: theme.colorScheme.primary,
@@ -169,7 +163,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                     l10n.holdToDelete,
                     style: TextStyle(
                       fontSize: 12,
-                      // Usar un color que contraste bien en modo oscuro
                       color: theme.brightness == Brightness.dark ? Colors.orange[300] : Colors.orange[700],
                       fontStyle: FontStyle.italic,
                     ),
@@ -181,19 +174,16 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  
                   IconButton(
                     icon: const Icon(Icons.edit, size: 20),
                     onPressed: () => _showEditNameDialog(context, user, l10n),
                     tooltip: l10n.editUserName,
                   ),
-                  
                   if (!isCurrentUser)
                     IconButton(
                       icon: Icon(
                         Icons.check_circle_outline, 
                         size: 20, 
-                        // Usar primaryColor para el icono
                         color: theme.colorScheme.primary, 
                       ),
                       onPressed: () async {
@@ -257,11 +247,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     );
   }
 
-  // Métodos _buildProfileAvatar, _showImageOptions, _pickImage, _deleteProfileImage,
-  // _showEditNameDialog, _showAddUserDialog, y _showDeleteUserDialog (sin cambios)
-  // ... (El resto de tus métodos siguen aquí) ...
-  
-  // Incluir el resto de los métodos aquí para un código completo.
   Widget _buildProfileAvatar(User user) {
     if (user.profileImagePath != null) {
       return CircleAvatar(
@@ -453,7 +438,13 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               final userName = controller.text.trim();
               if (userName.isEmpty) return;
 
-              await widget.userManager.createUser(userName);
+              // Crear el usuario y obtener su ID
+              final newUserId = await widget.userManager.createUser(userName);
+              final allUsers = await widget.userManager.getAllUsers();
+              final newUser = allUsers.firstWhere((u) => u.id == newUserId);
+              
+              // Cambiar automáticamente al nuevo usuario
+              await widget.userManager.setCurrentUser(newUser);
 
               if (dialogContext.mounted) {
                 Navigator.pop(dialogContext);
@@ -461,7 +452,9 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
               await _loadUsers();
 
+              // Notificar el cambio para actualizar el UserSelectorMenu
               widget.onUserChanged();
+              
               if (mounted) {
                 widget.onShowSnackBar(
                   '${l10n.userCreated}: $userName',

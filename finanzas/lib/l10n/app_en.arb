@@ -322,6 +322,15 @@
 "copyPath": "Copy path",
 "share": "Share",
 
+
+"manageUsersWallets": "Manage users wallets",
+  "preferences": "Preferences",
+  "appearanceNotificationsSecurity": "Appearance, notifications and security",
+  "data": "Data",
+  "exportImportManageData": "Export, import and manage your data",
+  "dataManagementTitle": "Data management",
+  "dangerZoneTitle": "Danger zone",
+
 "notifications": "Notifications",
 "dailyReminder": "Daily reminder",
 "reminderEnabled": "You will receive a reminder every day",

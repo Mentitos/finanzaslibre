@@ -19,15 +19,16 @@ class DangerZoneSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 16, bottom: 8),
-          
-        ),
         ListTile(
-          leading: const Icon(Icons.delete_sweep, color: Colors.orange),
+          leading: Icon(
+            Icons.delete_sweep,
+            color: isDark ? Colors.orange.shade300 : Colors.orange,
+          ),
           title: Text(l10n.deleteAllRecords),
           subtitle: Text(l10n.deleteAllRecordsSubtitle),
           onTap: () {
@@ -41,7 +42,10 @@ class DangerZoneSection extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: const Icon(Icons.restore, color: Colors.red),
+          leading: Icon(
+            Icons.restore,
+            color: isDark ? Colors.red.shade300 : Colors.red,
+          ),
           title: Text(l10n.resetApp),
           subtitle: Text(l10n.resetAppSubtitle),
           onTap: () {

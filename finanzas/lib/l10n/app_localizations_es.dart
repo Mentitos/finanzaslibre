@@ -859,6 +859,29 @@ class AppLocalizationsEs extends AppLocalizations {
   String get copy => 'Copiar';
 
   @override
+  String get manageUsersWallets => 'Administrar billeteras de usuarios';
+
+  @override
+  String get preferences => 'Preferencias';
+
+  @override
+  String get appearanceNotificationsSecurity =>
+      'Apariencia, notificaciones y seguridad';
+
+  @override
+  String get data => 'Datos';
+
+  @override
+  String get exportImportManageData =>
+      'Exportar, importar y administrar tus datos';
+
+  @override
+  String get dataManagementTitle => 'Administracion de datos';
+
+  @override
+  String get dangerZoneTitle => 'Zona de peligro';
+
+  @override
   String get copyPath => 'Copiar ruta';
 
   @override

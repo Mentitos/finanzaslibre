@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/savings_record.dart';
-import '../models/user_model.dart';
 import '../services/savings_data_manager.dart';
 import '../services/user_manager.dart';
 import '../widgets/record_dialog.dart';
@@ -43,8 +42,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   String _searchQuery = '';
   bool _isLoading = true;
   bool _privacyMode = false;
-  User? _currentUser;
-//ignorar eso de advertencia de indefinido y tal
+
   @override
   void initState() {
     super.initState();
@@ -70,7 +68,6 @@ class _SavingsScreenState extends State<SavingsScreen>
       final stats = await _dataManager.getStatistics();
       final privacyMode = await _dataManager.loadPrivacyMode();
       final categoryColors = await _dataManager.loadAllCategoryColors();
-      final currentUser = _userManager.getCurrentUserSync();
 
       setState(() {
         _allRecords = records;
@@ -78,7 +75,6 @@ class _SavingsScreenState extends State<SavingsScreen>
         _statistics = stats;
         _privacyMode = privacyMode;
         _categoryColors = categoryColors;
-        _currentUser = currentUser;
         _applyFilters();
         _isLoading = false;
       });

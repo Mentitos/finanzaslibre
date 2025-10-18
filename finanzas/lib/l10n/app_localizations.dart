@@ -1736,6 +1736,48 @@ abstract class AppLocalizations {
   /// **'Copiar'**
   String get copy;
 
+  /// No description provided for @manageUsersWallets.
+  ///
+  /// In es, this message translates to:
+  /// **'Administrar billeteras de usuarios'**
+  String get manageUsersWallets;
+
+  /// No description provided for @preferences.
+  ///
+  /// In es, this message translates to:
+  /// **'Preferencias'**
+  String get preferences;
+
+  /// No description provided for @appearanceNotificationsSecurity.
+  ///
+  /// In es, this message translates to:
+  /// **'Apariencia, notificaciones y seguridad'**
+  String get appearanceNotificationsSecurity;
+
+  /// No description provided for @data.
+  ///
+  /// In es, this message translates to:
+  /// **'Datos'**
+  String get data;
+
+  /// No description provided for @exportImportManageData.
+  ///
+  /// In es, this message translates to:
+  /// **'Exportar, importar y administrar tus datos'**
+  String get exportImportManageData;
+
+  /// No description provided for @dataManagementTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Administracion de datos'**
+  String get dataManagementTitle;
+
+  /// No description provided for @dangerZoneTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Zona de peligro'**
+  String get dangerZoneTitle;
+
   /// No description provided for @copyPath.
   ///
   /// In es, this message translates to:
