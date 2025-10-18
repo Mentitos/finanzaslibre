@@ -1,3 +1,13 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties().apply {
+    if (keystorePropertiesFile.exists()) {
+        load(FileInputStream(keystorePropertiesFile))
+    }
+}
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -7,35 +17,42 @@ plugins {
 
 android {
     namespace = "com.example.finanzas"
-    compileSdk = 36  // Actualizado a 36
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
-    
+
     compileOptions {
-        // Habilitar desugaring
         isCoreLibraryDesugaringEnabled = true
-        
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    
+
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_11.toString()
     }
-    
+
     defaultConfig {
         applicationId = "com.example.finanzas"
         minSdk = flutter.minSdkVersion
-        targetSdk = 36  // Actualizado a 36
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        
-        // Habilitar multidex por si acaso
         multiDexEnabled = true
     }
-    
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String
+            keyPassword = keystoreProperties["keyPassword"] as String
+            storeFile = file(keystoreProperties["storeFile"] as String)
+            storePassword = keystoreProperties["storePassword"] as String
+        }
+    }
+
     buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("debug")
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
@@ -45,6 +62,5 @@ flutter {
 }
 
 dependencies {
-    // Actualizar a versión 2.1.4 de desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }

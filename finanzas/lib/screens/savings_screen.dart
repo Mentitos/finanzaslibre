@@ -26,7 +26,7 @@ class SavingsScreen extends StatefulWidget {
 
 class _SavingsScreenState extends State<SavingsScreen>
     with TickerProviderStateMixin {
-    int _userRefreshKey = 0;
+  int _userRefreshKey = 0;
   late TabController _tabController;
   late UserManager _userManager;
   final SavingsDataManager _dataManager = SavingsDataManager();
@@ -229,8 +229,9 @@ class _SavingsScreenState extends State<SavingsScreen>
     );
   }
 
-  void _showSettingsMenu() {
-    Navigator.push(
+  void _showSettingsMenu() async {
+    // Esperar a que se cierre la pantalla de settings
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SettingsScreen(
@@ -239,7 +240,10 @@ class _SavingsScreenState extends State<SavingsScreen>
           onDataChanged: () async {
             _dataManager.setUserManager(_userManager);
             await _loadData();
-            setState(() {});
+            // Incrementar la key para forzar reconstrucción del UserSelectorMenu
+            setState(() {
+              _userRefreshKey++;
+            });
           },
           onShowSnackBar: (message, isError) {
             if (isError) {
@@ -253,6 +257,12 @@ class _SavingsScreenState extends State<SavingsScreen>
         ),
       ),
     );
+    
+    // Cuando regresamos de settings, refrescar el UserSelectorMenu
+    // por si se creó/eliminó un usuario
+    setState(() {
+      _userRefreshKey++;
+    });
   }
 
   void _showSuccessSnackBar(String message) {
@@ -292,13 +302,12 @@ class _SavingsScreenState extends State<SavingsScreen>
           children: [
             Text(l10n.appName),
             UserSelectorMenu(
-              key: ValueKey(_userRefreshKey), // AGREGAR ESTO
+              key: ValueKey(_userRefreshKey),
               userManager: _userManager,
-              refreshKey: ValueKey(_userRefreshKey), // Y ESTO
+              refreshKey: ValueKey(_userRefreshKey),
               onUserChanged: () async {
                 _dataManager.setUserManager(_userManager);
                 await _loadData();
-                // AGREGAR ESTO para cambiar la key
                 setState(() {
                   _userRefreshKey++;
                 });
