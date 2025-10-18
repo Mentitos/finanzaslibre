@@ -5,12 +5,13 @@ import '../services/savings_data_manager.dart';
 import '../services/user_manager.dart';
 import '../widgets/record_dialog.dart';
 import '../widgets/quick_money_dialog.dart';
+import '../widgets/user_selector_menu.dart';
 import '../constants/app_constants.dart';
 import 'tabs/summary_tab.dart';
 import 'tabs/history_tab.dart';
 import 'tabs/categories_tab.dart';
 import 'settings/settings_menu.dart';
-import '../l10n/app_localizations.dart'; 
+import '../l10n/app_localizations.dart';
 
 class SavingsScreen extends StatefulWidget {
   final UserManager userManager;
@@ -42,7 +43,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   String _searchQuery = '';
   bool _isLoading = true;
   bool _privacyMode = false;
-  User? _currentUser; 
+  User? _currentUser;
 
   @override
   void initState() {
@@ -69,7 +70,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       final stats = await _dataManager.getStatistics();
       final privacyMode = await _dataManager.loadPrivacyMode();
       final categoryColors = await _dataManager.loadAllCategoryColors();
-      final currentUser = await _userManager.getCurrentUserSync(); 
+      final currentUser = _userManager.getCurrentUserSync();
 
       setState(() {
         _allRecords = records;
@@ -77,7 +78,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         _statistics = stats;
         _privacyMode = privacyMode;
         _categoryColors = categoryColors;
-        _currentUser = currentUser; 
+        _currentUser = currentUser;
         _applyFilters();
         _isLoading = false;
       });
@@ -242,9 +243,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         dataManager: _dataManager,
         userManager: _userManager,
         onDataChanged: () async {
-          
           _dataManager.setUserManager(_userManager);
-          
           await _loadData();
           setState(() {});
         },
@@ -296,11 +295,20 @@ class _SavingsScreenState extends State<SavingsScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(l10n.appName),
-            if (_currentUser != null)
-              Text(
-                _currentUser!.name,
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
+            UserSelectorMenu(
+              userManager: _userManager,
+              onUserChanged: () async {
+                _dataManager.setUserManager(_userManager);
+                await _loadData();
+              },
+              onShowSnackBar: (message, isError) {
+                if (isError) {
+                  _showErrorSnackBar(message);
+                } else {
+                  _showSuccessSnackBar(message);
+                }
+              },
+            ),
           ],
         ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
