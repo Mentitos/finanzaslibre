@@ -47,8 +47,8 @@ class SettingsScreen extends StatelessWidget {
             iconColor: Colors.blue,
             title: l10n.users,
             subtitle: l10n.manageUsersWallets,
-            onTap: () {
-              Navigator.push(
+            onTap: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => UserListPage(
@@ -58,6 +58,9 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               );
+              // Llamar onDataChanged cuando se regresa de UserListPage
+              // para actualizar el UserSelectorMenu
+              await onDataChanged();
             },
           ),
           const SizedBox(height: 12),

@@ -882,6 +882,55 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dangerZoneTitle => 'Danger zone';
 
   @override
+  String get clearRecordsConfirmation =>
+      'All records for the current user will be deleted. This action cannot be undone.';
+
+  @override
+  String get recordsDeleted => 'Records deleted';
+
+  @override
+  String get resetAppCompletelyMessage =>
+      'The application will be completely reset.';
+
+  @override
+  String get alwaysKept => 'Will always be kept:';
+
+  @override
+  String get mainWalletKept => '✓ Your main wallet \"My Wallet\"';
+
+  @override
+  String get userProfileKept => '✓ Your user profile';
+
+  @override
+  String get keepRecordsOption => 'Keep records';
+
+  @override
+  String get keepMainWalletHistory => 'Keep the main wallet history';
+
+  @override
+  String get willBeDeleted => 'Will be deleted:';
+
+  @override
+  String get additionalWalletsDeleted => '✗ All additional wallets';
+
+  @override
+  String get customCategoriesDeleted => '✗ All custom categories';
+
+  @override
+  String get allRecordsHistoryDeleted => '✗ All records and history';
+
+  @override
+  String get allCategoriesDeleted => '✗ All categories';
+
+  @override
+  String get appResetWithRecordsKept =>
+      'Application reset. Your main wallet is kept with all its records.';
+
+  @override
+  String get appResetAsNew =>
+      'Application reset as new. Your main wallet is empty.';
+
+  @override
   String get copyPath => 'Copy path';
 
   @override

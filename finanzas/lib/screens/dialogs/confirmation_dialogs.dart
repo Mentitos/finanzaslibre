@@ -17,9 +17,7 @@ class ConfirmationDialogs {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.deleteAllRecords),
-        content: Text(
-          'Se eliminarán todos los registros del usuario actual. Esta acción no se puede deshacer.',
-        ),
+        content: Text(l10n.clearRecordsConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -39,10 +37,10 @@ class ConfirmationDialogs {
 
                 if (context.mounted) {
                   Navigator.pop(context);
-                  onShowSnackBar('Registros eliminados', false);
+                  onShowSnackBar(l10n.recordsDeleted, false);
                 }
               } catch (e) {
-                onShowSnackBar('Error: $e', true);
+                onShowSnackBar('${l10n.error}: $e', true);
               }
             },
             child: Text(l10n.delete),
@@ -72,12 +70,12 @@ class ConfirmationDialogs {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Se reiniciará la aplicación completamente.',
+                  l10n.resetAppCompletelyMessage,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
 
-                
+                // Always kept section
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -97,7 +95,7 @@ class ConfirmationDialogs {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Se mantendrá siempre:',
+                            l10n.alwaysKept,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.blue[700],
@@ -113,7 +111,7 @@ class ConfirmationDialogs {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '✓ Tu billetera principal "Mi Billetera"',
+                              l10n.mainWalletKept,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.blue[700],
@@ -121,7 +119,7 @@ class ConfirmationDialogs {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '✓ Tu perfil de usuario',
+                              l10n.userProfileKept,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.blue[700],
@@ -135,7 +133,7 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                
+                // Checkbox option
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -161,14 +159,14 @@ class ConfirmationDialogs {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Conservar registros',
+                                  l10n.keepRecordsOption,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     color: Colors.amber[800],
                                   ),
                                 ),
                                 Text(
-                                  'Mantener el historial de la billetera principal',
+                                  l10n.keepMainWalletHistory,
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[600],
@@ -184,7 +182,7 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                
+                // Will be deleted section
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -204,7 +202,7 @@ class ConfirmationDialogs {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Se eliminarán:',
+                            l10n.willBeDeleted,
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: Colors.red[700],
@@ -220,7 +218,7 @@ class ConfirmationDialogs {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '✗ Todas las billeteras adicionales',
+                              l10n.additionalWalletsDeleted,
                               style: TextStyle(
                                 fontSize: 12,
                                 color: Colors.red[700],
@@ -229,7 +227,7 @@ class ConfirmationDialogs {
                             const SizedBox(height: 4),
                             if (keepRecords)
                               Text(
-                                '✗ Todas las categorías personalizadas',
+                                l10n.customCategoriesDeleted,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.red[700],
@@ -240,7 +238,7 @@ class ConfirmationDialogs {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '✗ Todos los registros e historial',
+                                    l10n.allRecordsHistoryDeleted,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.red[700],
@@ -248,7 +246,7 @@ class ConfirmationDialogs {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '✗ Todas las categorías',
+                                    l10n.allCategoriesDeleted,
                                     style: TextStyle(
                                       fontSize: 12,
                                       color: Colors.red[700],
@@ -277,26 +275,24 @@ class ConfirmationDialogs {
                   final userManager = UserManager();
 
                   if (keepRecords) {
-                    
                     await userManager.resetAppKeepingDefaultUser();
                     await dataManager.clearAllDataExceptDefaultUser();
                     
                     if (context.mounted) {
                       Navigator.pop(context);
                       onShowSnackBar(
-                        'Aplicación reiniciada. Tu billetera principal se mantiene con todos sus registros.',
+                        l10n.appResetWithRecordsKept,
                         false,
                       );
                     }
                   } else {
-                    
                     await userManager.resetAppKeepingDefaultUser();
                     await dataManager.clearAllData();
                     
                     if (context.mounted) {
                       Navigator.pop(context);
                       onShowSnackBar(
-                        'Aplicación reiniciada como nueva. Tu billetera principal está vacía.',
+                        l10n.appResetAsNew,
                         false,
                       );
                     }
@@ -304,7 +300,7 @@ class ConfirmationDialogs {
 
                   await onDataChanged();
                 } catch (e) {
-                  onShowSnackBar('Error: $e', true);
+                  onShowSnackBar('${l10n.error}: $e', true);
                 }
               },
               child: Text(l10n.reset),

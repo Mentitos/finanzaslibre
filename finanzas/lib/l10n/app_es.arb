@@ -333,6 +333,23 @@
   "dataManagementTitle": "Administracion de datos",
   "dangerZoneTitle": "Zona de peligro",
 
+ "clearRecordsConfirmation": "Se eliminaran todos los registros del usuario actual. Esta accion no se puede deshacer.",
+  "recordsDeleted": "Registros eliminados",
+  "resetAppCompletelyMessage": "La aplicacion se restablecera por completo.",
+  "alwaysKept": "Siempre se conservara:",
+  "mainWalletKept": "✓ Tu billetera principal \"Mi Billetera\"",
+  "userProfileKept": "✓ Tu perfil de usuario",
+  "keepRecordsOption": "Conservar registros",
+  "keepMainWalletHistory": "Conservar el historial de la billetera principal",
+  "willBeDeleted": "Se eliminara:",
+  "additionalWalletsDeleted": "✗ Todas las billeteras adicionales",
+  "customCategoriesDeleted": "✗ Todas las categorias personalizadas",
+  "allRecordsHistoryDeleted": "✗ Todos los registros e historial",
+  "allCategoriesDeleted": "✗ Todas las categorias",
+  "appResetWithRecordsKept": "Aplicacion restablecida. Se conserva tu billetera principal con todos sus registros.",
+  "appResetAsNew": "Aplicacion restablecida como nueva. Tu billetera principal esta vacia.",
+
+
 "copyPath": "Copiar ruta",
 "share": "Compartir",
 "notifications": "Notificaciones",

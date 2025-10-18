@@ -26,6 +26,7 @@ class SavingsScreen extends StatefulWidget {
 
 class _SavingsScreenState extends State<SavingsScreen>
     with TickerProviderStateMixin {
+    int _userRefreshKey = 0;
   late TabController _tabController;
   late UserManager _userManager;
   final SavingsDataManager _dataManager = SavingsDataManager();
@@ -278,6 +279,7 @@ class _SavingsScreenState extends State<SavingsScreen>
     }
   }
 
+  
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -290,10 +292,16 @@ class _SavingsScreenState extends State<SavingsScreen>
           children: [
             Text(l10n.appName),
             UserSelectorMenu(
+              key: ValueKey(_userRefreshKey), // AGREGAR ESTO
               userManager: _userManager,
+              refreshKey: ValueKey(_userRefreshKey), // Y ESTO
               onUserChanged: () async {
                 _dataManager.setUserManager(_userManager);
                 await _loadData();
+                // AGREGAR ESTO para cambiar la key
+                setState(() {
+                  _userRefreshKey++;
+                });
               },
               onShowSnackBar: (message, isError) {
                 if (isError) {

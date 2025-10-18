@@ -1778,6 +1778,96 @@ abstract class AppLocalizations {
   /// **'Zona de peligro'**
   String get dangerZoneTitle;
 
+  /// No description provided for @clearRecordsConfirmation.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminaran todos los registros del usuario actual. Esta accion no se puede deshacer.'**
+  String get clearRecordsConfirmation;
+
+  /// No description provided for @recordsDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Registros eliminados'**
+  String get recordsDeleted;
+
+  /// No description provided for @resetAppCompletelyMessage.
+  ///
+  /// In es, this message translates to:
+  /// **'La aplicacion se restablecera por completo.'**
+  String get resetAppCompletelyMessage;
+
+  /// No description provided for @alwaysKept.
+  ///
+  /// In es, this message translates to:
+  /// **'Siempre se conservara:'**
+  String get alwaysKept;
+
+  /// No description provided for @mainWalletKept.
+  ///
+  /// In es, this message translates to:
+  /// **'✓ Tu billetera principal \"Mi Billetera\"'**
+  String get mainWalletKept;
+
+  /// No description provided for @userProfileKept.
+  ///
+  /// In es, this message translates to:
+  /// **'✓ Tu perfil de usuario'**
+  String get userProfileKept;
+
+  /// No description provided for @keepRecordsOption.
+  ///
+  /// In es, this message translates to:
+  /// **'Conservar registros'**
+  String get keepRecordsOption;
+
+  /// No description provided for @keepMainWalletHistory.
+  ///
+  /// In es, this message translates to:
+  /// **'Conservar el historial de la billetera principal'**
+  String get keepMainWalletHistory;
+
+  /// No description provided for @willBeDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Se eliminara:'**
+  String get willBeDeleted;
+
+  /// No description provided for @additionalWalletsDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'✗ Todas las billeteras adicionales'**
+  String get additionalWalletsDeleted;
+
+  /// No description provided for @customCategoriesDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'✗ Todas las categorias personalizadas'**
+  String get customCategoriesDeleted;
+
+  /// No description provided for @allRecordsHistoryDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'✗ Todos los registros e historial'**
+  String get allRecordsHistoryDeleted;
+
+  /// No description provided for @allCategoriesDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'✗ Todas las categorias'**
+  String get allCategoriesDeleted;
+
+  /// No description provided for @appResetWithRecordsKept.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicacion restablecida. Se conserva tu billetera principal con todos sus registros.'**
+  String get appResetWithRecordsKept;
+
+  /// No description provided for @appResetAsNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Aplicacion restablecida como nueva. Tu billetera principal esta vacia.'**
+  String get appResetAsNew;
+
   /// No description provided for @copyPath.
   ///
   /// In es, this message translates to:

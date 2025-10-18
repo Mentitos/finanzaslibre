@@ -882,6 +882,56 @@ class AppLocalizationsEs extends AppLocalizations {
   String get dangerZoneTitle => 'Zona de peligro';
 
   @override
+  String get clearRecordsConfirmation =>
+      'Se eliminaran todos los registros del usuario actual. Esta accion no se puede deshacer.';
+
+  @override
+  String get recordsDeleted => 'Registros eliminados';
+
+  @override
+  String get resetAppCompletelyMessage =>
+      'La aplicacion se restablecera por completo.';
+
+  @override
+  String get alwaysKept => 'Siempre se conservara:';
+
+  @override
+  String get mainWalletKept => '✓ Tu billetera principal \"Mi Billetera\"';
+
+  @override
+  String get userProfileKept => '✓ Tu perfil de usuario';
+
+  @override
+  String get keepRecordsOption => 'Conservar registros';
+
+  @override
+  String get keepMainWalletHistory =>
+      'Conservar el historial de la billetera principal';
+
+  @override
+  String get willBeDeleted => 'Se eliminara:';
+
+  @override
+  String get additionalWalletsDeleted => '✗ Todas las billeteras adicionales';
+
+  @override
+  String get customCategoriesDeleted => '✗ Todas las categorias personalizadas';
+
+  @override
+  String get allRecordsHistoryDeleted => '✗ Todos los registros e historial';
+
+  @override
+  String get allCategoriesDeleted => '✗ Todas las categorias';
+
+  @override
+  String get appResetWithRecordsKept =>
+      'Aplicacion restablecida. Se conserva tu billetera principal con todos sus registros.';
+
+  @override
+  String get appResetAsNew =>
+      'Aplicacion restablecida como nueva. Tu billetera principal esta vacia.';
+
+  @override
   String get copyPath => 'Copiar ruta';
 
   @override

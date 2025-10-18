@@ -322,6 +322,22 @@
 "copyPath": "Copy path",
 "share": "Share",
 
+"clearRecordsConfirmation": "All records for the current user will be deleted. This action cannot be undone.",
+"recordsDeleted": "Records deleted",
+"resetAppCompletelyMessage": "The application will be completely reset.",
+"alwaysKept": "Will always be kept:",
+"mainWalletKept": "✓ Your main wallet \"My Wallet\"",
+"userProfileKept": "✓ Your user profile",
+"keepRecordsOption": "Keep records",
+"keepMainWalletHistory": "Keep the main wallet history",
+"willBeDeleted": "Will be deleted:",
+"additionalWalletsDeleted": "✗ All additional wallets",
+"customCategoriesDeleted": "✗ All custom categories",
+"allRecordsHistoryDeleted": "✗ All records and history",
+"allCategoriesDeleted": "✗ All categories",
+"appResetWithRecordsKept": "Application reset. Your main wallet is kept with all its records.",
+"appResetAsNew": "Application reset as new. Your main wallet is empty.",
+
 
 "manageUsersWallets": "Manage users wallets",
   "preferences": "Preferences",

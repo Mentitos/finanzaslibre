@@ -8,12 +8,15 @@ class UserSelectorMenu extends StatefulWidget {
   final UserManager userManager;
   final VoidCallback onUserChanged;
   final Function(String message, bool isError)? onShowSnackBar;
+  // Agregar una key para forzar la recarga
+  final Key? refreshKey;
 
   const UserSelectorMenu({
     super.key,
     required this.userManager,
     required this.onUserChanged,
     this.onShowSnackBar,
+    this.refreshKey,
   });
 
   @override
@@ -29,6 +32,16 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
   void initState() {
     super.initState();
     _loadUsers();
+  }
+
+  // ¡NUEVO! Detectar cuando el widget se actualiza
+  @override
+  void didUpdateWidget(UserSelectorMenu oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Si cambió la refreshKey, recargar
+    if (oldWidget.refreshKey != widget.refreshKey) {
+      _loadUsers();
+    }
   }
 
   Future<void> _loadUsers() async {
@@ -66,10 +79,6 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
 
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
-      // ¡ESTO ES LO NUEVO! Recargar usuarios cada vez que se abre el menú
-      onOpened: () {
-        _loadUsers();
-      },
       itemBuilder: (context) {
         return _allUsers.map((user) {
           final isCurrentUser = user.id == _currentUser?.id;
