@@ -2,39 +2,45 @@ import 'package:flutter/material.dart';
 import '../../models/savings_record.dart';
 import '../../widgets/record_item.dart';
 import '../../constants/app_constants.dart';
+import 'package:fuzzywuzzy/fuzzywuzzy.dart';
 import '../../l10n/app_localizations.dart';
+import '../../l10n/category_translations.dart';
 
 class HistoryTab extends StatelessWidget {
+  final List<SavingsRecord> allRecords;
   final List<SavingsRecord> filteredRecords;
   final List<String> categories;
   final Map<String, Color> categoryColors;
   final String currentFilter;
   final String selectedCategory;
-  final String searchQuery; // Lo mantenemos para el mensaje de "sin resultados"
+  final String searchQuery;
   final TextEditingController searchController;
   final Future<void> Function() onRefresh;
   final Function(SavingsRecord) onEditRecord;
   final Function(String) onDeleteRecord;
   final Function(String) onFilterChanged;
   final Function(String) onCategoryChanged;
-  final Function(String) onSearchChanged; // CAMBIO 1: Ahora recibe un String
+  final Function(List<SavingsRecord>) onSearchChanged;
+  final VoidCallback onSearchCleared;
   final VoidCallback onAddRecordTap;
 
   const HistoryTab({
     super.key,
+    required this.allRecords,
     required this.filteredRecords,
     required this.categories,
     required this.categoryColors,
     required this.currentFilter,
     required this.selectedCategory,
-    required this.searchQuery, // El parámetro que faltaba en la llamada
+    required this.searchQuery,
     required this.searchController,
     required this.onRefresh,
     required this.onEditRecord,
     required this.onDeleteRecord,
     required this.onFilterChanged,
     required this.onCategoryChanged,
-    required this.onSearchChanged, // Firma actualizada
+    required this.onSearchChanged,
+    required this.onSearchCleared,
     required this.onAddRecordTap,
   });
 
@@ -42,10 +48,10 @@ class HistoryTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     
-      return Column(
+     return Column(
       children: [
         _buildSearchBar(l10n),
-        _buildFilters(context, l10n), // Pasamos el context
+        _buildFilters(l10n),
         Expanded(
           child: filteredRecords.isEmpty
               ? _buildEmptyState(context, l10n)
@@ -59,13 +65,14 @@ class HistoryTab extends StatelessWidget {
                     itemBuilder: (context, index) {
                       final record = filteredRecords[index];
                       return RecordItem(
-                        record: record,
-                        onEdit: () => onEditRecord(record),
-                        onDelete: () => _showDeleteConfirmation(context, record, l10n),
-                        showCategory: true,
-                        categoryColors: categoryColors,
-                        l10n: l10n, 
-                      );
+  record: record,
+  onEdit: () => onEditRecord(record),
+  onDelete: () => _showDeleteConfirmation(context, record, l10n),
+  showCategory: true,
+  categoryColors: categoryColors,
+  l10n: l10n, 
+);
+
                     },
                   ),
                 ),
@@ -85,29 +92,239 @@ class HistoryTab extends StatelessWidget {
           suffixIcon: searchController.text.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    searchController.clear();
-                    onSearchChanged(''); // Notifica que se limpió
-                  },
+                  onPressed: onSearchCleared,
                 )
               : null,
           border: const OutlineInputBorder(),
         ),
-        // CAMBIO 2: El onChanged ahora solo notifica el texto.
-        onChanged: onSearchChanged,
+        onChanged: (value) {
+          final results = fuzzySearch(value, allRecords);
+          onSearchChanged(results);
+        },
       ),
     );
   }
-  
-  // CAMBIO 3: La función fuzzySearch se elimina de aquí.
-  // La lógica ahora vive en _applyFilters() dentro de savings_screen.dart
 
-  Widget _buildFilters(BuildContext context, AppLocalizations l10n) { // Recibe context
+List<SavingsRecord> fuzzySearch(String query, List<SavingsRecord> records) {
+  
+  if (query.trim().isEmpty) {
+    return records;
+  }
+
+  final normalizedQuery = query.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
+
+  return records.where((record) {
+    final desc = record.description.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
+    final category = record.category.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
+    final descRatio = ratio(normalizedQuery, desc);
+    final catRatio = ratio(normalizedQuery, category);
+    return descRatio >= 70 || catRatio >= 70;
+  }).toList();
+}
+
+  Widget _buildFilters(AppLocalizations l10n) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(AppConstants.defaultPadding, 0, AppConstants.defaultPadding, AppConstants.defaultPadding),
+      padding: const EdgeInsets.symmetric(horizontal: AppConstants.defaultPadding),
       child: Row(
         children: [
           _buildFilterChip(l10n.deposits, 'deposits'), 
           const SizedBox(width: AppConstants.smallPadding),
-          _buildFilterChip(l10n.withdrawals, 'withdraw
+          _buildFilterChip(l10n.withdrawals, 'withdrawals'), 
+          const SizedBox(width: AppConstants.defaultPadding),
+          Builder(
+            builder: (context) => _buildCategoryDropdown(context, l10n),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String text, String value) {
+    final isSelected = currentFilter == value;
+    return FilterChip(
+      label: Text(text),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (isSelected) {
+          onFilterChanged('all');
+        } else {
+          onFilterChanged(value);
+        }
+      },
+    );
+  }
+
+   Widget _buildCategoryDropdown(BuildContext context, AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryColor = Theme.of(context).colorScheme.primary;
+    
+    final borderColor = selectedCategory == 'all'
+        ? (isDark ? Colors.grey.shade600 : Colors.grey.shade400)
+        : primaryColor;
+    final iconColor = selectedCategory == 'all'
+        ? (isDark ? Colors.grey.shade400 : Colors.grey.shade700)
+        : primaryColor;
+    final textColor = selectedCategory == 'all'
+        ? Theme.of(context).textTheme.bodyLarge?.color
+        : primaryColor;
+
+    return PopupMenuButton<String>(
+      initialValue: selectedCategory,
+      offset: const Offset(0, 40),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: borderColor,
+            width: selectedCategory == 'all' ? 1 : 2,
+          ),
+          borderRadius: BorderRadius.circular(8),
+          color: selectedCategory == 'all'
+              ? Colors.transparent
+              : Theme.of(context).primaryColor.withOpacity(0.1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.category, size: 20, color: iconColor),
+            const SizedBox(width: 8),
+            Text(
+              selectedCategory == 'all' ? l10n.category : selectedCategory, 
+              style: TextStyle(
+                fontWeight: selectedCategory == 'all' 
+                    ? FontWeight.normal 
+                    : FontWeight.bold,
+                color: textColor,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.arrow_drop_down, size: 20, color: iconColor),
+          ],
+        ),
+      ),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: 'all',
+          child: Text(l10n.allCategories), 
+        ),
+        ...categories.map((category) => PopupMenuItem(
+              value: category,
+              child: Text(l10n.translateCategory(category)),
+            )),
+      ],
+      onSelected: (value) {
+        onCategoryChanged(value);
+      },
+    );
+  }
+
+
+  Widget _buildEmptyState(BuildContext context, AppLocalizations l10n) {
+    String title = l10n.noRecords; 
+    String subtitle = l10n.noRecordsSubtitle; 
+
+    if (searchQuery.isNotEmpty) {
+      title = l10n.noSearchResults; 
+      subtitle = l10n.noSearchResultsSubtitle; 
+    } else if (selectedCategory != 'all') {
+      title = l10n.noCategoryRecords; 
+      subtitle = l10n.noCategoryRecordsSubtitle; 
+    }
+
+    return SingleChildScrollView(
+      child: EmptyRecordsWidget(
+        title: title,
+        subtitle: subtitle,
+        onActionPressed: searchQuery.isEmpty ? onAddRecordTap : null,
+        actionText: searchQuery.isEmpty ? l10n.addRecord : null, 
+      ),
+    );
+  }
+
+
+  void _showDeleteConfirmation(BuildContext context, SavingsRecord record, AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteRecord), 
+        content: Text(
+          '${l10n.deleteConfirmation} "${record.description.isEmpty ? record.category : record.description}"?', 
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel), 
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onDeleteRecord(record.id);
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: Text(l10n.delete), 
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+
+class EmptyRecordsWidget extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final VoidCallback? onActionPressed;
+  final String? actionText;
+
+  const EmptyRecordsWidget({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    this.onActionPressed,
+    this.actionText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppConstants.largePadding),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.inbox_outlined,
+              size: 80,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.grey[700],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            if (onActionPressed != null && actionText != null) ...[
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: onActionPressed,
+                icon: const Icon(Icons.add),
+                label: Text(actionText!),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}

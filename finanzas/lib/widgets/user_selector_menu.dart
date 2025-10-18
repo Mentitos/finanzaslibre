@@ -61,7 +61,9 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
     }
 
     final theme = Theme.of(context);
-    final primaryColor = theme.primaryColor;
+    final isDarkMode = theme.brightness == Brightness.dark;
+    // Color que se adapta al modo: verde en claro, blanco en oscuro
+    final highlightColor = isDarkMode ? Colors.white : theme.primaryColor;
 
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
@@ -72,10 +74,9 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
           return PopupMenuItem<String>(
             value: user.id,
             enabled: !isCurrentUser,
-            // 🔥 SOLUCIÓN FINAL: Usamos DefaultTextStyle para anular cualquier negrita heredada
             child: DefaultTextStyle(
               style: DefaultTextStyle.of(context).style.copyWith(
-                fontWeight: FontWeight.normal, // Forzamos Normal para todos los items
+                fontWeight: FontWeight.normal,
                 fontSize: 14, 
               ),
               child: Row(
@@ -86,17 +87,16 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
                     child: Text(
                       user.name,
                       style: TextStyle(
-                        // Mantenemos FontWeight.normal explícito para el nombre
-                        fontWeight: FontWeight.normal, 
-                        // Usamos PrimaryColor para destacar el seleccionado con color.
-                        color: isCurrentUser ? primaryColor : null,
+                        fontWeight: FontWeight.normal,
+                        // Usamos el color adaptativo
+                        color: isCurrentUser ? highlightColor : null,
                       ),
                     ),
                   ),
                   if (isCurrentUser)
                     Icon(
                       Icons.check_circle,
-                      color: primaryColor,
+                      color: highlightColor,
                       size: 20,
                     ),
                 ],
@@ -134,8 +134,9 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
                 _currentUser!.name,
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 11,
-                  // Aseguramos que el texto del botón tampoco sea bold.
-                  fontWeight: FontWeight.normal, 
+                  fontWeight: FontWeight.normal,
+                  // Color blanco en modo oscuro para mejor legibilidad
+                  color: isDarkMode ? Colors.white : null,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -143,7 +144,7 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
             Icon(
               Icons.arrow_drop_down,
               size: 14,
-              color: theme.textTheme.labelSmall?.color,
+              color: isDarkMode ? Colors.white : theme.textTheme.labelSmall?.color,
             ),
           ],
         ),
