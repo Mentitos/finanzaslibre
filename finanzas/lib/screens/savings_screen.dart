@@ -230,7 +230,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   }
 
   void _showSettingsMenu() async {
-    // Esperar a que se cierre la pantalla de settings
+    
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -240,7 +240,7 @@ class _SavingsScreenState extends State<SavingsScreen>
           onDataChanged: () async {
             _dataManager.setUserManager(_userManager);
             await _loadData();
-            // Incrementar la key para forzar reconstrucción del UserSelectorMenu
+            
             setState(() {
               _userRefreshKey++;
             });
@@ -258,8 +258,6 @@ class _SavingsScreenState extends State<SavingsScreen>
       ),
     );
     
-    // Cuando regresamos de settings, refrescar el UserSelectorMenu
-    // por si se creó/eliminó un usuario
     setState(() {
       _userRefreshKey++;
     });

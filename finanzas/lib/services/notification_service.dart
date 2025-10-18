@@ -5,7 +5,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 class NotificationService {
-  // Singleton pattern
+  
   static final NotificationService _instance = NotificationService._internal();
   
   factory NotificationService() {
@@ -22,17 +22,13 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    // Inicializar timezone
     tz.initializeTimeZones();
     
-    // Detectar y configurar la zona horaria del dispositivo
     final String timeZoneName = await _getDeviceTimeZone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
 
-    // Configuración Android
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // Configuración iOS
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
@@ -44,7 +40,6 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    // Inicializar con callback para cuando se toca la notificación
     await _notifications.initialize(
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
@@ -53,12 +48,10 @@ class NotificationService {
     _initialized = true;
   }
 
-  // Detectar la zona horaria del dispositivo
   Future<String> _getDeviceTimeZone() async {
     try {
       final String timeZoneName = DateTime.now().timeZoneName;
       
-      // Mapeo de zonas horarias comunes
       final Map<String, String> timeZoneMap = {
         'ART': 'America/Argentina/Buenos_Aires',
         'EST': 'America/New_York',
@@ -73,41 +66,37 @@ class NotificationService {
         'NZST': 'Pacific/Auckland',
       };
 
-      // Intentar encontrar la zona horaria en el mapa
       if (timeZoneMap.containsKey(timeZoneName)) {
         return timeZoneMap[timeZoneName]!;
       }
 
-      // Si no se encuentra, intentar usar la zona horaria de Argentina por defecto
-      // o detectar por offset
       final offset = DateTime.now().timeZoneOffset;
       if (offset.inHours == -3) {
         return 'America/Argentina/Buenos_Aires';
       }
 
-      // Fallback a UTC si no se puede determinar
       return 'UTC';
     } catch (e) {
-      // En caso de error, usar Buenos Aires como default
+      
       return 'America/Argentina/Buenos_Aires';
     }
   }
 
-  // Obtener la zona horaria actual configurada
+  
   String getCurrentTimeZone() {
     return tz.local.name;
   }
 
-  // Cambiar la zona horaria manualmente
+  
   void setTimeZone(String timeZoneName) {
     try {
       tz.setLocalLocation(tz.getLocation(timeZoneName));
     } catch (e) {
-      // Si falla, mantener la actual
+      
     }
   }
 
-  // Obtener lista de zonas horarias disponibles
+
   List<Map<String, String>> getAvailableTimeZones() {
     return [
       {'name': 'America/Argentina/Buenos_Aires', 'display': '🇦🇷 Argentina (GMT-3)'},
@@ -139,14 +128,14 @@ class NotificationService {
     ];
   }
 
-  // Callback cuando se toca la notificación
+ 
   void _onNotificationTapped(NotificationResponse response) {
-    // Aquí puedes agregar lógica para cuando el usuario toca la notificación
+    
   }
 
-  // Solicitar todos los permisos necesarios
+  
   Future<bool> requestPermissions() async {
-    // Permiso de notificaciones (Android 13+)
+    
     if (!await Permission.notification.isGranted) {
       final status = await Permission.notification.request();
       if (!status.isGranted) {
@@ -154,7 +143,7 @@ class NotificationService {
       }
     }
 
-    // Permiso de alarmas exactas (Android 12+)
+   
     if (Platform.isAndroid) {
       if (!await Permission.scheduleExactAlarm.isGranted) {
         await Permission.scheduleExactAlarm.request();
@@ -164,7 +153,7 @@ class NotificationService {
     return true;
   }
 
-  // Programar notificación diaria
+  
   Future<void> scheduleDailyReminder({
     required int hour,
     required int minute,
@@ -174,7 +163,7 @@ class NotificationService {
     final scheduledDate = _nextInstanceOfTime(hour, minute);
     
     await _notifications.zonedSchedule(
-      0, // ID único para la notificación diaria
+      0,
       title,
       body,
       scheduledDate,
@@ -201,7 +190,7 @@ class NotificationService {
     );
   }
 
-  // Calcular la próxima instancia de la hora configurada
+  
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
@@ -213,7 +202,7 @@ class NotificationService {
       minute,
     );
 
-    // Si la hora ya pasó hoy, programar para mañana
+    
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
@@ -221,14 +210,14 @@ class NotificationService {
     return scheduledDate;
   }
 
-  // Obtener tiempo restante hasta la próxima notificación
+  
   Duration getTimeUntilNextNotification(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     final nextNotification = _nextInstanceOfTime(hour, minute);
     return nextNotification.difference(now);
   }
 
-  // Formatear duración de forma legible
+ 
   String formatTimeRemaining(Duration duration) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
@@ -252,12 +241,12 @@ class NotificationService {
     }
   }
 
-  // Cancelar notificación diaria
+  
   Future<void> cancelDailyReminder() async {
     await _notifications.cancel(0);
   }
 
-  // Verificar si hay notificaciones programadas
+
   Future<bool> hasScheduledNotifications() async {
     final pending = await _notifications.pendingNotificationRequests();
     return pending.isNotEmpty;

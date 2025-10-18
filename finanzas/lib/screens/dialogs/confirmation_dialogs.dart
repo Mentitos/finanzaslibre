@@ -75,7 +75,6 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                // Always kept section
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -133,7 +132,6 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                // Checkbox option
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -182,7 +180,6 @@ class ConfirmationDialogs {
                 ),
                 const SizedBox(height: 16),
 
-                // Will be deleted section
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(

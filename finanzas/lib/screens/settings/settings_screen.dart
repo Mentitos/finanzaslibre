@@ -58,8 +58,6 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
               );
-              // Llamar onDataChanged cuando se regresa de UserListPage
-              // para actualizar el UserSelectorMenu
               await onDataChanged();
             },
           ),
@@ -188,7 +186,7 @@ class SettingsScreen extends StatelessWidget {
 }
 
 // ============================================
-// PANTALLAS SECUNDARIAS (en el mismo archivo)
+//            PANTALLAS SECUNDARIAS 
 // ============================================
 
 class _PreferencesSettingsScreen extends StatelessWidget {

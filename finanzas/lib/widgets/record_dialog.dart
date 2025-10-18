@@ -5,7 +5,7 @@ import '../constants/app_constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/category_translations.dart';
 
-// Formateador personalizado para separar miles con puntos
+
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -16,18 +16,18 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    // Remover todos los puntos existentes
+    
     String text = newValue.text.replaceAll('.', '');
     
-    // Solo permitir dígitos
+    
     if (!RegExp(r'^\d+$').hasMatch(text)) {
       return oldValue;
     }
 
-    // Formatear con separadores de miles
+    
     String formatted = _formatWithThousands(text);
     
-    // Calcular la nueva posición del cursor
+    
     int selectionIndex = newValue.selection.end;
     int oldDots = oldValue.text.substring(0, oldValue.selection.end).split('.').length - 1;
     int newDots = formatted.substring(0, selectionIndex + (formatted.split('.').length - 1 - oldDots)).split('.').length - 1;
@@ -43,7 +43,7 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   String _formatWithThousands(String text) {
     if (text.isEmpty) return text;
     
-    // Invertir el string para agregar puntos desde la derecha
+    
     String reversed = text.split('').reversed.join();
     String formatted = '';
     
@@ -54,7 +54,7 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       formatted += reversed[i];
     }
     
-    // Volver a invertir para obtener el formato correcto
+    
     return formatted.split('').reversed.join();
   }
 }
@@ -437,14 +437,14 @@ class _RecordDialogState extends State<RecordDialog> {
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [
-                      // AQUÍ: permite números y puntos
+                      
                       FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                      // AQUÍ: aplica el formateador de miles automáticamente
+                      
                       ThousandsSeparatorInputFormatter(),
                       LengthLimitingTextInputFormatter(15),
                     ],
                     validator: (value) {
-                      // Remover puntos para validar
+                     
                       final physicalClean = _physicalController.text.replaceAll('.', '');
                       final digitalClean = _digitalController.text.replaceAll('.', '');
                       final physical = double.tryParse(physicalClean) ?? 0;
@@ -628,7 +628,7 @@ class _RecordDialogState extends State<RecordDialog> {
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    // AQUÍ: remover puntos antes de parsear los números
+    
     final physicalClean = _physicalController.text.replaceAll('.', '');
     final digitalClean = _digitalController.text.replaceAll('.', '');
     final physical = double.tryParse(physicalClean) ?? 0;

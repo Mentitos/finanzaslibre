@@ -8,7 +8,7 @@ import '../utils/formatters.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/category_translations.dart';
 
-// Formateador personalizado para separar miles con puntos
+
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -19,18 +19,17 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    // Remover todos los puntos existentes
+    
     String text = newValue.text.replaceAll('.', '');
     
-    // Solo permitir dígitos
+    
     if (!RegExp(r'^\d+$').hasMatch(text)) {
       return oldValue;
     }
 
-    // Formatear con separadores de miles
+    
     String formatted = _formatWithThousands(text);
     
-    // Calcular la nueva posición del cursor
     int selectionIndex = newValue.selection.end;
     int oldDots = oldValue.text.substring(0, oldValue.selection.end).split('.').length - 1;
     int newDots = formatted.substring(0, selectionIndex + (formatted.split('.').length - 1 - oldDots)).split('.').length - 1;
@@ -46,7 +45,6 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   String _formatWithThousands(String text) {
     if (text.isEmpty) return text;
     
-    // Invertir el string para agregar puntos desde la derecha
     String reversed = text.split('').reversed.join();
     String formatted = '';
     
@@ -57,7 +55,6 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       formatted += reversed[i];
     }
     
-    // Volver a invertir para obtener el formato correcto
     return formatted.split('').reversed.join();
   }
 }
@@ -390,7 +387,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
       ),
       onPressed: () {
         setState(() {
-          // Formatear con separadores de miles al establecer desde quick amount
+
           String amountStr = amount.toStringAsFixed(0);
           controller.text = _formatNumberWithDots(amountStr);
         });
@@ -415,7 +412,6 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     return formatted.split('').reversed.join();
   }
 
-  // AQUÍ ES DONDE VA EL FORMATEADOR - en el campo customAmount
   Widget _buildAmountField(TextEditingController controller) {
     final l10n = AppLocalizations.of(context)!;
     
@@ -430,18 +426,18 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
       ),
       keyboardType: TextInputType.number,
       inputFormatters: [
-        // AQUÍ: permite números y puntos
+        
         FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-        // AQUÍ: aplica el formateador de miles automáticamente
+       
         ThousandsSeparatorInputFormatter(),
-        // Aumentado el límite para incluir los puntos
+        
         LengthLimitingTextInputFormatter(15),
       ],
       validator: (value) {
         if (value?.isEmpty == true) {
           return l10n.enterAmount;
         }
-        // Remover puntos para validar el número
+      
         final cleanValue = value!.replaceAll('.', '');
         final amount = double.tryParse(cleanValue);
         if (amount == null || amount <= 0) {
@@ -571,7 +567,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     
     await Future.delayed(const Duration(milliseconds: 300));
     
-    // AQUÍ: remueve los puntos antes de guardar el número
+
     final cleanAmount = amountController.text.replaceAll('.', '');
     final amount = double.parse(cleanAmount);
     final moneyTypeLabel = _getMoneyTypeLabel(l10n).toLowerCase();

@@ -110,7 +110,7 @@ class UserManager {
     await _prefs.setString(_currentUserKey, user.id);
   }
 
-  // En user_manager.dart
+  
 
 Future<String> createUser(String name) async {
   final users = await getAllUsers();
@@ -125,7 +125,7 @@ Future<String> createUser(String name) async {
 
   await _saveUsers([...users, newUser]);
   
-  // Devolver el ID del nuevo usuario
+  
   return newUserId;
 }
 

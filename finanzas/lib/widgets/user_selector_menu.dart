@@ -8,7 +8,7 @@ class UserSelectorMenu extends StatefulWidget {
   final UserManager userManager;
   final VoidCallback onUserChanged;
   final Function(String message, bool isError)? onShowSnackBar;
-  // Agregar una key para forzar la recarga
+  
   final Key? refreshKey;
 
   const UserSelectorMenu({
@@ -34,11 +34,11 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
     _loadUsers();
   }
 
-  // ¡NUEVO! Detectar cuando el widget se actualiza
+ 
   @override
   void didUpdateWidget(UserSelectorMenu oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Si cambió la refreshKey, recargar
+    
     if (oldWidget.refreshKey != widget.refreshKey) {
       _loadUsers();
     }

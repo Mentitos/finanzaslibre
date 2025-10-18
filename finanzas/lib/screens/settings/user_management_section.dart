@@ -438,7 +438,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               final userName = controller.text.trim();
               if (userName.isEmpty) return;
 
-              // Crear el usuario y obtener su ID
+              
               final newUserId = await widget.userManager.createUser(userName);
               final allUsers = await widget.userManager.getAllUsers();
               final newUser = allUsers.firstWhere((u) => u.id == newUserId);
@@ -452,7 +452,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
               await _loadUsers();
 
-              // Notificar el cambio para actualizar el UserSelectorMenu
+              
               widget.onUserChanged();
               
               if (mounted) {

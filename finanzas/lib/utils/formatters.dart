@@ -3,8 +3,7 @@ import '../l10n/app_localizations.dart';
 
 class Formatters {
   
-  // CORRECTO: Usa el locale 'de_DE' que usa punto como separador de miles
-  // El patrón debe usar , (coma) pero el locale lo convertirá a punto
+ 
   static final NumberFormat _currencyFormat = NumberFormat('#,##0', 'de_DE');
   static final DateFormat _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm');
   static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
