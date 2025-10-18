@@ -5,6 +5,60 @@ import '../constants/app_constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/category_translations.dart';
 
+// Formateador personalizado para separar miles con puntos
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Remover todos los puntos existentes
+    String text = newValue.text.replaceAll('.', '');
+    
+    // Solo permitir dígitos
+    if (!RegExp(r'^\d+$').hasMatch(text)) {
+      return oldValue;
+    }
+
+    // Formatear con separadores de miles
+    String formatted = _formatWithThousands(text);
+    
+    // Calcular la nueva posición del cursor
+    int selectionIndex = newValue.selection.end;
+    int oldDots = oldValue.text.substring(0, oldValue.selection.end).split('.').length - 1;
+    int newDots = formatted.substring(0, selectionIndex + (formatted.split('.').length - 1 - oldDots)).split('.').length - 1;
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: selectionIndex + newDots - oldDots,
+      ),
+    );
+  }
+
+  String _formatWithThousands(String text) {
+    if (text.isEmpty) return text;
+    
+    // Invertir el string para agregar puntos desde la derecha
+    String reversed = text.split('').reversed.join();
+    String formatted = '';
+    
+    for (int i = 0; i < reversed.length; i++) {
+      if (i > 0 && i % 3 == 0) {
+        formatted += '.';
+      }
+      formatted += reversed[i];
+    }
+    
+    // Volver a invertir para obtener el formato correcto
+    return formatted.split('').reversed.join();
+  }
+}
+
 class RecordDialog extends StatefulWidget {
   final Function(SavingsRecord) onSave;
   final List<String> categories;
@@ -48,10 +102,10 @@ class _RecordDialogState extends State<RecordDialog> {
     if (_isEditing) {
       final record = widget.record!;
       _physicalController.text = record.physicalAmount > 0
-          ? record.physicalAmount.toStringAsFixed(0)
+          ? _formatNumberWithDots(record.physicalAmount.toStringAsFixed(0))
           : '';
       _digitalController.text = record.digitalAmount > 0
-          ? record.digitalAmount.toStringAsFixed(0)
+          ? _formatNumberWithDots(record.digitalAmount.toStringAsFixed(0))
           : '';
       _descriptionController.text = record.description;
       _notesController.text = record.notes ?? '';
@@ -61,6 +115,21 @@ class _RecordDialogState extends State<RecordDialog> {
       _selectedCategory = widget.initialCategory ??
           (widget.categories.isNotEmpty ? widget.categories.first : 'General');
     }
+  }
+
+  String _formatNumberWithDots(String number) {
+    if (number.isEmpty) return number;
+    String reversed = number.split('').reversed.join();
+    String formatted = '';
+    
+    for (int i = 0; i < reversed.length; i++) {
+      if (i > 0 && i % 3 == 0) {
+        formatted += '.';
+      }
+      formatted += reversed[i];
+    }
+    
+    return formatted.split('').reversed.join();
   }
 
   @override
@@ -368,12 +437,18 @@ class _RecordDialogState extends State<RecordDialog> {
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(10),
+                      // AQUÍ: permite números y puntos
+                      FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                      // AQUÍ: aplica el formateador de miles automáticamente
+                      ThousandsSeparatorInputFormatter(),
+                      LengthLimitingTextInputFormatter(15),
                     ],
                     validator: (value) {
-                      final physical = double.tryParse(_physicalController.text) ?? 0;
-                      final digital = double.tryParse(_digitalController.text) ?? 0;
+                      // Remover puntos para validar
+                      final physicalClean = _physicalController.text.replaceAll('.', '');
+                      final digitalClean = _digitalController.text.replaceAll('.', '');
+                      final physical = double.tryParse(physicalClean) ?? 0;
+                      final digital = double.tryParse(digitalClean) ?? 0;
                       if (physical == 0 && digital == 0) return '';
                       return null;
                     },
@@ -553,8 +628,11 @@ class _RecordDialogState extends State<RecordDialog> {
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    final physical = double.tryParse(_physicalController.text) ?? 0;
-    final digital = double.tryParse(_digitalController.text) ?? 0;
+    // AQUÍ: remover puntos antes de parsear los números
+    final physicalClean = _physicalController.text.replaceAll('.', '');
+    final digitalClean = _digitalController.text.replaceAll('.', '');
+    final physical = double.tryParse(physicalClean) ?? 0;
+    final digital = double.tryParse(digitalClean) ?? 0;
 
     final record = SavingsRecord(
       id: _isEditing
