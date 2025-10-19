@@ -57,6 +57,16 @@ class ExportImportDialogs {
     AppLocalizations l10n,
     SavingsDataManager dataManager,
   ) {
+    // Calcular totales de todos los usuarios
+    final List<dynamic> usersData = data['users'] ?? [];
+    int totalRecords = 0;
+    int totalUsers = usersData.length;
+    
+    for (final userData in usersData) {
+      final records = userData['records'] as List? ?? [];
+      totalRecords += records.length;
+    }
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -114,13 +124,73 @@ class ExportImportDialogs {
                 ),
               ),
               const SizedBox(height: 16),
-              Text(
-                '${l10n.totalRecords}: $recordsCount',
-                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
-              ),
-              Text(
-                '${l10n.categories}: $categoriesCount',
-                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+              // Información de usuarios exportados
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.blue[900]?.withOpacity(0.3)
+                      : Colors.blue[50],
+                  border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.blue[700]!
+                        : Colors.blue,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.people,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.blue[400]
+                              : Colors.blue[700],
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Exportación completa',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.blue[300]
+                                : Colors.blue[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '• Usuarios: $totalUsers',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                    Text(
+                      '• Total registros: $totalRecords',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Se exportarán todas las billeteras',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.blue[300]
+                            : Colors.blue[700],
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
               Text(
@@ -160,7 +230,7 @@ class ExportImportDialogs {
                     await _saveToFile(
                       context,
                       csvData,
-                      'datos_finanzas.csv',
+                      'datos_finanzas_completo.csv',
                       l10n,
                     );
                     if (context.mounted) {
@@ -182,7 +252,7 @@ class ExportImportDialogs {
                     await _saveToFileBytes(
                       context,
                       excelBytes,
-                      'datos_finanzas.xlsx',
+                      'datos_finanzas_completo.xlsx',
                       l10n,
                     );
                     if (context.mounted) {
@@ -288,7 +358,7 @@ class ExportImportDialogs {
                   onPressed: () async {
                     try {
                       final exportDir = await _getExportDirectory();
-                      final file = File('${exportDir.path}/datos_finanzas.json');
+                      final file = File('${exportDir.path}/datos_finanzas_completo.json');
                       await file.writeAsString(jsonString);
                       
                       debugPrint('✅ JSON guardado en: ${file.path}');
@@ -307,7 +377,7 @@ class ExportImportDialogs {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(l10n.fileSaved('datos_finanzas.json')),
+                                      Text(l10n.fileSaved('datos_finanzas_completo.json')),
                                       const SizedBox(height: 4),
                                       Text(
                                         file.path,
@@ -730,6 +800,57 @@ class ExportImportDialogs {
                 ],
               ),
             ),
+            const SizedBox(height: 12),
+            // Info adicional sobre importación multi-usuario
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.green[900]?.withOpacity(0.3)
+                    : Colors.green[50],
+                border: Border.all(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.green[700]!
+                      : Colors.green,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.people,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.green[300]
+                            : Colors.green[700],
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Importación inteligente',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.green[300]
+                              : Colors.green[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '✓ Detecta automáticamente el formato\n✓ Crea usuarios que no existen\n✓ Compatible con backups antiguos',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 16),
             Text(
               l10n.pasteExportedData,
@@ -776,7 +897,7 @@ class ExportImportDialogs {
               controller: controller,
               decoration: InputDecoration(
                 border: const OutlineInputBorder(),
-                hintText: '{"exportDate": "...", ...}',
+                hintText: '{"exportDate": "...", "version": "2.0", "users": [...]}',
                 fillColor: Theme.of(context).brightness == Brightness.dark
                     ? Colors.grey[900]
                     : Colors.grey[100],
@@ -803,7 +924,17 @@ class ExportImportDialogs {
                 await onDataChanged();
                 if (dialogContext.mounted) {
                   Navigator.pop(dialogContext);
-                  onShowSnackBar(l10n.dataImportedSuccessfully, false);
+                  
+                  // Mostrar mensaje diferente según la versión importada
+                  final version = data['version'] ?? '1.0';
+                  final usersData = data['users'] as List? ?? [];
+                  
+                  String message = l10n.dataImportedSuccessfully;
+                  if (version == '2.0' && usersData.isNotEmpty) {
+                    message = '${l10n.dataImportedSuccessfully}\n${usersData.length} usuario(s) importado(s)';
+                  }
+                  
+                  onShowSnackBar(message, false);
                 }
               } else {
                 onShowSnackBar(l10n.errorImportingData, true);
