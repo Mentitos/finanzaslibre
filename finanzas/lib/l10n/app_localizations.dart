@@ -116,6 +116,78 @@ abstract class AppLocalizations {
   /// **'Tu compañero para gestionar ahorros'**
   String get appDescription;
 
+  /// No description provided for @googleDriveSync.
+  ///
+  /// In es, this message translates to:
+  /// **'Google Drive'**
+  String get googleDriveSync;
+
+  /// No description provided for @signInWithGoogle.
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciar sesión con Google'**
+  String get signInWithGoogle;
+
+  /// No description provided for @signOut.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get signOut;
+
+  /// No description provided for @createBackup.
+  ///
+  /// In es, this message translates to:
+  /// **'Crear Backup'**
+  String get createBackup;
+
+  /// No description provided for @backupsAvailable.
+  ///
+  /// In es, this message translates to:
+  /// **'Backups Disponibles'**
+  String get backupsAvailable;
+
+  /// No description provided for @noBackupsYet.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay backups disponibles'**
+  String get noBackupsYet;
+
+  /// No description provided for @restoreBackup.
+  ///
+  /// In es, this message translates to:
+  /// **'Restaurar Backup'**
+  String get restoreBackup;
+
+  /// No description provided for @deleteBackup.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar Backup'**
+  String get deleteBackup;
+
+  /// No description provided for @backupUploaded.
+  ///
+  /// In es, this message translates to:
+  /// **'Backup subido correctamente'**
+  String get backupUploaded;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In es, this message translates to:
+  /// **'Backup restaurado correctamente'**
+  String get backupRestored;
+
+  /// No description provided for @backupDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Backup eliminado'**
+  String get backupDeleted;
+
+  /// No description provided for @googleDriveSyncSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sincroniza tus datos en la nube'**
+  String get googleDriveSyncSubtitle;
+
   /// No description provided for @summary.
   ///
   /// In es, this message translates to:

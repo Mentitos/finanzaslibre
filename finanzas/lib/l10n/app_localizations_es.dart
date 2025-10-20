@@ -18,6 +18,42 @@ class AppLocalizationsEs extends AppLocalizations {
   String get appDescription => 'Tu compañero para gestionar ahorros';
 
   @override
+  String get googleDriveSync => 'Google Drive';
+
+  @override
+  String get signInWithGoogle => 'Iniciar sesión con Google';
+
+  @override
+  String get signOut => 'Cerrar sesión';
+
+  @override
+  String get createBackup => 'Crear Backup';
+
+  @override
+  String get backupsAvailable => 'Backups Disponibles';
+
+  @override
+  String get noBackupsYet => 'No hay backups disponibles';
+
+  @override
+  String get restoreBackup => 'Restaurar Backup';
+
+  @override
+  String get deleteBackup => 'Eliminar Backup';
+
+  @override
+  String get backupUploaded => 'Backup subido correctamente';
+
+  @override
+  String get backupRestored => 'Backup restaurado correctamente';
+
+  @override
+  String get backupDeleted => 'Backup eliminado';
+
+  @override
+  String get googleDriveSyncSubtitle => 'Sincroniza tus datos en la nube';
+
+  @override
   String get summary => 'Resumen';
 
   @override

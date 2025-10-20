@@ -4,6 +4,22 @@
   "appName": "Finanzas Libre",
   "appDescription": "Tu compañero para gestionar ahorros",
 
+  "googleDriveSync": "Sincronización con Google Drive",
+"signInWithGoogle": "Iniciar sesión con Google",
+"signOut": "Cerrar sesión",
+"createBackup": "Crear Backup",
+"backupsAvailable": "Backups Disponibles",
+"noBackupsYet": "No hay backups disponibles",
+"restoreBackup": "Restaurar Backup",
+"deleteBackup": "Eliminar Backup",
+"backupUploaded": "Backup subido correctamente",
+"backupRestored": "Backup restaurado correctamente",
+"backupDeleted": "Backup eliminado",
+
+
+"googleDriveSync": "Google Drive",
+"googleDriveSyncSubtitle": "Sincroniza tus datos en la nube",
+
   "summary": "Resumen",
   "history": "Historial",
   "categories": "Categorías",

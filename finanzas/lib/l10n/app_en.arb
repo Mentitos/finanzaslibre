@@ -4,6 +4,22 @@
   "appName": "Libre Finance",
   "appDescription": "Your savings management companion",
 
+  "googleDriveSync": "Google Drive Sync",
+"signInWithGoogle": "Sign in with Google",
+"signOut": "Sign Out",
+"createBackup": "Create Backup",
+"backupsAvailable": "Available Backups",
+"noBackupsYet": "No Backups Available",
+"restoreBackup": "Restore Backup",
+"deleteBackup": "Delete Backup",
+"backupUploaded": "Backup uploaded successfully",
+"backupRestored": "Backup restored successfully",
+"backupDeleted": "Backup deleted",
+
+
+"googleDriveSync": "Google Drive",
+"googleDriveSyncSubtitle": "Sync your data to the cloud",
+
   "summary": "Summary",
   "history": "History",
   "categories": "Categories",

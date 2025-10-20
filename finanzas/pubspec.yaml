@@ -50,7 +50,11 @@ dependencies:
   path_provider: ^2.1.0
   permission_handler: ^11.4.0
 
-  
+  google_sign_in: ^6.1.5
+  googleapis: ^13.0.0
+  googleapis_auth: ^1.4.1
+  http: ^1.1.0
+
   excel: ^4.0.3
 
   share_plus: ^7.0.0

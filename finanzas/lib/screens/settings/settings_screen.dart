@@ -9,6 +9,7 @@ import 'sections/danger_zone_section.dart';
 import 'sections/notifications_section.dart';
 import 'security_section.dart';
 import 'user_list_page.dart';
+import '../google_drive_sync_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   final SavingsDataManager dataManager;
@@ -62,7 +63,27 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 12),
+          // En el método build de SettingsScreen, agrega esta tarjeta:
 
+_buildSettingsCard(
+  context: context,
+  icon: Icons.cloud,
+  iconColor: Colors.blue,
+  title: 'Google Drive',
+  subtitle: 'Sincroniza tus datos en la nube',
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GoogleDriveSyncScreen(
+          dataManager: dataManager,
+          onShowSnackBar: onShowSnackBar,
+          onDataChanged: onDataChanged,
+        ),
+      ),
+    );
+  },
+),
           // Preferencias
           _buildSettingsCard(
             context: context,

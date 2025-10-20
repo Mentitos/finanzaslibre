@@ -18,6 +18,42 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appDescription => 'Your savings management companion';
 
   @override
+  String get googleDriveSync => 'Google Drive';
+
+  @override
+  String get signInWithGoogle => 'Sign in with Google';
+
+  @override
+  String get signOut => 'Sign Out';
+
+  @override
+  String get createBackup => 'Create Backup';
+
+  @override
+  String get backupsAvailable => 'Available Backups';
+
+  @override
+  String get noBackupsYet => 'No Backups Available';
+
+  @override
+  String get restoreBackup => 'Restore Backup';
+
+  @override
+  String get deleteBackup => 'Delete Backup';
+
+  @override
+  String get backupUploaded => 'Backup uploaded successfully';
+
+  @override
+  String get backupRestored => 'Backup restored successfully';
+
+  @override
+  String get backupDeleted => 'Backup deleted';
+
+  @override
+  String get googleDriveSyncSubtitle => 'Sync your data to the cloud';
+
+  @override
   String get summary => 'Summary';
 
   @override
