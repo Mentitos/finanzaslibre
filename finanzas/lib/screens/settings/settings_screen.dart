@@ -63,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 12),
-          // En el método build de SettingsScreen, agrega esta tarjeta:
+          
 
 _buildSettingsCard(
   context: context,
@@ -84,6 +84,7 @@ _buildSettingsCard(
     );
   },
 ),
+const SizedBox(height: 12),
           // Preferencias
           _buildSettingsCard(
             context: context,

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import '../../services/google_drive_service.dart';
-import '../../services/savings_data_manager.dart';
-import '../../l10n/app_localizations.dart';
+import '../services/google_drive_service.dart';
+import '../services/savings_data_manager.dart';
+import '../l10n/app_localizations.dart';
 
 class GoogleDriveSyncScreen extends StatefulWidget {
   final SavingsDataManager dataManager;
@@ -35,45 +34,57 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
   Future<void> _initialize() async {
     setState(() => _isLoading = true);
     await _driveService.initialize();
-    setState(() {
-      _isSignedIn = _driveService.isSignedIn;
-      _isLoading = false;
-    });
+    
+    if (mounted) {
+      setState(() {
+        _isSignedIn = _driveService.isSignedIn;
+        _isLoading = false;
+      });
 
-    if (_isSignedIn) {
-      await _loadBackups();
+      if (_isSignedIn) {
+        await _loadBackups();
+      }
     }
   }
 
   Future<void> _loadBackups() async {
+    if (!mounted) return;
+    
     setState(() => _isLoading = true);
     final backups = await _driveService.listBackups();
-    setState(() {
-      _backups = backups;
-      _isLoading = false;
-    });
+    
+    if (mounted) {
+      setState(() {
+        _backups = backups;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _signIn() async {
-  setState(() => _isLoading = true);
-  final success = await _driveService.signIn();
-  
-  if (success) {
-    setState(() => _isSignedIn = true);
-    widget.onShowSnackBar('✅ Sesión iniciada correctamente', false);
-    await _loadBackups();
-  } else {
-    setState(() => _isLoading = false);
-    widget.onShowSnackBar(
-      '❌ Error al iniciar sesión.\n'
-      'Verifica tu configuración de Google Cloud Console',
-      true
-    );
+    setState(() => _isLoading = true);
+    final success = await _driveService.signIn();
+    
+    if (!mounted) return;
+    
+    if (success) {
+      setState(() => _isSignedIn = true);
+      widget.onShowSnackBar('✅ Sesión iniciada correctamente', false);
+      await _loadBackups();
+    } else {
+      setState(() => _isLoading = false);
+      widget.onShowSnackBar(
+        '❌ Error al iniciar sesión.\nVerifica tu configuración de Google Cloud Console',
+        true
+      );
+    }
   }
-}
 
   Future<void> _signOut() async {
     await _driveService.signOut();
+    
+    if (!mounted) return;
+    
     setState(() {
       _isSignedIn = false;
       _backups = [];
@@ -88,24 +99,29 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
       final data = await widget.dataManager.exportData();
       final success = await _driveService.uploadBackup(data);
       
+      if (!mounted) return;
+      
       if (success) {
-        widget.onShowSnackBar('Backup subido a Google Drive', false);
+        widget.onShowSnackBar('✅ Backup subido a Google Drive', false);
         await _loadBackups();
       } else {
         setState(() => _isLoading = false);
-        widget.onShowSnackBar('Error al subir backup', true);
+        widget.onShowSnackBar('❌ Error al subir backup', true);
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
-      widget.onShowSnackBar('Error: $e', true);
+      widget.onShowSnackBar('❌ Error: $e', true);
     }
   }
 
   Future<void> _downloadBackup(DriveBackupFile backup) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('⚠️ Confirmar restauración'),
+        title: Text('⚠️ ${l10n.restoreBackup}'),
         content: Text(
           '¿Deseas restaurar el backup del ${backup.formattedDate}?\n\n'
           '⚠️ Esto reemplazará todos tus datos actuales.',
@@ -113,7 +129,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
@@ -124,71 +140,83 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
       ),
     );
 
-    if (confirm != true) return;
+    if (confirm != true || !mounted) return;
 
     setState(() => _isLoading = true);
 
     try {
       final data = await _driveService.downloadBackup(backup.id);
       
+      if (!mounted) return;
+      
       if (data != null) {
         final success = await widget.dataManager.importData(data);
         
+        if (!mounted) return;
+        
         if (success) {
           await widget.onDataChanged();
-          widget.onShowSnackBar('Datos restaurados correctamente', false);
+          widget.onShowSnackBar('✅ Datos restaurados correctamente', false);
         } else {
-          widget.onShowSnackBar('Error al importar datos', true);
+          widget.onShowSnackBar('❌ Error al importar datos', true);
         }
       } else {
-        widget.onShowSnackBar('Error al descargar backup', true);
+        widget.onShowSnackBar('❌ Error al descargar backup', true);
       }
     } catch (e) {
-      widget.onShowSnackBar('Error: $e', true);
+      if (!mounted) return;
+      widget.onShowSnackBar('❌ Error: $e', true);
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _deleteBackup(DriveBackupFile backup) async {
+    final l10n = AppLocalizations.of(context)!;
+    
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('🗑️ Eliminar backup'),
+        title: Text('🗑️ ${l10n.deleteBackup}'),
         content: Text(
           '¿Deseas eliminar el backup del ${backup.formattedDate}?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Eliminar'),
+            child: Text(l10n.delete),
           ),
         ],
       ),
     );
 
-    if (confirm != true) return;
+    if (confirm != true || !mounted) return;
 
     setState(() => _isLoading = true);
 
     try {
       final success = await _driveService.deleteBackup(backup.id);
       
+      if (!mounted) return;
+      
       if (success) {
-        widget.onShowSnackBar('Backup eliminado', false);
+        widget.onShowSnackBar('✅ Backup eliminado', false);
         await _loadBackups();
       } else {
         setState(() => _isLoading = false);
-        widget.onShowSnackBar('Error al eliminar backup', true);
+        widget.onShowSnackBar('❌ Error al eliminar backup', true);
       }
     } catch (e) {
+      if (!mounted) return;
       setState(() => _isLoading = false);
-      widget.onShowSnackBar('Error: $e', true);
+      widget.onShowSnackBar('❌ Error: $e', true);
     }
   }
 
@@ -200,13 +228,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            Image.asset(
-              'assets/google_drive_icon.png', // Necesitarás agregar este asset
-              height: 24,
-              errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.cloud, size: 24);
-              },
-            ),
+            Icon(Icons.cloud, size: 24, color: Colors.blue[700]),
             const SizedBox(width: 8),
             const Text('Google Drive'),
           ],
@@ -223,7 +245,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Widget _buildSignInView(bool isDark) {
     return Center(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -342,11 +364,8 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Información de cuenta
           _buildAccountCard(isDark),
           const SizedBox(height: 16),
-
-          // Botón de crear backup
           _buildActionButton(
             icon: Icons.backup,
             label: 'Crear Backup Ahora',
@@ -354,14 +373,11 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
             onPressed: _uploadBackup,
           ),
           const SizedBox(height: 24),
-
-          // Lista de backups
           Text(
             'Backups Disponibles',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 12),
-
           if (_backups.isEmpty)
             _buildEmptyBackupsCard(isDark)
           else

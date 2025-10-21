@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GoogleDriveService {
   static final GoogleDriveService _instance = GoogleDriveService._internal();
@@ -13,12 +14,15 @@ class GoogleDriveService {
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
-      drive.DriveApi.driveFileScope, // Acceso completo a archivos creados por la app
+      drive.DriveApi.driveFileScope,
     ],
   );
 
   GoogleSignInAccount? _currentUser;
   drive.DriveApi? _driveApi;
+  
+  // ✅ Clave para guardar estado de sesión
+  static const String _isSignedInKey = 'google_drive_signed_in';
 
   // Getters
   bool get isSignedIn => _currentUser != null;
@@ -28,29 +32,85 @@ class GoogleDriveService {
 
   /// Inicializar el servicio
   Future<void> initialize() async {
+    debugPrint('🔄 Inicializando Google Drive Service...');
+    
     // Escuchar cambios en el estado de autenticación
-    _googleSignIn.onCurrentUserChanged.listen((account) {
+    _googleSignIn.onCurrentUserChanged.listen((account) async {
       _currentUser = account;
+      
+      if (account != null) {
+        await _initializeDriveApi();
+        await _saveSignInState(true);
+        debugPrint('✅ Usuario autenticado: ${account.email}');
+      } else {
+        await _saveSignInState(false);
+        debugPrint('❌ Usuario desconectado');
+      }
     });
 
-    // Intentar iniciar sesión silenciosamente
-    await _googleSignIn.signInSilently();
+    // ✅ Intentar restaurar sesión anterior
+    final wasSignedIn = await _getSignInState();
+    
+    if (wasSignedIn) {
+      debugPrint('🔄 Intentando restaurar sesión...');
+      try {
+        final account = await _googleSignIn.signInSilently();
+        if (account != null) {
+          debugPrint('✅ Sesión restaurada: ${account.email}');
+        } else {
+          debugPrint('⚠️ No se pudo restaurar la sesión');
+          await _saveSignInState(false);
+        }
+      } catch (e) {
+        debugPrint('❌ Error restaurando sesión: $e');
+        await _saveSignInState(false);
+      }
+    } else {
+      debugPrint('ℹ️ No hay sesión previa');
+    }
+  }
+
+  /// Guardar estado de sesión
+  Future<void> _saveSignInState(bool signedIn) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_isSignedInKey, signedIn);
+      debugPrint('💾 Estado guardado: signedIn=$signedIn');
+    } catch (e) {
+      debugPrint('❌ Error guardando estado: $e');
+    }
+  }
+
+  /// Obtener estado de sesión
+  Future<bool> _getSignInState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool(_isSignedInKey) ?? false;
+    } catch (e) {
+      debugPrint('❌ Error obteniendo estado: $e');
+      return false;
+    }
   }
 
   /// Iniciar sesión con Google
   Future<bool> signIn() async {
     try {
-      // Desconectar primero para forzar selección de cuenta
-      await _googleSignIn.signOut();
+      debugPrint('🔄 Iniciando sign in...');
+      
+      // ✅ NO desconectar antes - esto causa problemas
+      // await _googleSignIn.signOut();
       
       final account = await _googleSignIn.signIn();
+      
       if (account == null) {
         debugPrint('❌ Usuario canceló el inicio de sesión');
+        await _saveSignInState(false);
         return false;
       }
 
       _currentUser = account;
       await _initializeDriveApi();
+      await _saveSignInState(true);
       
       debugPrint('✅ Inicio de sesión exitoso: ${account.email}');
       return true;
@@ -58,11 +118,14 @@ class GoogleDriveService {
       debugPrint('❌ Error al iniciar sesión: $e');
       debugPrint('❌ Tipo de error: ${e.runtimeType}');
       
-      // Dar más información sobre el error
-      if (e.toString().contains('10:')) {
-        debugPrint('❌ Error 10: Verifica que hayas configurado OAuth en Google Cloud Console');
-        debugPrint('❌ Asegúrate de que el SHA-1 esté registrado correctamente');
+      if (e.toString().contains('10:') || e.toString().contains('DEVELOPER_ERROR')) {
+        debugPrint('❌ Error 10 (DEVELOPER_ERROR): Verifica tu configuración de OAuth');
+        debugPrint('   - Asegúrate de que el SHA-1 esté registrado correctamente');
+        debugPrint('   - Verifica que el package name coincida');
+        debugPrint('   - Revisa que OAuth Client ID esté configurado');
       }
+      
+      await _saveSignInState(false);
       return false;
     }
   }
@@ -73,6 +136,7 @@ class GoogleDriveService {
       await _googleSignIn.signOut();
       _currentUser = null;
       _driveApi = null;
+      await _saveSignInState(false);
       debugPrint('✅ Sesión cerrada');
     } catch (e) {
       debugPrint('❌ Error al cerrar sesión: $e');
@@ -81,7 +145,10 @@ class GoogleDriveService {
 
   /// Inicializar Drive API
   Future<void> _initializeDriveApi() async {
-    if (_currentUser == null) return;
+    if (_currentUser == null) {
+      debugPrint('⚠️ No hay usuario para inicializar Drive API');
+      return;
+    }
 
     try {
       final authHeaders = await _currentUser!.authHeaders;
@@ -104,17 +171,20 @@ class GoogleDriveService {
       final jsonString = jsonEncode(data);
       final fileName = 'finanzas_libre_backup_${DateTime.now().millisecondsSinceEpoch}.json';
 
-      // Crear metadata del archivo
+      debugPrint('🔄 Subiendo backup: $fileName');
+
       final driveFile = drive.File()
         ..name = fileName
         ..mimeType = 'application/json'
-        ..parents = ['root']; // Guardar en la raíz de Drive
+        ..parents = ['root'];
 
-      // Convertir JSON a Stream
-      final mediaStream = Stream.value(utf8.encode(jsonString));
-      final media = drive.Media(mediaStream, jsonString.length);
+      // ✅ FIX: Convertir a bytes primero para obtener el tamaño exacto
+      final bytes = utf8.encode(jsonString);
+      final mediaStream = Stream.value(bytes);
+      final media = drive.Media(mediaStream, bytes.length);
 
-      // Subir archivo
+      debugPrint('📦 Tamaño del backup: ${bytes.length} bytes');
+
       final uploadedFile = await _driveApi!.files.create(
         driveFile,
         uploadMedia: media,
@@ -136,8 +206,10 @@ class GoogleDriveService {
     }
 
     try {
+      debugPrint('🔄 Listando backups...');
+      
       final fileList = await _driveApi!.files.list(
-        q: "name contains 'finanzas_libre_backup_' and mimeType='application/json'",
+        q: "name contains 'finanzas_libre_backup_' and mimeType='application/json' and trashed=false",
         orderBy: 'createdTime desc',
         spaces: 'drive',
         $fields: 'files(id, name, createdTime, size)',
@@ -168,6 +240,8 @@ class GoogleDriveService {
     }
 
     try {
+      debugPrint('🔄 Descargando backup: $fileId');
+      
       final media = await _driveApi!.files.get(
         fileId,
         downloadOptions: drive.DownloadOptions.fullMedia,
@@ -197,6 +271,7 @@ class GoogleDriveService {
     }
 
     try {
+      debugPrint('🔄 Eliminando backup: $fileId');
       await _driveApi!.files.delete(fileId);
       debugPrint('✅ Backup eliminado: $fileId');
       return true;
@@ -214,6 +289,8 @@ class GoogleDriveService {
     }
 
     try {
+      debugPrint('🔄 Auto-sync iniciado...');
+      
       // Verificar si hay backups recientes (últimas 24 horas)
       final backups = await listBackups();
       final now = DateTime.now();
@@ -226,10 +303,11 @@ class GoogleDriveService {
 
       if (recentBackup) {
         debugPrint('ℹ️ Ya existe un backup reciente (menos de 24h)');
-        return true; // No es necesario crear otro backup
+        return true;
       }
 
       // Crear nuevo backup
+      debugPrint('🔄 Creando nuevo backup automático...');
       return await uploadBackup(data);
     } catch (e) {
       debugPrint('❌ Error en auto-sync: $e');
@@ -254,7 +332,12 @@ class DriveBackupFile {
 
   String get formattedDate {
     if (createdTime == null) return 'Fecha desconocida';
-    return '${createdTime!.day}/${createdTime!.month}/${createdTime!.year} ${createdTime!.hour}:${createdTime!.minute}';
+    final day = createdTime!.day.toString().padLeft(2, '0');
+    final month = createdTime!.month.toString().padLeft(2, '0');
+    final year = createdTime!.year;
+    final hour = createdTime!.hour.toString().padLeft(2, '0');
+    final minute = createdTime!.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
   }
 
   String get formattedSize {

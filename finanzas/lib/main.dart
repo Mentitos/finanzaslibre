@@ -4,6 +4,7 @@ import 'screens/savings_screen.dart';
 import 'screens/pin_lock_screen.dart';
 import 'services/savings_data_manager.dart';
 import 'services/user_manager.dart';
+import 'services/google_drive_service.dart';
 import 'l10n/app_localizations.dart'; 
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/notification_service.dart';
@@ -16,6 +17,8 @@ void main() async {
   SavingsDataManager.init();
   final dataManager = SavingsDataManager();
   await dataManager.initialize();
+
+  await GoogleDriveService().initialize();
 
   await NotificationService().initialize();
   
