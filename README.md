@@ -3,23 +3,38 @@
 Open-source personal savings app that distinguishes between physical and digital money.
 
 Goals:
+
 -Multiple users 🆗
+
 -Dark mode 🆗
+
 -Monthly statistics 🆗
+
 -Specific or standalone savings goals (might drop this feature)
+
 -Improve app design and visuals
+
 -Evaluate notification behavior (to avoid excessive alerts)
+
 -Possibly add a settings system and transfers between users
+
 
 Completed features:
 
 -Transaction history with integrated search
+
 -Multiple categories for expense tracking
+
 -Data import and export in text format
+
 -Optional security PIN for app access
+
 -Easy in-app data reset
+
 -Automatic Google Drive backups
+
 -Quick profile switching
+
 
 # finanzaslibre
 App de ahorros personales que distingue dinero fisico y digital open source
