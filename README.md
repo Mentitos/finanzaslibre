@@ -19,6 +19,7 @@ Goals:
   -Possibly add a settings system and transfers between users
 
 
+
 Completed features:
 
   -Transaction history with integrated search
