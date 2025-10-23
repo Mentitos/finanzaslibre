@@ -5,7 +5,9 @@ import 'screens/pin_lock_screen.dart';
 import 'services/savings_data_manager.dart';
 import 'services/user_manager.dart';
 import 'services/google_drive_service.dart';
-import 'l10n/app_localizations.dart'; 
+import 'services/auto_backup_service.dart';
+import 'services/backup_scheduler.dart';
+import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/notification_service.dart';
 
@@ -19,7 +21,7 @@ void main() async {
   await dataManager.initialize();
 
   await GoogleDriveService().initialize();
-
+  await AutoBackupService().initialize();
   await NotificationService().initialize();
   
   final prefs = await SharedPreferences.getInstance();
@@ -39,15 +41,18 @@ void main() async {
 
   runApp(MyApp(
     initialTheme: initialTheme,
+    dataManager: dataManager,
   ));
 }
 
 class MyApp extends StatefulWidget {
   final ThemeMode initialTheme;
+  final SavingsDataManager dataManager;
 
   const MyApp({
     super.key,
     required this.initialTheme,
+    required this.dataManager,
   });
 
   @override
@@ -123,24 +128,27 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Mis Ahorros',
-      debugShowCheckedModeBanner: false,
-      theme: _buildLightTheme(),
-      darkTheme: _buildDarkTheme(),
-      themeMode: _themeMode,
-      locale: _locale,
-      localizationsDelegates: [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('es'),
-        Locale('en'),
-      ],
-      home: const AuthWrapper(),
+    return BackupSchedulerListener(
+      dataManager: widget.dataManager,
+      child: MaterialApp(
+        title: 'Mis Ahorros',
+        debugShowCheckedModeBanner: false,
+        theme: _buildLightTheme(),
+        darkTheme: _buildDarkTheme(),
+        themeMode: _themeMode,
+        locale: _locale,
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('es'),
+          Locale('en'),
+        ],
+        home: AuthWrapper(dataManager: widget.dataManager),
+      ),
     );
   }
 
@@ -181,14 +189,18 @@ class _MyAppState extends State<MyApp> {
 }
 
 class AuthWrapper extends StatefulWidget {
-  const AuthWrapper({super.key});
+  final SavingsDataManager dataManager;
+  
+  const AuthWrapper({
+    super.key,
+    required this.dataManager,
+  });
 
   @override
   State<AuthWrapper> createState() => _AuthWrapperState();
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  final SavingsDataManager _dataManager = SavingsDataManager();
   final UserManager _userManager = UserManager();
   
   bool _isLoading = true;
@@ -204,9 +216,9 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Future<void> _checkPinStatus() async {
-    final pinEnabled = await _dataManager.isPinEnabled();
-    final pin = await _dataManager.loadPin();
-    final biometricStatus = await _dataManager.loadBiometricEnabled();
+    final pinEnabled = await widget.dataManager.isPinEnabled();
+    final pin = await widget.dataManager.loadPin();
+    final biometricStatus = await widget.dataManager.loadBiometricEnabled();
 
     setState(() {
       _needsPin = pinEnabled && pin != null;

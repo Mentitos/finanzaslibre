@@ -5,10 +5,6 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-
-
-  
-
 class GoogleDriveService {
   static final GoogleDriveService _instance = GoogleDriveService._internal();
   factory GoogleDriveService() => _instance;
@@ -25,7 +21,6 @@ class GoogleDriveService {
   GoogleSignInAccount? _currentUser;
   drive.DriveApi? _driveApi;
   
-  // ✅ Clave para guardar estado de sesión
   static const String _isSignedInKey = 'google_drive_signed_in';
 
   // Getters
@@ -38,7 +33,6 @@ class GoogleDriveService {
   Future<void> initialize() async {
     debugPrint('🔄 Inicializando Google Drive Service...');
     
-    // Escuchar cambios en el estado de autenticación
     _googleSignIn.onCurrentUserChanged.listen((account) async {
       _currentUser = account;
       
@@ -52,7 +46,6 @@ class GoogleDriveService {
       }
     });
 
-    // ✅ Intentar restaurar sesión anterior
     final wasSignedIn = await _getSignInState();
     
     if (wasSignedIn) {
@@ -101,9 +94,6 @@ class GoogleDriveService {
     try {
       debugPrint('🔄 Iniciando sign in...');
       
-      // ✅ NO desconectar antes - esto causa problemas
-      // await _googleSignIn.signOut();
-      
       final account = await _googleSignIn.signIn();
       
       if (account == null) {
@@ -120,15 +110,6 @@ class GoogleDriveService {
       return true;
     } catch (e) {
       debugPrint('❌ Error al iniciar sesión: $e');
-      debugPrint('❌ Tipo de error: ${e.runtimeType}');
-      
-      if (e.toString().contains('10:') || e.toString().contains('DEVELOPER_ERROR')) {
-        debugPrint('❌ Error 10 (DEVELOPER_ERROR): Verifica tu configuración de OAuth');
-        debugPrint('   - Asegúrate de que el SHA-1 esté registrado correctamente');
-        debugPrint('   - Verifica que el package name coincida');
-        debugPrint('   - Revisa que OAuth Client ID esté configurado');
-      }
-      
       await _saveSignInState(false);
       return false;
     }
@@ -164,8 +145,12 @@ class GoogleDriveService {
     }
   }
 
-  /// Subir datos JSON a Google Drive
-  Future<bool> uploadBackup(Map<String, dynamic> data) async {
+  /// Subir datos JSON a Google Drive (CON PARÁMETROS OPCIONALES)
+  Future<bool> uploadBackup(
+    Map<String, dynamic> data, {
+    bool isAuto = false,
+    String? customFileName,
+  }) async {
     if (_driveApi == null) {
       debugPrint('❌ Drive API no inicializada');
       return false;
@@ -173,7 +158,8 @@ class GoogleDriveService {
 
     try {
       final jsonString = jsonEncode(data);
-      final fileName = 'finanzas_libre_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+      final fileName = customFileName ?? 
+          'finanzas_libre_${isAuto ? "auto" : "manual"}_${DateTime.now().millisecondsSinceEpoch}.json';
 
       debugPrint('🔄 Subiendo backup: $fileName');
 
@@ -182,7 +168,6 @@ class GoogleDriveService {
         ..mimeType = 'application/json'
         ..parents = ['root'];
 
-      // ✅ FIX: Convertir a bytes primero para obtener el tamaño exacto
       final bytes = utf8.encode(jsonString);
       final mediaStream = Stream.value(bytes);
       final media = drive.Media(mediaStream, bytes.length);
@@ -213,7 +198,7 @@ class GoogleDriveService {
       debugPrint('🔄 Listando backups...');
       
       final fileList = await _driveApi!.files.list(
-        q: "name contains 'finanzas_libre_backup_' and mimeType='application/json' and trashed=false",
+        q: "name contains 'finanzas_libre_' and mimeType='application/json' and trashed=false",
         orderBy: 'createdTime desc',
         spaces: 'drive',
         $fields: 'files(id, name, createdTime, size)',
@@ -281,40 +266,6 @@ class GoogleDriveService {
       return true;
     } catch (e) {
       debugPrint('❌ Error eliminando backup: $e');
-      return false;
-    }
-  }
-
-  /// Sincronización automática (subir si hay cambios)
-  Future<bool> autoSync(Map<String, dynamic> data) async {
-    if (!isSignedIn) {
-      debugPrint('⚠️ No hay sesión activa para auto-sync');
-      return false;
-    }
-
-    try {
-      debugPrint('🔄 Auto-sync iniciado...');
-      
-      // Verificar si hay backups recientes (últimas 24 horas)
-      final backups = await listBackups();
-      final now = DateTime.now();
-      
-      final recentBackup = backups.any((backup) {
-        if (backup.createdTime == null) return false;
-        final difference = now.difference(backup.createdTime!);
-        return difference.inHours < 24;
-      });
-
-      if (recentBackup) {
-        debugPrint('ℹ️ Ya existe un backup reciente (menos de 24h)');
-        return true;
-      }
-
-      // Crear nuevo backup
-      debugPrint('🔄 Creando nuevo backup automático...');
-      return await uploadBackup(data);
-    } catch (e) {
-      debugPrint('❌ Error en auto-sync: $e');
       return false;
     }
   }
