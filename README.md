@@ -1,4 +1,4 @@
-FinanzasLibre
+# FinanzasLibre
 
 Open-source personal savings app that distinguishes between physical and digital money.
 
