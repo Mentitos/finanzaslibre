@@ -10,7 +10,6 @@ class GoogleDriveService {
   factory GoogleDriveService() => _instance;
   GoogleDriveService._internal();
 
-  // Configuración de Google Sign In
   final GoogleSignIn _googleSignIn = GoogleSignIn(
     scopes: [
       'email',
@@ -23,13 +22,11 @@ class GoogleDriveService {
   
   static const String _isSignedInKey = 'google_drive_signed_in';
 
-  // Getters
   bool get isSignedIn => _currentUser != null;
   String? get userEmail => _currentUser?.email;
   String? get userName => _currentUser?.displayName;
   String? get userPhotoUrl => _currentUser?.photoUrl;
 
-  /// Inicializar el servicio
   Future<void> initialize() async {
     debugPrint('🔄 Inicializando Google Drive Service...');
     
@@ -67,7 +64,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Guardar estado de sesión
   Future<void> _saveSignInState(bool signedIn) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -78,7 +74,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Obtener estado de sesión
   Future<bool> _getSignInState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -89,7 +84,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Iniciar sesión con Google
   Future<bool> signIn() async {
     try {
       debugPrint('🔄 Iniciando sign in...');
@@ -115,7 +109,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Cerrar sesión
   Future<void> signOut() async {
     try {
       await _googleSignIn.signOut();
@@ -128,7 +121,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Inicializar Drive API
   Future<void> _initializeDriveApi() async {
     if (_currentUser == null) {
       debugPrint('⚠️ No hay usuario para inicializar Drive API');
@@ -145,7 +137,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Subir datos JSON a Google Drive (CON PARÁMETROS OPCIONALES)
   Future<bool> uploadBackup(
     Map<String, dynamic> data, {
     bool isAuto = false,
@@ -187,7 +178,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Listar todos los backups disponibles
   Future<List<DriveBackupFile>> listBackups() async {
     if (_driveApi == null) {
       debugPrint('❌ Drive API no inicializada');
@@ -221,7 +211,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Descargar backup desde Google Drive
   Future<Map<String, dynamic>?> downloadBackup(String fileId) async {
     if (_driveApi == null) {
       debugPrint('❌ Drive API no inicializada');
@@ -252,7 +241,6 @@ class GoogleDriveService {
     }
   }
 
-  /// Eliminar backup de Google Drive
   Future<bool> deleteBackup(String fileId) async {
     if (_driveApi == null) {
       debugPrint('❌ Drive API no inicializada');
@@ -271,7 +259,6 @@ class GoogleDriveService {
   }
 }
 
-/// Modelo para representar un archivo de backup en Drive
 class DriveBackupFile {
   final String id;
   final String name;
@@ -303,7 +290,6 @@ class DriveBackupFile {
   }
 }
 
-/// Cliente HTTP para autenticación con Google
 class GoogleAuthClient extends http.BaseClient {
   final Map<String, String> _headers;
   final http.Client _client = http.Client();
