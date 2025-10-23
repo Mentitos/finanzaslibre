@@ -2,10 +2,11 @@
 App de ahorros personales que distingue dinero fisico y digital open source
 
 Objetivos:
-  - Multiples Usuarios
+  - Multiples Usuarios🆗
   - Modo oscuro🆗
   - Estadisticas mensuales🆗
-  - Objetivos de ahorro concretos o aislados
+  - Objetivos de ahorro concretos o aislados - medio que no quiero ya
+  - Poner linda la aplicacion
 
 
 Objetivos logrados:
@@ -14,4 +15,6 @@ Objetivos logrados:
   - Imoprtacion y exportacion de datos en forma de texto
   - Pin de seguridad opcional para entrar a la app
   - Facilidad de formatear desde la app
+  - Backups automaticos con google drive
+  - 
 
