@@ -4,36 +4,36 @@ Open-source personal savings app that distinguishes between physical and digital
 
 Goals:
 
--Multiple users 🆗
+  -Multiple users 🆗
 
--Dark mode 🆗
+  -Dark mode 🆗
 
--Monthly statistics 🆗
+  -Monthly statistics 🆗
 
--Specific or standalone savings goals (might drop this feature)
+  -Specific or standalone savings goals (might drop this feature)
 
--Improve app design and visuals
+  -Improve app design and visuals
 
--Evaluate notification behavior (to avoid excessive alerts)
+  -Evaluate notification behavior (to avoid excessive alerts)
 
--Possibly add a settings system and transfers between users
+  -Possibly add a settings system and transfers between users
 
 
 Completed features:
 
--Transaction history with integrated search
+  -Transaction history with integrated search
 
--Multiple categories for expense tracking
+  -Multiple categories for expense tracking
 
--Data import and export in text format
+  -Data import and export in text format
 
--Optional security PIN for app access
+  -Optional security PIN for app access
 
--Easy in-app data reset
+  -Easy in-app data reset
 
--Automatic Google Drive backups
+  -Automatic Google Drive backups
 
--Quick profile switching
+  -Quick profile switching
 
 
 # finanzaslibre
