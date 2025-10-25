@@ -446,7 +446,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
           ),
           const SizedBox(height: 24),
           
-          // Sección de backups automáticos
+          
           if (autoBackups.isNotEmpty) ...[
             Row(
               children: [
@@ -599,7 +599,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
               const Divider(),
               const SizedBox(height: 12),
               
-              // Selector de hora
+              
               InkWell(
                 onTap: _selectBackupTime,
                 borderRadius: BorderRadius.circular(8),
@@ -651,7 +651,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
               
               const SizedBox(height: 12),
               
-              // Información adicional
+             
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
