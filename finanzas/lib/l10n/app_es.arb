@@ -17,6 +17,16 @@
 "backupDeleted": "Backup eliminado",
 
 
+  "goals": "Metas",
+  "deleteGoal": "Eliminar Meta",
+  "newGoal": "Nueva Meta",
+  "editGoal": "Editar Meta",
+  "goalCompleted": "Meta Completada",
+  "addMoney": "Agregar Dinero",
+  "removeMoney": "Retirar Dinero",
+
+
+
 "googleDriveSync": "Google Drive",
 "googleDriveSyncSubtitle": "Sincroniza tus datos en la nube",
 

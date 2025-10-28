@@ -182,6 +182,48 @@ abstract class AppLocalizations {
   /// **'Backup eliminado'**
   String get backupDeleted;
 
+  /// No description provided for @goals.
+  ///
+  /// In es, this message translates to:
+  /// **'Metas'**
+  String get goals;
+
+  /// No description provided for @deleteGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar Meta'**
+  String get deleteGoal;
+
+  /// No description provided for @newGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva Meta'**
+  String get newGoal;
+
+  /// No description provided for @editGoal.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar Meta'**
+  String get editGoal;
+
+  /// No description provided for @goalCompleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Meta Completada'**
+  String get goalCompleted;
+
+  /// No description provided for @addMoney.
+  ///
+  /// In es, this message translates to:
+  /// **'Agregar Dinero'**
+  String get addMoney;
+
+  /// No description provided for @removeMoney.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirar Dinero'**
+  String get removeMoney;
+
   /// No description provided for @googleDriveSyncSubtitle.
   ///
   /// In es, this message translates to:

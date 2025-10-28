@@ -51,6 +51,27 @@ class AppLocalizationsEs extends AppLocalizations {
   String get backupDeleted => 'Backup eliminado';
 
   @override
+  String get goals => 'Metas';
+
+  @override
+  String get deleteGoal => 'Eliminar Meta';
+
+  @override
+  String get newGoal => 'Nueva Meta';
+
+  @override
+  String get editGoal => 'Editar Meta';
+
+  @override
+  String get goalCompleted => 'Meta Completada';
+
+  @override
+  String get addMoney => 'Agregar Dinero';
+
+  @override
+  String get removeMoney => 'Retirar Dinero';
+
+  @override
   String get googleDriveSyncSubtitle => 'Sincroniza tus datos en la nube';
 
   @override

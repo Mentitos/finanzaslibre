@@ -17,6 +17,15 @@
 "backupDeleted": "Backup deleted",
 
 
+  "goals": "Goals",
+  "deleteGoal": "Delete Goal",
+  "newGoal": "New Goal",
+  "editGoal": "Edit Goal",
+  "goalCompleted": "Goal Completed",
+  "addMoney": "Add Money",
+  "removeMoney": "Remove Money",
+
+
 "googleDriveSync": "Google Drive",
 "googleDriveSyncSubtitle": "Sync your data to the cloud",
 

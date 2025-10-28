@@ -11,6 +11,7 @@ import 'tabs/history_tab.dart';
 import 'tabs/categories_tab.dart';
 import 'settings/settings_screen.dart';
 import '../l10n/app_localizations.dart';
+import 'goals_screen.dart';
 
 class SavingsScreen extends StatefulWidget {
   final UserManager userManager;
@@ -49,7 +50,7 @@ class _SavingsScreenState extends State<SavingsScreen>
     super.initState();
     _userManager = widget.userManager;
     _dataManager.setUserManager(_userManager);
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _loadData();
   }
 
@@ -340,6 +341,7 @@ class _SavingsScreenState extends State<SavingsScreen>
             Tab(text: l10n.summary, icon: const Icon(Icons.dashboard)),
             Tab(text: l10n.history, icon: const Icon(Icons.history)),
             Tab(text: l10n.categories, icon: const Icon(Icons.category)),
+            Tab(text: 'Metas', icon: const Icon(Icons.flag)),
           ],
         ),
       ),
@@ -403,15 +405,16 @@ class _SavingsScreenState extends State<SavingsScreen>
                   onAddCategory: _addCategory,
                   onDeleteCategory: _deleteCategory,
                 ),
+                GoalsScreen(dataManager: _dataManager),
+
               ],
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddRecordDialog,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.new_),
-        backgroundColor: Colors.green,
-        foregroundColor: Theme.of(context).cardColor,
-      ),
+      floatingActionButton: FloatingActionButton(
+  onPressed: _showAddRecordDialog,
+  backgroundColor: Colors.green,
+  foregroundColor: Colors.white,
+  child: const Icon(Icons.add),
+),
     );
   }
 }

@@ -7,6 +7,8 @@ import 'data_managers/security_manager.dart';
 import 'data_managers/privacy_manager.dart';
 import 'data_managers/import_export_manager.dart';
 import 'data_managers/data_cleanup_manager.dart';
+import 'data_managers/goals_manager.dart';
+import '../models/savings_goal_model.dart';
 
 class SavingsDataManager {
   static final SavingsDataManager _instance = SavingsDataManager._internal();
@@ -18,7 +20,7 @@ class SavingsDataManager {
 
   late SharedPreferences _prefs;
 
-  
+  late GoalsManager _goalsManager;
   late RecordsManager _recordsManager;
   late CategoriesManager _categoriesManager;
   late SecurityManager _securityManager;
@@ -35,6 +37,7 @@ class SavingsDataManager {
     _privacyManager = PrivacyManager(_prefs);
     _importExportManager = ImportExportManager();
     _dataCleanupManager = DataCleanupManager(_prefs);
+     _goalsManager = GoalsManager(_prefs);
   }
 
   // --- DELEGACIÓN A RECORDS MANAGER ---
@@ -150,16 +153,53 @@ Future<bool> importData(Map<String, dynamic> data) =>
   Future<bool> clearAllData() =>
       _dataCleanupManager.clearAllData();
 
+  
+  // --- DELEGACIÓN A GOALS MANAGER ---
+Future<List<SavingsGoal>> loadGoals({bool forceReload = false}) =>
+    _goalsManager.loadGoals(forceReload: forceReload);
+
+Future<bool> saveGoals(List<SavingsGoal> goals) =>
+    _goalsManager.saveGoals(goals);
+
+Future<bool> addGoal(SavingsGoal goal) =>
+    _goalsManager.addGoal(goal);
+
+Future<bool> updateGoal(SavingsGoal updatedGoal) =>
+    _goalsManager.updateGoal(updatedGoal);
+
+Future<bool> deleteGoal(String id) =>
+    _goalsManager.deleteGoal(id);
+
+Future<bool> addMoneyToGoal(String goalId, double amount) =>
+    _goalsManager.addMoneyToGoal(goalId, amount);
+
+Future<bool> removeMoneyFromGoal(String goalId, double amount) =>
+    _goalsManager.removeMoneyFromGoal(goalId, amount);
+
+Future<bool> completeGoal(String goalId) =>
+    _goalsManager.completeGoal(goalId);
+
+Future<List<SavingsGoal>> getActiveGoals() =>
+    _goalsManager.getActiveGoals();
+
+Future<List<SavingsGoal>> getCompletedGoals() =>
+    _goalsManager.getCompletedGoals();
+
+Future<Map<String, dynamic>> getGoalsStatistics() =>
+    _goalsManager.getGoalsStatistics();
+
   // Para compatibilidad con otros servicios
   void setUserManager(dynamic userManager) {
     _recordsManager.setUserManager(userManager);
     _categoriesManager.setUserManager(userManager);
     _privacyManager.setUserManager(userManager);
     _dataCleanupManager.setUserManager(userManager);
+    _goalsManager.setUserManager(userManager);
   }
 
   void clearCache() {
     _recordsManager.clearCache();
     _categoriesManager.clearCache();
+    _goalsManager.clearCache();
   }
 }
