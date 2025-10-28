@@ -12,6 +12,8 @@ import 'tabs/categories_tab.dart';
 import 'settings/settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import 'goals_screen.dart';
+import 'package:finanzas/services/data_change_notifier.dart';
+
 
 class SavingsScreen extends StatefulWidget {
   final UserManager userManager;
@@ -26,7 +28,7 @@ class SavingsScreen extends StatefulWidget {
 }
 
 class _SavingsScreenState extends State<SavingsScreen>
-    with TickerProviderStateMixin {
+ with TickerProviderStateMixin {
   int _userRefreshKey = 0;
   late TabController _tabController;
   late UserManager _userManager;
@@ -44,6 +46,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   String _searchQuery = '';
   bool _isLoading = true;
   bool _privacyMode = false;
+  final DataChangeNotifier _dataNotifier = DataChangeNotifier();
 
   @override
   void initState() {
@@ -51,11 +54,13 @@ class _SavingsScreenState extends State<SavingsScreen>
     _userManager = widget.userManager;
     _dataManager.setUserManager(_userManager);
     _tabController = TabController(length: 4, vsync: this);
+    _dataNotifier.addListener(_onDataChanged);
     _loadData();
   }
 
   @override
   void dispose() {
+     _dataNotifier.removeListener(_onDataChanged);
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -88,7 +93,10 @@ class _SavingsScreenState extends State<SavingsScreen>
       }
     }
   }
-
+  void _onDataChanged() {
+    debugPrint('📢 Cambio en datos detectado, recargando Summary...');
+    _loadData();
+  }
   void _applyFilters() {
     setState(() {
       _filteredRecords = _allRecords.where((record) {

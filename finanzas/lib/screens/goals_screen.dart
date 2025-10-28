@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import 'dialogs/goal_dialog.dart';
 import '../../widgets/goal_card.dart';
 import '../../models/savings_record.dart';
+import '../services/data_change_notifier.dart';
 
 
 // Formateador para miles
@@ -126,6 +127,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
           final success = await widget.dataManager.addGoal(goal);
           if (success) {
             await _loadGoals();
+            DataChangeNotifier().notifyDataChanged();
             _showSuccessSnackBar('Meta creada exitosamente');
           } else {
             _showErrorSnackBar('Error al crear meta');
@@ -144,6 +146,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
           final success = await widget.dataManager.updateGoal(updatedGoal);
           if (success) {
             await _loadGoals();
+            DataChangeNotifier().notifyDataChanged();
             _showSuccessSnackBar('Meta actualizada');
           } else {
             _showErrorSnackBar('Error al actualizar meta');
@@ -172,6 +175,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
               final success = await widget.dataManager.deleteGoal(goal.id);
               if (success) {
                 await _loadGoals();
+                DataChangeNotifier().notifyDataChanged();
                 _showSuccessSnackBar('Meta eliminada');
               } else {
                 _showErrorSnackBar('Error al eliminar meta');
@@ -393,7 +397,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                   if (recordSuccess && goalSuccess) {
                     // Recargar TODO para actualizar balances
                     await _loadGoals();
-                    
+                    DataChangeNotifier().notifyDataChanged();
                     // Verificar si se completó
                     final updatedGoal = _activeGoals.firstWhere(
                       (g) => g.id == goal.id,
