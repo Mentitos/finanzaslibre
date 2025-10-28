@@ -181,15 +181,17 @@ class GoalsManager {
     return goals.where((g) => g.status == GoalStatus.completed).toList();
   }
 
-  /// Obtener estadísticas de metas
+  /// Obtener estadísticas de metas (SOLO ACTIVAS)
   Future<Map<String, dynamic>> getGoalsStatistics() async {
     final goals = await loadGoals();
     
+    // ✨ SOLO CONTAR METAS ACTIVAS PARA ESTADÍSTICAS
     final activeGoals = goals.where((g) => g.status == GoalStatus.active).toList();
     final completedGoals = goals.where((g) => g.status == GoalStatus.completed).toList();
     
-    final totalTargetAmount = goals.fold<double>(0, (sum, g) => sum + g.targetAmount);
-    final totalCurrentAmount = goals.fold<double>(0, (sum, g) => sum + g.currentAmount);
+    // Calcular totales solo con metas activas
+    final totalTargetAmount = activeGoals.fold<double>(0, (sum, g) => sum + g.targetAmount);
+    final totalCurrentAmount = activeGoals.fold<double>(0, (sum, g) => sum + g.currentAmount);
     final totalProgress = totalTargetAmount > 0 
         ? totalCurrentAmount / totalTargetAmount 
         : 0.0;

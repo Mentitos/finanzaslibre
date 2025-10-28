@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../models/savings_goal_model.dart';
 import '../../services/savings_data_manager.dart';
 import '../../utils/formatters.dart';
@@ -9,12 +10,63 @@ import '../../widgets/goal_card.dart';
 import '../../models/savings_record.dart';
 
 
+// Formateador para miles
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    String text = newValue.text.replaceAll('.', '');
+    
+    if (!RegExp(r'^\d+$').hasMatch(text)) {
+      return oldValue;
+    }
+
+    String formatted = _formatWithThousands(text);
+    
+    int selectionIndex = newValue.selection.end;
+    int oldDots = oldValue.text.substring(0, oldValue.selection.end).split('.').length - 1;
+    int newDots = formatted.substring(0, selectionIndex + (formatted.split('.').length - 1 - oldDots)).split('.').length - 1;
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: selectionIndex + newDots - oldDots,
+      ),
+    );
+  }
+
+  String _formatWithThousands(String text) {
+    if (text.isEmpty) return text;
+    
+    String reversed = text.split('').reversed.join();
+    String formatted = '';
+    
+    for (int i = 0; i < reversed.length; i++) {
+      if (i > 0 && i % 3 == 0) {
+        formatted += '.';
+      }
+      formatted += reversed[i];
+    }
+    
+    return formatted.split('').reversed.join();
+  }
+}
+
+
 class GoalsScreen extends StatefulWidget {
   final SavingsDataManager dataManager;
+  final VoidCallback? onGoalUpdated; // Callback para notificar cambios
 
   const GoalsScreen({
     super.key,
     required this.dataManager,
+    this.onGoalUpdated,
   });
 
   @override
@@ -26,6 +78,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
   List<SavingsGoal> _activeGoals = [];
   List<SavingsGoal> _completedGoals = [];
   Map<String, dynamic> _statistics = {};
+  Map<String, dynamic> _walletStatistics = {};
   bool _isLoading = true;
 
   @override
@@ -48,11 +101,13 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
       final activeGoals = await widget.dataManager.getActiveGoals();
       final completedGoals = await widget.dataManager.getCompletedGoals();
       final stats = await widget.dataManager.getGoalsStatistics();
+      final walletStats = await widget.dataManager.getStatistics();
 
       setState(() {
         _activeGoals = activeGoals;
         _completedGoals = completedGoals;
         _statistics = stats;
+        _walletStatistics = walletStats;
         _isLoading = false;
       });
     } catch (e) {
@@ -133,88 +188,169 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
   void _showMoneyDialog(SavingsGoal goal) {
     final controller = TextEditingController();
     bool isAdding = true;
-    bool isPhysical = true; // Nueva variable para tipo de dinero
+    bool isPhysical = true;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text('${goal.emoji} ${goal.name}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Selector Agregar/Retirar
-              SegmentedButton<bool>(
-                segments: const [
-                  ButtonSegment(value: true, label: Text('Agregar'), icon: Icon(Icons.add)),
-                  ButtonSegment(value: false, label: Text('Retirar'), icon: Icon(Icons.remove)),
-                ],
-                selected: {isAdding},
-                onSelectionChanged: (Set<bool> newSelection) {
-                  setDialogState(() {
-                    isAdding = newSelection.first;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Selector Físico/Digital
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.grey[850]
-                      : Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.account_balance_wallet, size: 20),
-                    const SizedBox(width: 8),
-                    const Text('Tipo de dinero:', style: TextStyle(fontSize: 14)),
-                    const Spacer(),
-                    SegmentedButton<bool>(
-                      style: SegmentedButton.styleFrom(
-                        selectedBackgroundColor: Colors.blue,
-                        selectedForegroundColor: Colors.white,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Mostrar balance actual
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.account_balance_wallet, size: 16, color: Colors.blue),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Balance Disponible',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                          ),
+                        ],
                       ),
-                      segments: const [
-                        ButtonSegment(
-                          value: true,
-                          icon: Icon(Icons.account_balance_wallet, size: 16),
-                          label: Text('Físico', style: TextStyle(fontSize: 12)),
-                        ),
-                        ButtonSegment(
-                          value: false,
-                          icon: Icon(Icons.credit_card, size: 16),
-                          label: Text('Digital', style: TextStyle(fontSize: 12)),
-                        ),
-                      ],
-                      selected: {isPhysical},
-                      onSelectionChanged: (Set<bool> newSelection) {
-                        setDialogState(() {
-                          isPhysical = newSelection.first;
-                        });
-                      },
-                    ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Column(
+                            children: [
+                              const Text('💵 Físico', style: TextStyle(fontSize: 10)),
+                              Text(
+                                '\$${Formatters.formatCurrency(_walletStatistics['totalPhysical']?.toDouble() ?? 0.0)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              const Text('💳 Digital', style: TextStyle(fontSize: 10)),
+                              Text(
+                                '\$${Formatters.formatCurrency(_walletStatistics['totalDigital']?.toDouble() ?? 0.0)}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.purple,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                // Selector Agregar/Retirar
+                SegmentedButton<bool>(
+                  segments: const [
+                    ButtonSegment(value: true, label: Text('Agregar'), icon: Icon(Icons.add)),
+                    ButtonSegment(value: false, label: Text('Retirar'), icon: Icon(Icons.remove)),
                   ],
+                  selected: {isAdding},
+                  onSelectionChanged: (Set<bool> newSelection) {
+                    setDialogState(() {
+                      isAdding = newSelection.first;
+                    });
+                  },
                 ),
-              ),
-              const SizedBox(height: 16),
-              
-              // Campo de monto
-              TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  labelText: 'Monto',
-                  prefixText: '\$',
-                  border: const OutlineInputBorder(),
-                  helperText: isPhysical ? 'Dinero físico' : 'Dinero digital',
+                const SizedBox(height: 16),
+                
+                // Selector Físico/Digital
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.grey[850]
+                        : Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            isPhysical ? Icons.account_balance_wallet : Icons.credit_card,
+                            size: 16,
+                            color: isPhysical ? Colors.blue : Colors.purple,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Tipo de dinero:', style: TextStyle(fontSize: 12)),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: SegmentedButton<bool>(
+                          style: SegmentedButton.styleFrom(
+                            selectedBackgroundColor: isPhysical ? Colors.blue : Colors.purple,
+                            selectedForegroundColor: Colors.white,
+                          ),
+                          segments: const [
+                            ButtonSegment(
+                              value: true,
+                              icon: Icon(Icons.account_balance_wallet, size: 16),
+                              label: Text('Físico', style: TextStyle(fontSize: 12)),
+                            ),
+                            ButtonSegment(
+                              value: false,
+                              icon: Icon(Icons.credit_card, size: 16),
+                              label: Text('Digital', style: TextStyle(fontSize: 12)),
+                            ),
+                          ],
+                          selected: {isPhysical},
+                          onSelectionChanged: (Set<bool> newSelection) {
+                            setDialogState(() {
+                              isPhysical = newSelection.first;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                keyboardType: TextInputType.number,
-                autofocus: true,
-              ),
-            ],
+                const SizedBox(height: 16),
+                
+                // Campo de monto con formato
+                TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    labelText: 'Monto',
+                    prefixText: '\$',
+                    border: const OutlineInputBorder(),
+                    helperText: isPhysical ? '💵 Dinero físico' : '💳 Dinero digital',
+                    helperStyle: TextStyle(
+                      color: isPhysical ? Colors.blue : Colors.purple,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                    ThousandsSeparatorInputFormatter(),
+                    LengthLimitingTextInputFormatter(15),
+                  ],
+                  autofocus: true,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -223,29 +359,39 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
             ),
             FilledButton(
               onPressed: () async {
-                final amount = double.tryParse(controller.text.replaceAll('.', ''));
+                final cleanAmount = controller.text.replaceAll('.', '').replaceAll(',', '');
+                final amount = double.tryParse(cleanAmount);
+                
                 if (amount != null && amount > 0) {
                   Navigator.pop(context);
                   
+                  // Crear el registro que ajusta el total
+                  final record = SavingsRecord(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    physicalAmount: isPhysical ? amount : 0,
+                    digitalAmount: isPhysical ? 0 : amount,
+                    description: isAdding 
+                        ? 'Aporte a meta: ${goal.name}'
+                        : 'Retiro de meta: ${goal.name}',
+                    createdAt: DateTime.now(),
+                    type: isAdding ? RecordType.withdrawal : RecordType.deposit,
+                    category: 'Meta de Ahorro',
+                    notes: '${goal.emoji} ${goal.name} | ${isPhysical ? "💵 Dinero físico" : "💳 Dinero digital"}',
+                  );
+                  
+                  // Crear el registro primero
+                  final recordSuccess = await widget.dataManager.addRecord(record);
+                  debugPrint('📝 Registro creado: ${recordSuccess ? "✅" : "❌"}');
+                  debugPrint('💰 Tipo: ${isAdding ? "RETIRO (para meta)" : "DEPÓSITO (desde meta)"}');
+                  debugPrint('💵 Físico: \$${record.physicalAmount}, Digital: \$${record.digitalAmount}');
+                  
                   // Actualizar la meta
-                  final success = isAdding
+                  final goalSuccess = isAdding
                       ? await widget.dataManager.addMoneyToGoal(goal.id, amount)
                       : await widget.dataManager.removeMoneyFromGoal(goal.id, amount);
                   
-                  if (success) {
-                    // Crear registro vinculado
-                    final record = SavingsRecord(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
-                      physicalAmount: isPhysical ? amount : 0,
-                      digitalAmount: isPhysical ? 0 : amount,
-                      description: '${isAdding ? "Aporte a" : "Retiro de"} meta: ${goal.name}',
-                      createdAt: DateTime.now(),
-                      type: isAdding ? RecordType.deposit : RecordType.withdrawal,
-                      category: 'Meta de Ahorro',
-                      notes: 'Vinculado a meta ${goal.emoji} ${goal.name}',
-                    );
-                    
-                    await widget.dataManager.addRecord(record);
+                  if (recordSuccess && goalSuccess) {
+                    // Recargar TODO para actualizar balances
                     await _loadGoals();
                     
                     // Verificar si se completó
@@ -258,12 +404,15 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                       _showGoalCompletedDialog(updatedGoal);
                     } else {
                       final moneyType = isPhysical ? 'físico' : 'digital';
+                      final moneyIcon = isPhysical ? '💵' : '💳';
                       _showSuccessSnackBar(
                         isAdding 
-                          ? 'Dinero $moneyType agregado a la meta' 
-                          : 'Dinero $moneyType retirado de la meta'
+                          ? '$moneyIcon \$${Formatters.formatCurrency(amount)} $moneyType agregado a la meta'
+                          : '$moneyIcon \$${Formatters.formatCurrency(amount)} $moneyType retirado de la meta'
                       );
                     }
+                  } else {
+                    _showErrorSnackBar('Error al procesar la transacción');
                   }
                 }
               },
@@ -320,6 +469,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
           content: Text(message),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -343,7 +493,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
 
     return Column(
       children: [
-        // Header personalizado (sin AppBar)
+        // Header personalizado
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Row(
@@ -361,7 +511,6 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
                   ),
                 ],
               ),
-              // Botón para agregar meta
               FilledButton.icon(
                 onPressed: _showAddGoalDialog,
                 icon: const Icon(Icons.add, size: 20),
@@ -375,7 +524,9 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
           ),
         ),
 
-        // Estadísticas
+
+
+        // Estadísticas de metas
         if (_statistics.isNotEmpty && !_isLoading) _buildStatisticsCard(),
 
         // TabBar para Activas/Completadas
@@ -432,7 +583,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  'Progreso Total',
+                  'Progreso Total en Metas',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
@@ -460,12 +611,12 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '\$${Formatters.formatCurrency(totalCurrentAmount)}',
-                  style: const TextStyle(fontSize: 14),
+                  'Ahorrado: \$${Formatters.formatCurrency(totalCurrentAmount)}',
+                  style: const TextStyle(fontSize: 13),
                 ),
                 Text(
-                  '\$${Formatters.formatCurrency(totalTargetAmount)}',
-                  style: const TextStyle(fontSize: 14),
+                  'Meta: \$${Formatters.formatCurrency(totalTargetAmount)}',
+                  style: const TextStyle(fontSize: 13),
                 ),
               ],
             ),

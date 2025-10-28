@@ -405,7 +405,10 @@ class _SavingsScreenState extends State<SavingsScreen>
                   onAddCategory: _addCategory,
                   onDeleteCategory: _deleteCategory,
                 ),
-                GoalsScreen(dataManager: _dataManager),
+                GoalsScreen(
+  dataManager: _dataManager,
+  onGoalUpdated: _loadData, // Esto recarga el Summary automáticamente
+),
 
               ],
             ),
