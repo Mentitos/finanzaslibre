@@ -16,7 +16,48 @@ class GoalDialog extends StatefulWidget {
   @override
   State<GoalDialog> createState() => _GoalDialogState();
 }
+class ThousandsSeparatorInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Si está vacío, devolver igual
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
 
+    // Eliminar puntos viejos
+    String cleanText = newValue.text.replaceAll('.', '');
+
+    // Intentar parsear el número
+    int? value = int.tryParse(cleanText);
+    if (value == null) return oldValue;
+
+    // Formatear con puntos
+    final newString = _formatWithDots(value.toString());
+
+    // Calcular nueva posición del cursor
+    int selectionIndex =
+        newString.length - (cleanText.length - newValue.selection.end);
+
+    return TextEditingValue(
+      text: newString,
+      selection: TextSelection.collapsed(offset: selectionIndex),
+    );
+  }
+
+  /// Función auxiliar: agrega puntos cada 3 dígitos
+  String _formatWithDots(String number) {
+    final chars = number.split('').reversed.toList();
+    final buffer = StringBuffer();
+
+    for (int i = 0; i < chars.length; i++) {
+      if (i != 0 && i % 3 == 0) buffer.write('.');
+      buffer.write(chars[i]);
+    }
+
+    return buffer.toString().split('').reversed.join();
+  }
+}
 class _GoalDialogState extends State<GoalDialog> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
@@ -35,17 +76,34 @@ class _GoalDialogState extends State<GoalDialog> {
   bool get _isEditing => widget.goal != null;
 
   @override
-  void initState() {
-    super.initState();
-    if (_isEditing) {
-      final goal = widget.goal!;
-      _nameController.text = goal.name;
-      _descriptionController.text = goal.description ?? '';
-      _targetAmountController.text = goal.targetAmount.toStringAsFixed(0);
-      _selectedEmoji = goal.emoji;
-      _deadline = goal.deadline;
-    }
+void initState() {
+  super.initState();
+  if (_isEditing) {
+    final goal = widget.goal!;
+    _nameController.text = goal.name;
+    _descriptionController.text = goal.description ?? '';
+    
+    _targetAmountController.text = _formatNumberWithDots(goal.targetAmount.toStringAsFixed(0));
+    _selectedEmoji = goal.emoji;
+    _deadline = goal.deadline;
   }
+}
+
+
+String _formatNumberWithDots(String number) {
+  if (number.isEmpty) return number;
+  String reversed = number.split('').reversed.join();
+  String formatted = '';
+  
+  for (int i = 0; i < reversed.length; i++) {
+    if (i > 0 && i % 3 == 0) {
+      formatted += '.';
+    }
+    formatted += reversed[i];
+  }
+  
+  return formatted.split('').reversed.join();
+}
 
   @override
   void dispose() {
@@ -210,32 +268,35 @@ class _GoalDialogState extends State<GoalDialog> {
   }
 
   Widget _buildTargetAmountInput(BuildContext context, AppLocalizations l10n) {
-    return TextFormField(
-      controller: _targetAmountController,
-      decoration: const InputDecoration(
-        labelText: 'Monto objetivo',
-        hintText: '0',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.attach_money),
-        prefixText: '\$',
-      ),
-      keyboardType: TextInputType.number,
-      inputFormatters: [
-        FilteringTextInputFormatter.digitsOnly,
-        LengthLimitingTextInputFormatter(10),
-      ],
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Ingresa el monto objetivo';
-        }
-        final amount = double.tryParse(value);
-        if (amount == null || amount <= 0) {
-          return 'Ingresa un monto válido';
-        }
-        return null;
-      },
-    );
-  }
+  return TextFormField(
+    controller: _targetAmountController,
+    decoration: const InputDecoration(
+      labelText: 'Monto objetivo',
+      hintText: '0',
+      border: OutlineInputBorder(),
+      prefixIcon: Icon(Icons.attach_money),
+      prefixText: '\$',
+    ),
+    keyboardType: TextInputType.number,
+    inputFormatters: [
+      FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+      ThousandsSeparatorInputFormatter(), // 🔥 AGREGAR FORMATEO
+      LengthLimitingTextInputFormatter(15),
+    ],
+    validator: (value) {
+      if (value == null || value.isEmpty) {
+        return 'Ingresa el monto objetivo';
+      }
+      // 🔥 LIMPIAR PUNTOS ANTES DE VALIDAR
+      final cleanValue = value.replaceAll('.', '');
+      final amount = double.tryParse(cleanValue);
+      if (amount == null || amount <= 0) {
+        return 'Ingresa un monto válido';
+      }
+      return null;
+    },
+  );
+}
 
   Widget _buildDeadlineSelector(BuildContext context, AppLocalizations l10n) {
     return InkWell(
@@ -363,39 +424,42 @@ class _GoalDialogState extends State<GoalDialog> {
   }
 
   void _saveGoal() async {
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 300));
+  setState(() => _isLoading = true);
+  await Future.delayed(const Duration(milliseconds: 300));
 
-    final targetAmount = double.parse(_targetAmountController.text);
+  // 🔥 LIMPIAR PUNTOS ANTES DE PARSEAR
+  final cleanAmount = _targetAmountController.text.replaceAll('.', '');
+  final targetAmount = double.parse(cleanAmount);
 
-    final goal = _isEditing
-        ? widget.goal!.copyWith(
-            name: _nameController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty 
-                ? null 
-                : _descriptionController.text.trim(),
-            targetAmount: targetAmount,
-            deadline: _deadline,
-            emoji: _selectedEmoji,
-          )
-        : SavingsGoal(
-            id: DateTime.now().millisecondsSinceEpoch.toString(),
-            name: _nameController.text.trim(),
-            description: _descriptionController.text.trim().isEmpty 
-                ? null 
-                : _descriptionController.text.trim(),
-            targetAmount: targetAmount,
-            createdAt: DateTime.now(),
-            deadline: _deadline,
-            emoji: _selectedEmoji,
-          );
+  final goal = _isEditing
+      ? widget.goal!.copyWith(
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty 
+              ? null 
+              : _descriptionController.text.trim(),
+          targetAmount: targetAmount,
+          deadline: _deadline,
+          emoji: _selectedEmoji,
+        )
+      : SavingsGoal(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: _nameController.text.trim(),
+          description: _descriptionController.text.trim().isEmpty 
+              ? null 
+              : _descriptionController.text.trim(),
+          targetAmount: targetAmount,
+          createdAt: DateTime.now(),
+          deadline: _deadline,
+          emoji: _selectedEmoji,
+        );
 
-    widget.onSave(goal);
+  widget.onSave(goal);
 
-    if (mounted) {
-      Navigator.pop(context);
-    }
+  if (mounted) {
+    Navigator.pop(context);
   }
+}
+
 }

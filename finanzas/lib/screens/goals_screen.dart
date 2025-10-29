@@ -120,74 +120,148 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
   }
 
   void _showAddGoalDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => GoalDialog(
-        onSave: (goal) async {
-          final success = await widget.dataManager.addGoal(goal);
-          if (success) {
-            await _loadGoals();
-            DataChangeNotifier().notifyDataChanged();
-            _showSuccessSnackBar('Meta creada exitosamente');
-          } else {
-            _showErrorSnackBar('Error al crear meta');
-          }
-        },
-      ),
-    );
-  }
+  showDialog(
+    context: context,
+    builder: (context) => GoalDialog(
+      onSave: (goal) async {
+        final success = await widget.dataManager.addGoal(goal);
+        if (success) {
+          await _loadGoals();
+          DataChangeNotifier().notifyDataChanged(); // 🔥 NOTIFICAR
+          _showSuccessSnackBar('Meta creada exitosamente');
+        } else {
+          _showErrorSnackBar('Error al crear meta');
+        }
+      },
+    ),
+  );
+}
 
-  void _showEditGoalDialog(SavingsGoal goal) {
-    showDialog(
-      context: context,
-      builder: (context) => GoalDialog(
-        goal: goal,
-        onSave: (updatedGoal) async {
-          final success = await widget.dataManager.updateGoal(updatedGoal);
-          if (success) {
-            await _loadGoals();
-            DataChangeNotifier().notifyDataChanged();
-            _showSuccessSnackBar('Meta actualizada');
-          } else {
-            _showErrorSnackBar('Error al actualizar meta');
-          }
-        },
-      ),
-    );
-  }
+void _showEditGoalDialog(SavingsGoal goal) {
+  showDialog(
+    context: context,
+    builder: (context) => GoalDialog(
+      goal: goal,
+      onSave: (updatedGoal) async {
+        final success = await widget.dataManager.updateGoal(updatedGoal);
+        if (success) {
+          await _loadGoals();
+          DataChangeNotifier().notifyDataChanged(); // 🔥 NOTIFICAR
+          _showSuccessSnackBar('Meta actualizada');
+        } else {
+          _showErrorSnackBar('Error al actualizar meta');
+        }
+      },
+    ),
+  );
+}
 
   void _showDeleteConfirmation(SavingsGoal goal) {
-    final l10n = AppLocalizations.of(context)!;
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Eliminar Meta'),
-        content: Text('¿Eliminar la meta "${goal.name}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancel),
-          ),
-          FilledButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              final success = await widget.dataManager.deleteGoal(goal.id);
-              if (success) {
-                await _loadGoals();
-                DataChangeNotifier().notifyDataChanged();
-                _showSuccessSnackBar('Meta eliminada');
-              } else {
-                _showErrorSnackBar('Error al eliminar meta');
-              }
-            },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
-            child: Text(l10n.delete),
-          ),
+  final l10n = AppLocalizations.of(context)!;
+  final hasProgress = goal.currentAmount > 0;
+  
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Row(
+        children: [
+          Text(goal.emoji, style: const TextStyle(fontSize: 24)),
+          const SizedBox(width: 8),
+          const Expanded(child: Text('Eliminar Meta')),
         ],
       ),
-    );
-  }
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('¿Eliminar la meta "${goal.name}"?'),
+          
+          // 🔥 MOSTRAR INFO SI HAY DINERO
+          if (hasProgress) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.withOpacity(0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.green[700], size: 18),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Devolución de dinero',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Se devolverán \$${Formatters.formatCurrency(goal.currentAmount)} a tu billetera',
+                    style: TextStyle(fontSize: 12, color: Colors.green[700]),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        FilledButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            
+            // 🔥 DEVOLVER DINERO SI LA META TIENE PROGRESO
+            if (hasProgress) {
+              // Crear registro de DEPÓSITO para devolver el dinero
+              final record = SavingsRecord(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                physicalAmount: 0, // Se devuelve como digital por defecto
+                digitalAmount: goal.currentAmount,
+                description: 'Devolución de meta eliminada: ${goal.name}',
+                createdAt: DateTime.now(),
+                type: RecordType.deposit, // 🔥 DEPÓSITO = devuelve a billetera
+                category: 'Meta de Ahorro',
+                notes: '${goal.emoji} Meta eliminada - Dinero devuelto automáticamente',
+              );
+              
+              await widget.dataManager.addRecord(record);
+              debugPrint('💰 Dinero devuelto: \$${goal.currentAmount}');
+            }
+            
+            // Eliminar la meta
+            final success = await widget.dataManager.deleteGoal(goal.id);
+            
+            if (success) {
+              await _loadGoals();
+              DataChangeNotifier().notifyDataChanged(); // 🔥 NOTIFICAR CAMBIO
+              
+              if (hasProgress) {
+                _showSuccessSnackBar(
+                  '✅ Meta eliminada\n💰 \$${Formatters.formatCurrency(goal.currentAmount)} devuelto a tu billetera'
+                );
+              } else {
+                _showSuccessSnackBar('Meta eliminada');
+              }
+            } else {
+              _showErrorSnackBar('Error al eliminar meta');
+            }
+          },
+          style: FilledButton.styleFrom(backgroundColor: Colors.red),
+          child: Text(l10n.delete),
+        ),
+      ],
+    ),
+  );
+}
 
   void _showMoneyDialog(SavingsGoal goal) {
     final controller = TextEditingController();
