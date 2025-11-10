@@ -26,6 +26,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   StatisticsPeriod _selectedPeriod = StatisticsPeriod.month;
   DateTime? _selectedSpecificMonth;
   DateTime? _selectedSpecificDay;
+bool _showPieChart = true;
 
   @override
   void initState() {
@@ -48,18 +49,60 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
+        child: Column( 
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: [ 
+            
             _buildPeriodSelector(l10n),
             const SizedBox(height: 24),
+            
             _buildSummaryCards(filteredRecords, l10n),
             const SizedBox(height: 24),
-            _buildPieChart(categoryData, l10n),
+
+           
+            Center(
+              child: SegmentedButton<bool>(
+                segments: [
+                  ButtonSegment<bool>(
+                    value: true,
+                    
+                    label: const Text('Torta'),
+                    icon: const Icon(Icons.pie_chart_outline),
+                  ),
+                  ButtonSegment<bool>(
+                    value: false,
+                   
+                    label: const Text('Portafolio'),
+                    icon: const Icon(Icons.bar_chart),
+                  ),
+                ],
+                selected: {_showPieChart},
+                onSelectionChanged: (Set<bool> newSelection) {
+                  setState(() {
+                    _showPieChart = newSelection.first;
+                  });
+                },
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              
+              child: _showPieChart
+                  ? _buildPieChart(categoryData, l10n)
+                  : _buildPortfolioBarChart(categoryData, l10n),
+            ),
+            
+
             const SizedBox(height: 24),
             _buildCategoryList(categoryData, l10n),
-          ],
-        ),
+
+          ], 
+        ), 
       ),
     );
   }
@@ -384,7 +427,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   Widget _buildCategoryList(Map<String, double> categoryData, AppLocalizations l10n) {
-    // Filtrar datos válidos (excluir valores muy cercanos a cero)
+    
     final validData = categoryData.entries
         .where((entry) => entry.value.abs() > 0.01)
         .toList();
@@ -394,7 +437,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
     final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
 
-    // Prevenir división por cero (esto me rompia el programa antes de agregar el filtro)
     if (total <= 0) return const SizedBox.shrink();
 
     return Card(
@@ -471,7 +513,201 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       ),
     );
   }
+  //==============================================================
+  //           GRÁFICO DE BARRAS PORTAFOLIO
+  //==============================================================
 
+  Widget _buildPortfolioBarChart(Map<String, double> categoryData, AppLocalizations l10n) {
+    
+    final validData = categoryData.entries
+        .where((entry) => entry.value.abs() > 0.01)
+        .toList();
+    
+    
+    if (validData.isEmpty) {
+      return Card(
+        child: Container(
+          height: 350,
+          alignment: Alignment.center,
+          child: Text(
+            l10n.noDataForPeriod,
+            style: TextStyle(color: Colors.grey[600]),
+          ),
+        ),
+      );
+    }
+
+    validData.sort((a, b) => b.value.compareTo(a.value));
+    
+    final List<BarChartGroupData> barGroups = [];
+    for (int i = 0; i < validData.length; i++) {
+      final entry = validData[i];
+      barGroups.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: entry.value,
+              
+              color: entry.value >= 0 ? Colors.green : Colors.red,
+              width: 16,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Portafolio por Categoría", 
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              height: 350,
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  barGroups: barGroups,
+                  
+                  titlesData: FlTitlesData(
+                    show: true,
+                   
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 22,
+                        interval: 1,
+                        getTitlesWidget: (value, meta) {
+                          final index = value.toInt();
+                          if (index < 0 || index >= validData.length) {
+                            return Container();
+                          }
+                          
+                          final categoryName = l10n.translateCategory(validData[index].key);
+                          return SideTitleWidget(
+                            axisSide: meta.axisSide,
+                            space: 4.0,
+                            child: Text(
+                              categoryName.length > 3 ? categoryName.substring(0, 3) : categoryName,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            _formatCurrencySimple(value), 
+                            style: const TextStyle(fontSize: 10),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                 
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: _calculateHorizontalInterval(validData),
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color: Colors.grey.withOpacity(0.3),
+                        strokeWidth: 1,
+                      );
+                    },
+                  ),
+                  
+                  borderData: FlBorderData(show: false),
+                  
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (BarChartGroupData group) { 
+  return Colors.blueGrey.shade800; 
+  
+},
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final categoryName = l10n.translateCategory(validData[group.x].key);
+                        final amount = rod.toY;
+                        return BarTooltipItem(
+                          '$categoryName\n',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          children: [
+                            TextSpan(
+                              text: Formatters.formatCurrency(amount),
+                              style: TextStyle(
+                                color: amount >= 0 ? Colors.lightGreenAccent : Colors.redAccent,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                swapAnimationDuration: const Duration(milliseconds: 600),
+                swapAnimationCurve: Curves.easeInOutCubic,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatCurrencySimple(double value) {
+    if (value == 0) return '0';
+    if (value.abs() >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}M';
+    }
+    if (value.abs() >= 1000) {
+      return '${(value / 1000).toStringAsFixed(1)}k';
+    }
+    return value.toStringAsFixed(0);
+  }
+
+  double _calculateHorizontalInterval(List<MapEntry<String, double>> data) {
+    if (data.isEmpty) return 100;
+
+    double maxVal = 0;
+    double minVal = 0;
+
+    for (var entry in data) {
+      if (entry.value > maxVal) maxVal = entry.value;
+      if (entry.value < minVal) minVal = entry.value;
+    }
+
+    final range = maxVal - minVal;
+    if (range == 0) {
+     
+      return (maxVal.abs() / 2).clamp(1, double.infinity);
+    }
+    
+    double interval = range / 5; 
+
+    if (interval == 0) return 100;
+    
+    if (interval > 1000) return (interval / 1000).round() * 1000;
+    if (interval > 100) return (interval / 100).round() * 100;
+    if (interval > 50) return (interval / 50).round() * 50;
+    if (interval > 10) return (interval / 10).round() * 10;
+    
+    return interval.round().toDouble().clamp(1, double.infinity);
+  }
   Widget _buildMonthSelector(AppLocalizations l10n) {
     final now = DateTime.now();
     final selectedMonth = _selectedSpecificMonth ?? now;
