@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../services/savings_data_manager.dart';
 import '../../services/user_manager.dart';
+import '../../services/update_service.dart';
 import '../../l10n/app_localizations.dart';
 import 'sections/about_section.dart';
 import 'sections/appearance_section.dart';
@@ -10,6 +11,7 @@ import 'sections/notifications_section.dart';
 import 'security_section.dart';
 import 'user_list_page.dart';
 import '../google_drive_sync_screen.dart';
+import '../../constants/app_constants.dart';
 
 class SettingsScreen extends StatelessWidget {
   final SavingsDataManager dataManager;
@@ -129,7 +131,40 @@ const SizedBox(height: 12),
             },
           ),
           const SizedBox(height: 12),
+_buildSettingsCard(
+  context: context,
+  icon: Icons.system_update,
+  iconColor: Colors.blue,
+  title: 'Buscar actualizaciones',
+  subtitle: 'Versión ${AppConstants.appVersion}',
+  onTap: () async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
 
+    final updateInfo = await UpdateService().checkForUpdates();
+
+    if (context.mounted) {
+      Navigator.pop(context);
+
+      if (updateInfo != null) {
+        UpdateService().showUpdateDialog(context, updateInfo);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✅ Tienes la última versión instalada'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    }
+  },
+),
+        const SizedBox(height: 12),
           const Divider(height: 40),
 
           // Acerca de

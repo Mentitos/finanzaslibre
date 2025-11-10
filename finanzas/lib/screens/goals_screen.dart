@@ -11,7 +11,6 @@ import '../../models/savings_record.dart';
 import '../services/data_change_notifier.dart';
 
 
-// Formateador para miles
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -62,7 +61,7 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
 
 class GoalsScreen extends StatefulWidget {
   final SavingsDataManager dataManager;
-  final VoidCallback? onGoalUpdated; // Callback para notificar cambios
+  final VoidCallback? onGoalUpdated; 
 
   const GoalsScreen({
     super.key,
@@ -127,7 +126,7 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
         final success = await widget.dataManager.addGoal(goal);
         if (success) {
           await _loadGoals();
-          DataChangeNotifier().notifyDataChanged(); // 🔥 NOTIFICAR
+          DataChangeNotifier().notifyDataChanged(); 
           _showSuccessSnackBar('Meta creada exitosamente');
         } else {
           _showErrorSnackBar('Error al crear meta');
@@ -146,7 +145,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
         final success = await widget.dataManager.updateGoal(updatedGoal);
         if (success) {
           await _loadGoals();
-          DataChangeNotifier().notifyDataChanged(); // 🔥 NOTIFICAR
+          DataChangeNotifier().notifyDataChanged(); 
           _showSuccessSnackBar('Meta actualizada');
         } else {
           _showErrorSnackBar('Error al actualizar meta');
@@ -176,7 +175,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
         children: [
           Text('¿Eliminar la meta "${goal.name}"?'),
           
-          // 🔥 MOSTRAR INFO SI HAY DINERO
+          
           if (hasProgress) ...[
             const SizedBox(height: 16),
             Container(
@@ -219,16 +218,16 @@ void _showEditGoalDialog(SavingsGoal goal) {
           onPressed: () async {
             Navigator.pop(context);
             
-            // 🔥 DEVOLVER DINERO SI LA META TIENE PROGRESO
+            
             if (hasProgress) {
-              // Crear registro de DEPÓSITO para devolver el dinero
+              
               final record = SavingsRecord(
                 id: DateTime.now().millisecondsSinceEpoch.toString(),
-                physicalAmount: 0, // Se devuelve como digital por defecto
+                physicalAmount: 0, 
                 digitalAmount: goal.currentAmount,
                 description: 'Devolución de meta eliminada: ${goal.name}',
                 createdAt: DateTime.now(),
-                type: RecordType.deposit, // 🔥 DEPÓSITO = devuelve a billetera
+                type: RecordType.deposit, 
                 category: 'Meta de Ahorro',
                 notes: '${goal.emoji} Meta eliminada - Dinero devuelto automáticamente',
               );
@@ -237,12 +236,12 @@ void _showEditGoalDialog(SavingsGoal goal) {
               debugPrint('💰 Dinero devuelto: \$${goal.currentAmount}');
             }
             
-            // Eliminar la meta
+            
             final success = await widget.dataManager.deleteGoal(goal.id);
             
             if (success) {
               await _loadGoals();
-              DataChangeNotifier().notifyDataChanged(); // 🔥 NOTIFICAR CAMBIO
+              DataChangeNotifier().notifyDataChanged(); 
               
               if (hasProgress) {
                 _showSuccessSnackBar(
@@ -277,7 +276,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Mostrar balance actual
+                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -335,7 +334,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
                 ),
                 const SizedBox(height: 16),
                 
-                // Selector Agregar/Retirar
+                
                 SegmentedButton<bool>(
                   segments: const [
                     ButtonSegment(value: true, label: Text('Agregar'), icon: Icon(Icons.add)),
@@ -350,7 +349,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
                 ),
                 const SizedBox(height: 16),
                 
-                // Selector Físico/Digital
+                
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -406,7 +405,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
                 ),
                 const SizedBox(height: 16),
                 
-                // Campo de monto con formato
+                
                 TextField(
                   controller: controller,
                   decoration: InputDecoration(
@@ -443,7 +442,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
                 if (amount != null && amount > 0) {
                   Navigator.pop(context);
                   
-                  // Crear el registro que ajusta el total
+                  
                   final record = SavingsRecord(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     physicalAmount: isPhysical ? amount : 0,
@@ -457,22 +456,22 @@ void _showEditGoalDialog(SavingsGoal goal) {
                     notes: '${goal.emoji} ${goal.name} | ${isPhysical ? "💵 Dinero físico" : "💳 Dinero digital"}',
                   );
                   
-                  // Crear el registro primero
+                  
                   final recordSuccess = await widget.dataManager.addRecord(record);
                   debugPrint('📝 Registro creado: ${recordSuccess ? "✅" : "❌"}');
                   debugPrint('💰 Tipo: ${isAdding ? "RETIRO (para meta)" : "DEPÓSITO (desde meta)"}');
                   debugPrint('💵 Físico: \$${record.physicalAmount}, Digital: \$${record.digitalAmount}');
                   
-                  // Actualizar la meta
+                 
                   final goalSuccess = isAdding
                       ? await widget.dataManager.addMoneyToGoal(goal.id, amount)
                       : await widget.dataManager.removeMoneyFromGoal(goal.id, amount);
                   
                   if (recordSuccess && goalSuccess) {
-                    // Recargar TODO para actualizar balances
+                    
                     await _loadGoals();
                     DataChangeNotifier().notifyDataChanged();
-                    // Verificar si se completó
+                    
                     final updatedGoal = _activeGoals.firstWhere(
                       (g) => g.id == goal.id,
                       orElse: () => _completedGoals.firstWhere((g) => g.id == goal.id),
@@ -571,7 +570,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
 
     return Column(
       children: [
-        // Header personalizado
+        
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Row(
@@ -604,10 +603,8 @@ void _showEditGoalDialog(SavingsGoal goal) {
 
 
 
-        // Estadísticas de metas
         if (_statistics.isNotEmpty && !_isLoading) _buildStatisticsCard(),
 
-        // TabBar para Activas/Completadas
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
@@ -630,7 +627,6 @@ void _showEditGoalDialog(SavingsGoal goal) {
           ),
         ),
 
-        // Contenido
         Expanded(
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())

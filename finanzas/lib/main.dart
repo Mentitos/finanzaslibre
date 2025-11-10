@@ -7,6 +7,7 @@ import 'services/user_manager.dart';
 import 'services/google_drive_service.dart';
 import 'services/auto_backup_service.dart';
 import 'services/backup_scheduler.dart';
+import 'services/update_service.dart';
 import 'l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'services/notification_service.dart';
@@ -72,6 +73,9 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _themeMode = widget.initialTheme;
     _loadLocale();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService().checkForUpdatesOnStartup(context);
+    });
   }
 
   Future<void> _loadLocale() async {
