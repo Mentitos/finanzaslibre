@@ -291,6 +291,10 @@
 "mustEnterAtLeastOneAmount": "Please enter at least one amount",
 "depositUpper": "DEPOSIT",
 "withdrawalUpper": "WITHDRAWAL",
+"adjustmentUpper": "ADJUST",
+"newBalance": "New Balance",
+"adjustmentInfo": "Enter the new total balance for physical or digital money.",
+"adjustment": "Adjustment",
 
 "systemLanguage": "System language",
   "system": "system",

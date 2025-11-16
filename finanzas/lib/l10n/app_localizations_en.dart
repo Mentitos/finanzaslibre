@@ -795,6 +795,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get withdrawalUpper => 'WITHDRAWAL';
 
   @override
+  String get adjustmentUpper => 'ADJUST';
+
+  @override
+  String get newBalance => 'New Balance';
+
+  @override
+  String get adjustmentInfo =>
+      'Enter the new total balance for physical or digital money.';
+
+  @override
+  String get adjustment => 'Adjustment';
+
+  @override
   String get systemLanguage => 'System language';
 
   @override

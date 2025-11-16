@@ -98,7 +98,7 @@ Widget build(BuildContext context) {
         ),
         const SizedBox(height: 8),
         Text(
-          '${AppConstants.currencySymbol}${_formatPrivateAmount(totalAmount)}',
+          '${isPositive ? '' : '-'}${AppConstants.currencySymbol}${_formatPrivateAmount(totalAmount.abs())}',
           style: const TextStyle(
             color: Colors.white,
             fontSize: 32,
@@ -191,7 +191,7 @@ Widget build(BuildContext context) {
               ),
               const SizedBox(height: 8),
               Text(
-                '${AppConstants.currencySymbol}${_formatPrivateAmount(amount)}',
+                '${amount < 0 ? '-' : ''}${AppConstants.currencySymbol}${_formatPrivateAmount(amount.abs())}',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

@@ -1,4 +1,4 @@
-enum RecordType { deposit, withdrawal }
+enum RecordType { deposit, withdrawal, adjustment }
 
 enum MoneyType { 
   physical, 

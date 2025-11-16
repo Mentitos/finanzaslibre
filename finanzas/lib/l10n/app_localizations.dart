@@ -1616,6 +1616,30 @@ abstract class AppLocalizations {
   /// **'RETIRO'**
   String get withdrawalUpper;
 
+  /// No description provided for @adjustmentUpper.
+  ///
+  /// In es, this message translates to:
+  /// **'AJUSTAR'**
+  String get adjustmentUpper;
+
+  /// No description provided for @newBalance.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo Saldo'**
+  String get newBalance;
+
+  /// No description provided for @adjustmentInfo.
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce el nuevo saldo total para dinero físico o digital.'**
+  String get adjustmentInfo;
+
+  /// No description provided for @adjustment.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajuste'**
+  String get adjustment;
+
   /// No description provided for @systemLanguage.
   ///
   /// In es, this message translates to:

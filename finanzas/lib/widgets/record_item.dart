@@ -28,10 +28,33 @@ class RecordItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final categoryName = l10n.translateCategory(record.category);
     
-    final transactionColor = record.type == RecordType.deposit 
-        ? Colors.green 
-        : Colors.red;
-    
+    Color transactionColor;
+    IconData icon;
+    String amountText;
+
+    var typeForDisplay = record.type;
+    if (typeForDisplay == RecordType.adjustment) {
+        typeForDisplay = record.totalAmount >= 0 ? RecordType.deposit : RecordType.withdrawal;
+    }
+
+    switch (typeForDisplay) {
+      case RecordType.deposit:
+        transactionColor = Colors.green;
+        icon = Icons.arrow_upward;
+        amountText = '+\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        break;
+      case RecordType.withdrawal:
+        transactionColor = Colors.red;
+        icon = Icons.arrow_downward;
+        amountText = '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        break;
+      case RecordType.adjustment:
+        // This case will not be reached due to the logic above, but kept for safety.
+        transactionColor = Colors.blue;
+        icon = Icons.sync_alt;
+        amountText = Formatters.formatCurrencyWithSign(record.totalAmount);
+        break;
+    }
     
     final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
     
@@ -52,9 +75,7 @@ class RecordItem extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  record.type == RecordType.deposit
-                      ? Icons.arrow_upward
-                      : Icons.arrow_downward,
+                  icon,
                   color: transactionColor,
                   size: 20,
                 ),
@@ -145,7 +166,7 @@ class RecordItem extends StatelessWidget {
                 children: [
                   
                   Text(
-                    '${record.type == RecordType.deposit ? '+' : '-'}\$${Formatters.formatCurrency(record.totalAmount)}',
+                    amountText,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -156,7 +177,7 @@ class RecordItem extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (record.physicalAmount > 0) ...[
+                      if (record.physicalAmount != 0) ...[
                         Icon(
                           Icons.account_balance_wallet,
                           size: 14,
@@ -164,15 +185,15 @@ class RecordItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          '\$${Formatters.formatCurrency(record.physicalAmount)}',
+                          Formatters.formatCurrencyWithSign(record.physicalAmount, showPositiveSign: record.type == RecordType.adjustment),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[600],
                           ),
                         ),
-                        if (record.digitalAmount > 0) const SizedBox(width: 4),
+                        if (record.digitalAmount != 0) const SizedBox(width: 4),
                       ],
-                      if (record.digitalAmount > 0) ...[
+                      if (record.digitalAmount != 0) ...[
                         Icon(
                           Icons.credit_card,
                           size: 14,
@@ -180,7 +201,7 @@ class RecordItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          '\$${Formatters.formatCurrency(record.digitalAmount)}',
+                          Formatters.formatCurrencyWithSign(record.digitalAmount, showPositiveSign: record.type == RecordType.adjustment),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[600],
@@ -222,11 +243,33 @@ class RecentRecordItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
-    final transactionColor = record.type == RecordType.deposit 
-        ? Colors.green 
-        : Colors.red;
-    
+    Color transactionColor;
+    IconData icon;
+    String amountText;
+
+    var typeForDisplay = record.type;
+    if (typeForDisplay == RecordType.adjustment) {
+        typeForDisplay = record.totalAmount >= 0 ? RecordType.deposit : RecordType.withdrawal;
+    }
+
+    switch (typeForDisplay) {
+      case RecordType.deposit:
+        transactionColor = Colors.green;
+        icon = Icons.arrow_upward;
+        amountText = '+\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        break;
+      case RecordType.withdrawal:
+        transactionColor = Colors.red;
+        icon = Icons.arrow_downward;
+        amountText = '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        break;
+      case RecordType.adjustment:
+        // This case will not be reached
+        transactionColor = Colors.blue;
+        icon = Icons.sync_alt;
+        amountText = Formatters.formatCurrencyWithSign(record.totalAmount);
+        break;
+    }
     
     final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
     
@@ -235,9 +278,7 @@ class RecentRecordItem extends StatelessWidget {
       leading: CircleAvatar(
         backgroundColor: transactionColor.withOpacity(0.1),
         child: Icon(
-          record.type == RecordType.deposit
-              ? Icons.arrow_upward
-              : Icons.arrow_downward,
+          icon,
           color: transactionColor,
           size: 20,
         ),
@@ -284,7 +325,7 @@ class RecentRecordItem extends StatelessWidget {
         ],
       ),
       trailing: Text(
-        '${record.type == RecordType.deposit ? '+' : '-'}\$${Formatters.formatCurrency(record.totalAmount)}',
+        amountText,
         style: TextStyle(
           fontWeight: FontWeight.bold,
           color: transactionColor,

@@ -208,6 +208,8 @@ class _SavingsScreenState extends State<SavingsScreen>
         categories: _categories,
         categoryColors: _categoryColors,
         initialCategory: _selectedCategory != 'all' ? _selectedCategory : null,
+        currentPhysicalBalance: _statistics['totalPhysical'] ?? 0.0,
+        currentDigitalBalance: _statistics['totalDigital'] ?? 0.0,
       ),
     );
   }
@@ -220,6 +222,8 @@ class _SavingsScreenState extends State<SavingsScreen>
         categories: _categories,
         categoryColors: _categoryColors,
         record: record,
+        currentPhysicalBalance: _statistics['totalPhysical'] ?? 0.0,
+        currentDigitalBalance: _statistics['totalDigital'] ?? 0.0,
       ),
     );
   }

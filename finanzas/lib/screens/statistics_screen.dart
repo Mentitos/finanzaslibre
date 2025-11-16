@@ -151,9 +151,14 @@ bool _showPieChart = true;
     final Map<String, double> data = {};
 
     for (var record in records) {
-      final amount = record.type == RecordType.deposit
-          ? record.totalAmount
-          : -record.totalAmount;
+      double amount;
+      if (record.type == RecordType.adjustment) {
+        amount = record.totalAmount; // This is a signed delta
+      } else if (record.type == RecordType.deposit) {
+        amount = record.totalAmount;
+      } else { // withdrawal
+        amount = -record.totalAmount;
+      }
       data[record.category] = (data[record.category] ?? 0) + amount;
     }
 
@@ -270,17 +275,23 @@ bool _showPieChart = true;
   }
 
   Widget _buildSummaryCards(List<SavingsRecord> records, AppLocalizations l10n) {
-    final deposits = records.where((r) => r.type == RecordType.deposit);
-    final withdrawals = records.where((r) => r.type == RecordType.withdrawal);
+    double totalDeposits = 0;
+    double totalWithdrawals = 0;
 
-    final totalDeposits = deposits.fold<double>(
-      0,
-      (sum, r) => sum + r.totalAmount,
-    );
-    final totalWithdrawals = withdrawals.fold<double>(
-      0,
-      (sum, r) => sum + r.totalAmount,
-    );
+    for (var record in records) {
+      if (record.type == RecordType.adjustment) {
+        if (record.totalAmount >= 0) {
+          totalDeposits += record.totalAmount;
+        } else {
+          totalWithdrawals += record.totalAmount.abs();
+        }
+      } else if (record.type == RecordType.deposit) {
+        totalDeposits += record.totalAmount;
+      } else { // withdrawal
+        totalWithdrawals += record.totalAmount;
+      }
+    }
+    
     final balance = totalDeposits - totalWithdrawals;
 
     return Row(
@@ -306,7 +317,7 @@ bool _showPieChart = true;
         Expanded(
           child: _buildSummaryCard(
             l10n.balance,
-            balance.abs(),
+            balance,
             balance >= 0 ? Colors.blue : Colors.orange,
             balance >= 0 ? Icons.trending_up : Icons.trending_down,
           ),
@@ -324,7 +335,7 @@ bool _showPieChart = true;
             Icon(icon, color: color, size: 32),
             const SizedBox(height: 8),
             Text(
-              '${AppConstants.currencySymbol}${Formatters.formatCurrency(amount)}',
+              '${amount < 0 ? '-' : ''}${AppConstants.currencySymbol}${Formatters.formatCurrency(amount.abs())}',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,

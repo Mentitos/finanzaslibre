@@ -160,24 +160,28 @@ class RecordsManager {
     }
 
     final deposits =
-        records.where((r) => r.type == RecordType.deposit).toList();
+        records.where((r) => r.type == RecordType.deposit || (r.type == RecordType.adjustment && r.totalAmount >= 0)).toList();
     final withdrawals =
-        records.where((r) => r.type == RecordType.withdrawal).toList();
+        records.where((r) => r.type == RecordType.withdrawal || (r.type == RecordType.adjustment && r.totalAmount < 0)).toList();
 
     double totalPhysical = 0;
     double totalDigital = 0;
     Map<String, double> categoryTotals = {};
 
     for (final record in records) {
-      final multiplier =
-          record.type == RecordType.deposit ? 1.0 : -1.0;
-
-      totalPhysical += record.physicalAmount * multiplier;
-      totalDigital += record.digitalAmount * multiplier;
-
-      categoryTotals[record.category] =
-          (categoryTotals[record.category] ?? 0) +
-              (record.totalAmount * multiplier);
+      if (record.type == RecordType.adjustment) {
+        totalPhysical += record.physicalAmount;
+        totalDigital += record.digitalAmount;
+        categoryTotals[record.category] =
+            (categoryTotals[record.category] ?? 0) + record.totalAmount;
+      } else {
+        final multiplier = record.type == RecordType.deposit ? 1.0 : -1.0;
+        totalPhysical += record.physicalAmount * multiplier;
+        totalDigital += record.digitalAmount * multiplier;
+        categoryTotals[record.category] =
+            (categoryTotals[record.category] ?? 0) +
+                (record.totalAmount * multiplier);
+      }
     }
 
     return {

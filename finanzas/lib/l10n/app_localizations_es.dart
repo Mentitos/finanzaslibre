@@ -794,6 +794,19 @@ class AppLocalizationsEs extends AppLocalizations {
   String get withdrawalUpper => 'RETIRO';
 
   @override
+  String get adjustmentUpper => 'AJUSTAR';
+
+  @override
+  String get newBalance => 'Nuevo Saldo';
+
+  @override
+  String get adjustmentInfo =>
+      'Introduce el nuevo saldo total para dinero físico o digital.';
+
+  @override
+  String get adjustment => 'Ajuste';
+
+  @override
   String get systemLanguage => 'Idioma del sistema';
 
   @override

@@ -293,7 +293,11 @@
   "mustEnterAtLeastOneAmount": "Al menos ingresa un monto",
   "depositUpper": "DEPÓSITO",
   "withdrawalUpper": "RETIRO",
-
+  "adjustmentUpper": "AJUSTAR",
+  "newBalance": "Nuevo Saldo",
+  "adjustmentInfo": "Introduce el nuevo saldo total para dinero físico o digital.",
+  "adjustment": "Ajuste",
+  "adjustment": "Ajuste",
  "systemLanguage": "Idioma del sistema",
   "system": "sistema",
   "systemDefault": "predeterminado del sistema",
