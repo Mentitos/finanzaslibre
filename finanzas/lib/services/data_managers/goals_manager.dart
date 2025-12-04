@@ -184,8 +184,7 @@ class GoalsManager {
   /// Obtener estadísticas de metas (SOLO ACTIVAS)
   Future<Map<String, dynamic>> getGoalsStatistics() async {
     final goals = await loadGoals();
-    
-    // ✨ SOLO CONTAR METAS ACTIVAS PARA ESTADÍSTICAS
+
     final activeGoals = goals.where((g) => g.status == GoalStatus.active).toList();
     final completedGoals = goals.where((g) => g.status == GoalStatus.completed).toList();
     

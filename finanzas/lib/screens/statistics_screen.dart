@@ -59,7 +59,6 @@ bool _showPieChart = true;
             _buildSummaryCards(filteredRecords, l10n),
             const SizedBox(height: 24),
 
-           
             Center(
               child: SegmentedButton<bool>(
                 segments: [
@@ -96,7 +95,6 @@ bool _showPieChart = true;
                   ? _buildPieChart(categoryData, l10n)
                   : _buildPortfolioBarChart(categoryData, l10n),
             ),
-            
 
             const SizedBox(height: 24),
             _buildCategoryList(categoryData, l10n),
@@ -153,10 +151,10 @@ bool _showPieChart = true;
     for (var record in records) {
       double amount;
       if (record.type == RecordType.adjustment) {
-        amount = record.totalAmount; // This is a signed delta
+        amount = record.totalAmount; 
       } else if (record.type == RecordType.deposit) {
         amount = record.totalAmount;
-      } else { // withdrawal
+      } else { 
         amount = -record.totalAmount;
       }
       data[record.category] = (data[record.category] ?? 0) + amount;
@@ -287,7 +285,7 @@ bool _showPieChart = true;
         }
       } else if (record.type == RecordType.deposit) {
         totalDeposits += record.totalAmount;
-      } else { // withdrawal
+      } else { 
         totalWithdrawals += record.totalAmount;
       }
     }
@@ -378,7 +376,6 @@ bool _showPieChart = true;
     final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
     final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
 
-    
     if (total <= 0) {
       return Card(
         child: Container(
@@ -533,8 +530,7 @@ bool _showPieChart = true;
     final validData = categoryData.entries
         .where((entry) => entry.value.abs() > 0.01)
         .toList();
-    
-    
+
     if (validData.isEmpty) {
       return Card(
         child: Container(
