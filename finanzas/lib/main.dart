@@ -1,3 +1,5 @@
+import 'package:finanzas/models/color_palette.dart';
+import 'package:finanzas/services/palette_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/savings_screen.dart';
@@ -67,12 +69,14 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late ThemeMode _themeMode;
   Locale _locale = const Locale('es');
+  ColorPalette _currentPalette = ColorPalette.predefinedPalettes.first;
 
   @override
   void initState() {
     super.initState();
     _themeMode = widget.initialTheme;
     _loadLocale();
+    _loadPalette();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UpdateService().checkForUpdatesOnStartup(context);
     });
@@ -137,8 +141,8 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
         title: 'Mis Ahorros',
         debugShowCheckedModeBanner: false,
-        theme: _buildLightTheme(),
-        darkTheme: _buildDarkTheme(),
+        theme: _buildLightTheme(_currentPalette),
+        darkTheme: _buildDarkTheme(_currentPalette),
         themeMode: _themeMode,
         locale: _locale,
         localizationsDelegates: [
@@ -156,12 +160,12 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  ThemeData _buildLightTheme() {
+  ThemeData _buildLightTheme(ColorPalette palette) {
     return ThemeData(
-      primarySwatch: Colors.green,
+      primarySwatch: _getMaterialColor(palette.seedColor),
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.green,
+        seedColor: palette.seedColor,
         brightness: Brightness.light,
       ),
       cardTheme: const CardThemeData(
@@ -173,12 +177,12 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  ThemeData _buildDarkTheme() {
+  ThemeData _buildDarkTheme(ColorPalette palette) {
     return ThemeData(
-      primarySwatch: Colors.green,
+      primarySwatch: _getMaterialColor(palette.seedColor),
       useMaterial3: true,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.green,
+        seedColor: palette.seedColor,
         brightness: Brightness.dark,
       ),
       cardTheme: CardThemeData(
@@ -189,6 +193,41 @@ class _MyAppState extends State<MyApp> {
         color: Colors.grey[850],
       ),
     );
+  }
+  MaterialColor _getMaterialColor(Color color) {
+    final int red = color.red;
+    final int green = color.green;
+    final int blue = color.blue;
+
+    final Map<int, Color> shades = {
+      50: Color.fromRGBO(red, green, blue, .1),
+      100: Color.fromRGBO(red, green, blue, .2),
+      200: Color.fromRGBO(red, green, blue, .3),
+      300: Color.fromRGBO(red, green, blue, .4),
+      400: Color.fromRGBO(red, green, blue, .5),
+      500: Color.fromRGBO(red, green, blue, .6),
+      600: Color.fromRGBO(red, green, blue, .7),
+      700: Color.fromRGBO(red, green, blue, .8),
+      800: Color.fromRGBO(red, green, blue, .9),
+      900: Color.fromRGBO(red, green, blue, 1),
+    };
+
+    return MaterialColor(color.value, shades);
+  }
+
+  
+  
+  Future<void> _loadPalette() async {
+    final palette = await PaletteManager.loadPalette();
+    setState(() {
+      _currentPalette = palette;
+    });
+  }
+  void changePalette(ColorPalette palette) async {
+    setState(() {
+      _currentPalette = palette;
+    });
+    await PaletteManager.savePalette(palette);
   }
 }
 
