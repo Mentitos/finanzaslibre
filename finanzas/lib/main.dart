@@ -16,9 +16,9 @@ import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   await UserManager.initialize();
-  
+
   SavingsDataManager.init();
   final dataManager = SavingsDataManager();
   await dataManager.initialize();
@@ -26,7 +26,7 @@ void main() async {
   await GoogleDriveService().initialize();
   await AutoBackupService().initialize();
   await NotificationService().initialize();
-  
+
   final prefs = await SharedPreferences.getInstance();
   final themeModeString = prefs.getString('theme_mode') ?? 'system';
 
@@ -42,10 +42,7 @@ void main() async {
       initialTheme = ThemeMode.system;
   }
 
-  runApp(MyApp(
-    initialTheme: initialTheme,
-    dataManager: dataManager,
-  ));
+  runApp(MyApp(initialTheme: initialTheme, dataManager: dataManager));
 }
 
 class MyApp extends StatefulWidget {
@@ -87,8 +84,11 @@ class _MyAppState extends State<MyApp> {
     final languageCode = prefs.getString('language_code') ?? 'system';
 
     if (languageCode == 'system') {
-      final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-      String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
+      final systemLocale =
+          WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      String effectiveLang = (systemLocale == 'es' || systemLocale == 'en')
+          ? systemLocale
+          : 'en';
       setState(() {
         _locale = Locale(effectiveLang);
       });
@@ -104,8 +104,11 @@ class _MyAppState extends State<MyApp> {
     await prefs.setString('language_code', languageCode);
 
     if (languageCode == 'system') {
-      final systemLocale = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-      String effectiveLang = (systemLocale == 'es' || systemLocale == 'en') ? systemLocale : 'en';
+      final systemLocale =
+          WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+      String effectiveLang = (systemLocale == 'es' || systemLocale == 'en')
+          ? systemLocale
+          : 'en';
       setState(() {
         _locale = Locale(effectiveLang);
       });
@@ -151,11 +154,11 @@ class _MyAppState extends State<MyApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        supportedLocales: const [
-          Locale('es'),
-          Locale('en'),
-        ],
-        home: AuthWrapper(dataManager: widget.dataManager),
+        supportedLocales: const [Locale('es'), Locale('en')],
+        home: AuthWrapper(
+          dataManager: widget.dataManager,
+          palette: _currentPalette,
+        ),
       ),
     );
   }
@@ -167,12 +170,29 @@ class _MyAppState extends State<MyApp> {
       colorScheme: ColorScheme.fromSeed(
         seedColor: palette.seedColor,
         brightness: Brightness.light,
+      ).copyWith(primary: palette.seedColor),
+      appBarTheme: AppBarTheme(
+        // Green is the exception: it uses inversePrimary (Pastel).
+        // All others (Custom/Pink) use seedColor (Solid).
+        backgroundColor: palette.id == 'green'
+            ? ColorScheme.fromSeed(seedColor: palette.seedColor).inversePrimary
+            : palette.seedColor,
+        foregroundColor: palette.useWhiteText ? Colors.white : Colors.black,
       ),
       cardTheme: const CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: palette.seedColor,
+        contentTextStyle: TextStyle(
+          color: palette.useWhiteText ? Colors.white : Colors.black,
+        ),
+        actionTextColor: palette.useWhiteText ? Colors.white : Colors.black,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
@@ -184,6 +204,15 @@ class _MyAppState extends State<MyApp> {
       colorScheme: ColorScheme.fromSeed(
         seedColor: palette.seedColor,
         brightness: Brightness.dark,
+      ).copyWith(primary: palette.seedColor),
+      appBarTheme: AppBarTheme(
+        backgroundColor: palette.id == 'green'
+            ? ColorScheme.fromSeed(
+                seedColor: palette.seedColor,
+                brightness: Brightness.dark,
+              ).inversePrimary
+            : palette.seedColor,
+        foregroundColor: Colors.white,
       ),
       cardTheme: CardThemeData(
         elevation: 2,
@@ -192,8 +221,18 @@ class _MyAppState extends State<MyApp> {
         ),
         color: Colors.grey[850],
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: palette.seedColor,
+        contentTextStyle: TextStyle(
+          color: palette.useWhiteText ? Colors.white : Colors.black,
+        ),
+        actionTextColor: palette.useWhiteText ? Colors.white : Colors.black,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
+
   MaterialColor _getMaterialColor(Color color) {
     final int red = color.red;
     final int green = color.green;
@@ -215,14 +254,13 @@ class _MyAppState extends State<MyApp> {
     return MaterialColor(color.value, shades);
   }
 
-  
-  
   Future<void> _loadPalette() async {
     final palette = await PaletteManager.loadPalette();
     setState(() {
       _currentPalette = palette;
     });
   }
+
   void changePalette(ColorPalette palette) async {
     setState(() {
       _currentPalette = palette;
@@ -233,10 +271,12 @@ class _MyAppState extends State<MyApp> {
 
 class AuthWrapper extends StatefulWidget {
   final SavingsDataManager dataManager;
-  
+  final ColorPalette palette;
+
   const AuthWrapper({
     super.key,
     required this.dataManager,
+    required this.palette,
   });
 
   @override
@@ -245,7 +285,7 @@ class AuthWrapper extends StatefulWidget {
 
 class _AuthWrapperState extends State<AuthWrapper> {
   final UserManager _userManager = UserManager();
-  
+
   bool _isLoading = true;
   bool _isAuthenticated = false;
   bool _needsPin = false;
@@ -304,11 +344,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (!_isAuthenticated && _needsPin) {
@@ -327,6 +363,10 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    return SavingsScreen(userManager: _userManager);
+    return SavingsScreen(
+      dataManager: widget.dataManager,
+      userManager: _userManager,
+      palette: widget.palette,
+    );
   }
 }

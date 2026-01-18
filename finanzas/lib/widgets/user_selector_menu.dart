@@ -8,7 +8,7 @@ class UserSelectorMenu extends StatefulWidget {
   final UserManager userManager;
   final VoidCallback onUserChanged;
   final Function(String message, bool isError)? onShowSnackBar;
-  
+
   final Key? refreshKey;
 
   const UserSelectorMenu({
@@ -34,11 +34,10 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
     _loadUsers();
   }
 
- 
   @override
   void didUpdateWidget(UserSelectorMenu oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.refreshKey != widget.refreshKey) {
       _loadUsers();
     }
@@ -47,7 +46,7 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
   Future<void> _loadUsers() async {
     final currentUser = await widget.userManager.getCurrentUser();
     final allUsers = await widget.userManager.getAllUsers();
-    
+
     if (mounted) {
       setState(() {
         _currentUser = currentUser;
@@ -79,17 +78,20 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
 
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
+      color: isDarkMode ? Colors.grey[900] : Colors.white,
+      surfaceTintColor: Colors.transparent,
       itemBuilder: (context) {
         return _allUsers.map((user) {
           final isCurrentUser = user.id == _currentUser?.id;
-          
+
           return PopupMenuItem<String>(
             value: user.id,
             enabled: !isCurrentUser,
             child: DefaultTextStyle(
               style: DefaultTextStyle.of(context).style.copyWith(
                 fontWeight: FontWeight.normal,
-                fontSize: 14, 
+                fontSize: 14,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
               child: Row(
                 children: [
@@ -100,13 +102,17 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
                       user.name,
                       style: TextStyle(
                         fontWeight: FontWeight.normal,
-                        color: isCurrentUser ? highlightColor : null,
+                        color: isCurrentUser
+                            ? (isDarkMode ? Colors.white : Colors.black)
+                            : (isDarkMode ? Colors.white70 : Colors.black87),
                       ),
                     ),
                   ),
                   if (isCurrentUser)
                     Icon(
                       Icons.check_circle,
+                      // Mantenemos el color primario/rosa solo para el check, o usamos contraste también
+                      // El usuario pidió contraste en el texto/fondo. El check puede ser de color.
                       color: highlightColor,
                       size: 20,
                     ),
@@ -118,12 +124,12 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
       },
       onSelected: (userId) async {
         final selectedUser = _allUsers.firstWhere((u) => u.id == userId);
-        
+
         await widget.userManager.setCurrentUser(selectedUser);
         widget.onUserChanged();
-        
+
         await _loadUsers();
-        
+
         if (mounted && widget.onShowSnackBar != null) {
           final l10n = AppLocalizations.of(context)!;
           widget.onShowSnackBar!(
@@ -146,7 +152,7 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontSize: 11,
                   fontWeight: FontWeight.normal,
-                  color: isDarkMode ? Colors.white : null,
+                  color: theme.appBarTheme.foregroundColor,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),
@@ -154,7 +160,7 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
             Icon(
               Icons.arrow_drop_down,
               size: 14,
-              color: isDarkMode ? Colors.white : theme.textTheme.labelSmall?.color,
+              color: theme.appBarTheme.foregroundColor,
             ),
           ],
         ),
@@ -172,8 +178,9 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
 
     return CircleAvatar(
       radius: size / 2,
-      backgroundColor: Colors.primaries[user.name.hashCode % Colors.primaries.length]
-            .withOpacity(0.3),
+      backgroundColor: Colors
+          .primaries[user.name.hashCode % Colors.primaries.length]
+          .withOpacity(0.3),
       child: Icon(
         Icons.person,
         color: Colors.primaries[user.name.hashCode % Colors.primaries.length],

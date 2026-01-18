@@ -35,7 +35,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
   Future<void> _loadUsers() async {
     final users = await widget.userManager.getAllUsers();
     final currentUser = await widget.userManager.getCurrentUser();
-    
+
     if (mounted) {
       setState(() {
         _users = users;
@@ -48,7 +48,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
 
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -57,16 +56,6 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 16, bottom: 8),
-          child: Text(
-            l10n.users,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.textTheme.titleMedium?.color, 
-            ),
-          ),
-        ),
         ..._users.map((user) {
           final isCurrentUser = _currentUser?.id == user.id;
           final isMainWallet = user.id == UserManager.getDefaultUserId();
@@ -106,9 +95,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      color: isCurrentUser 
-          ? theme.colorScheme.primary.withOpacity(theme.brightness == Brightness.dark ? 0.1 : 0.05)
-          : theme.cardColor,
+      // color: isCurrentUser logic removed
       child: Stack(
         children: [
           ListTile(
@@ -122,7 +109,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   child: Text(
                     user.name,
                     style: TextStyle(
-                      color: isCurrentUser ? theme.colorScheme.primary : theme.textTheme.titleMedium?.color,
+                      color: theme.textTheme.titleMedium?.color,
+                      fontWeight: isCurrentUser
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                 ),
@@ -133,14 +123,18 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(theme.brightness == Brightness.dark ? 0.4 : 0.2),
+                      color: Colors.green.withOpacity(
+                        theme.brightness == Brightness.dark ? 0.4 : 0.2,
+                      ),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
                       l10n.principal,
                       style: TextStyle(
                         fontSize: 12,
-                        color: theme.brightness == Brightness.dark ? Colors.lightGreenAccent : Colors.green,
+                        color: theme.brightness == Brightness.dark
+                            ? Colors.lightGreenAccent
+                            : Colors.green,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -163,7 +157,9 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                     l10n.holdToDelete,
                     style: TextStyle(
                       fontSize: 12,
-                      color: theme.brightness == Brightness.dark ? Colors.orange[300] : Colors.orange[700],
+                      color: theme.brightness == Brightness.dark
+                          ? Colors.orange[300]
+                          : Colors.orange[700],
                       fontStyle: FontStyle.italic,
                     ),
                   ),
@@ -182,19 +178,21 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                   if (!isCurrentUser)
                     IconButton(
                       icon: Icon(
-                        Icons.check_circle_outline, 
-                        size: 20, 
-                        color: theme.colorScheme.primary, 
+                        Icons.check_circle_outline,
+                        size: 20,
+                        color: theme.colorScheme.primary,
                       ),
                       onPressed: () async {
                         await widget.userManager.setCurrentUser(user);
                         widget.onUserChanged();
                         await _loadUsers();
                         if (mounted) {
-                          widget.onShowSnackBar(
-                            '${l10n.switchedTo} ${user.name}',
-                            false,
-                          );
+                          if (mounted) {
+                            widget.onShowSnackBar(
+                              '${l10n.switchedTo} ${user.name}',
+                              false,
+                            );
+                          }
                         }
                       },
                       tooltip: l10n.useThisWallet,
@@ -204,10 +202,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
             ),
             onTap: () async {
               if (isCurrentUser) {
-                widget.onShowSnackBar(
-                  l10n.alreadyUsingUser(user.name),
-                  false,
-                );
+                widget.onShowSnackBar(l10n.alreadyUsingUser(user.name), false);
                 return;
               }
 
@@ -216,16 +211,31 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               await _loadUsers();
 
               if (mounted) {
-                widget.onShowSnackBar(
-                  '${l10n.switchedTo} ${user.name}',
-                  false,
-                );
+                widget.onShowSnackBar('${l10n.switchedTo} ${user.name}', false);
               }
             },
             onLongPress: !isMainWallet
                 ? () => _showDeleteUserDialog(context, user, l10n)
                 : null,
           ),
+          if (isCurrentUser)
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 3,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary, // Línea de color del tema
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
+                ),
+              ),
+            ),
+          // Mantener el indicador de "no principal" si es necesario, o quitarlo si choca.
+          // El usuario pidió solo arreglar el estilo de selección, así que dejaré la lógica existente de línea roja si existía
           if (!isMainWallet && !isCurrentUser)
             Positioned(
               right: 0,
@@ -234,7 +244,9 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               child: Container(
                 width: 4,
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(theme.brightness == Brightness.dark ? 0.7 : 0.5),
+                  color: Colors.red.withOpacity(
+                    theme.brightness == Brightness.dark ? 0.7 : 0.5,
+                  ),
                   borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(12),
                     bottomRight: Radius.circular(12),
@@ -269,8 +281,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
       ),
       child: Icon(
         Icons.person,
-        color:
-            Colors.primaries[user.name.hashCode % Colors.primaries.length],
+        color: Colors.primaries[user.name.hashCode % Colors.primaries.length],
       ),
     );
   }
@@ -344,10 +355,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
     }
   }
 
-  Future<void> _deleteProfileImage(
-    User user,
-    AppLocalizations l10n,
-  ) async {
+  Future<void> _deleteProfileImage(User user, AppLocalizations l10n) async {
     await widget.userManager.deleteProfileImage(user.id);
     await _loadUsers();
     widget.onShowSnackBar(l10n.photoRemoved, false);
@@ -388,7 +396,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
               try {
                 await widget.userManager.updateUserName(user.id, newName);
-                
+
                 if (dialogContext.mounted) {
                   Navigator.pop(dialogContext);
                 }
@@ -397,10 +405,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                 widget.onUserChanged();
 
                 if (mounted) {
-                  widget.onShowSnackBar(
-                    l10n.nameUpdatedTo(newName),
-                    false,
-                  );
+                  widget.onShowSnackBar(l10n.nameUpdatedTo(newName), false);
                 }
               } catch (e) {
                 widget.onShowSnackBar('${l10n.error}: $e', true);
@@ -438,11 +443,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               final userName = controller.text.trim();
               if (userName.isEmpty) return;
 
-              
               final newUserId = await widget.userManager.createUser(userName);
               final allUsers = await widget.userManager.getAllUsers();
               final newUser = allUsers.firstWhere((u) => u.id == newUserId);
-              
+
               // Cambiar automáticamente al nuevo usuario
               await widget.userManager.setCurrentUser(newUser);
 
@@ -452,14 +456,10 @@ class _UserManagementSectionState extends State<UserManagementSection> {
 
               await _loadUsers();
 
-              
               widget.onUserChanged();
-              
+
               if (mounted) {
-                widget.onShowSnackBar(
-                  '${l10n.userCreated}: $userName',
-                  false,
-                );
+                widget.onShowSnackBar('${l10n.userCreated}: $userName', false);
               }
             },
             child: Text(l10n.create),

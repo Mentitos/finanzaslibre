@@ -40,5 +40,24 @@ class PrivacyManager {
       return false;
     }
   }
-}
 
+  Future<bool> saveHideBalancesOnStartup(bool enabled) async {
+    try {
+      final key = _getUserDataKey('hide_balances_on_startup');
+      return await _prefs.setBool(key, enabled);
+    } catch (e) {
+      debugPrint('❌ Error guardando configuración de inicio: $e');
+      return false;
+    }
+  }
+
+  Future<bool> loadHideBalancesOnStartup() async {
+    try {
+      final key = _getUserDataKey('hide_balances_on_startup');
+      return _prefs.getBool(key) ?? false;
+    } catch (e) {
+      debugPrint('❌ Error cargando configuración de inicio: $e');
+      return false;
+    }
+  }
+}

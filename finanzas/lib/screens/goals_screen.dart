@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../models/color_palette.dart';
 import 'package:flutter/services.dart';
 import '../../models/savings_goal_model.dart';
 import '../../services/savings_data_manager.dart';
@@ -9,7 +10,6 @@ import 'dialogs/goal_dialog.dart';
 import '../../widgets/goal_card.dart';
 import '../../models/savings_record.dart';
 import '../services/data_change_notifier.dart';
-
 
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
@@ -22,17 +22,27 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
     }
 
     String text = newValue.text.replaceAll('.', '');
-    
+
     if (!RegExp(r'^\d+$').hasMatch(text)) {
       return oldValue;
     }
 
     String formatted = _formatWithThousands(text);
-    
+
     int selectionIndex = newValue.selection.end;
-    int oldDots = oldValue.text.substring(0, oldValue.selection.end).split('.').length - 1;
-    int newDots = formatted.substring(0, selectionIndex + (formatted.split('.').length - 1 - oldDots)).split('.').length - 1;
-    
+    int oldDots =
+        oldValue.text.substring(0, oldValue.selection.end).split('.').length -
+        1;
+    int newDots =
+        formatted
+            .substring(
+              0,
+              selectionIndex + (formatted.split('.').length - 1 - oldDots),
+            )
+            .split('.')
+            .length -
+        1;
+
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(
@@ -43,29 +53,30 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
 
   String _formatWithThousands(String text) {
     if (text.isEmpty) return text;
-    
+
     String reversed = text.split('').reversed.join();
     String formatted = '';
-    
+
     for (int i = 0; i < reversed.length; i++) {
       if (i > 0 && i % 3 == 0) {
         formatted += '.';
       }
       formatted += reversed[i];
     }
-    
+
     return formatted.split('').reversed.join();
   }
 }
 
-
 class GoalsScreen extends StatefulWidget {
   final SavingsDataManager dataManager;
-  final VoidCallback? onGoalUpdated; 
+  final ColorPalette palette;
+  final VoidCallback? onGoalUpdated;
 
   const GoalsScreen({
     super.key,
     required this.dataManager,
+    required this.palette,
     this.onGoalUpdated,
   });
 
@@ -73,7 +84,8 @@ class GoalsScreen extends StatefulWidget {
   State<GoalsScreen> createState() => _GoalsScreenState();
 }
 
-class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStateMixin {
+class _GoalsScreenState extends State<GoalsScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
   List<SavingsGoal> _activeGoals = [];
   List<SavingsGoal> _completedGoals = [];
@@ -119,148 +131,154 @@ class _GoalsScreenState extends State<GoalsScreen> with SingleTickerProviderStat
   }
 
   void _showAddGoalDialog() {
-  showDialog(
-    context: context,
-    builder: (context) => GoalDialog(
-      onSave: (goal) async {
-        final success = await widget.dataManager.addGoal(goal);
-        if (success) {
-          await _loadGoals();
-          DataChangeNotifier().notifyDataChanged(); 
-          _showSuccessSnackBar('Meta creada exitosamente');
-        } else {
-          _showErrorSnackBar('Error al crear meta');
-        }
-      },
-    ),
-  );
-}
+    showDialog(
+      context: context,
+      builder: (context) => GoalDialog(
+        palette: widget.palette,
+        onSave: (goal) async {
+          final success = await widget.dataManager.addGoal(goal);
+          if (success) {
+            await _loadGoals();
+            DataChangeNotifier().notifyDataChanged();
+            _showSuccessSnackBar('Meta creada exitosamente');
+          } else {
+            _showErrorSnackBar('Error al crear meta');
+          }
+        },
+      ),
+    );
+  }
 
-void _showEditGoalDialog(SavingsGoal goal) {
-  showDialog(
-    context: context,
-    builder: (context) => GoalDialog(
-      goal: goal,
-      onSave: (updatedGoal) async {
-        final success = await widget.dataManager.updateGoal(updatedGoal);
-        if (success) {
-          await _loadGoals();
-          DataChangeNotifier().notifyDataChanged(); 
-          _showSuccessSnackBar('Meta actualizada');
-        } else {
-          _showErrorSnackBar('Error al actualizar meta');
-        }
-      },
-    ),
-  );
-}
+  void _showEditGoalDialog(SavingsGoal goal) {
+    showDialog(
+      context: context,
+      builder: (context) => GoalDialog(
+        goal: goal,
+        palette: widget.palette,
+        onSave: (updatedGoal) async {
+          final success = await widget.dataManager.updateGoal(updatedGoal);
+          if (success) {
+            await _loadGoals();
+            DataChangeNotifier().notifyDataChanged();
+            _showSuccessSnackBar('Meta actualizada');
+          } else {
+            _showErrorSnackBar('Error al actualizar meta');
+          }
+        },
+      ),
+    );
+  }
 
   void _showDeleteConfirmation(SavingsGoal goal) {
-  final l10n = AppLocalizations.of(context)!;
-  final hasProgress = goal.currentAmount > 0;
-  
-  showDialog(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: Row(
-        children: [
-          Text(goal.emoji, style: const TextStyle(fontSize: 24)),
-          const SizedBox(width: 8),
-          const Expanded(child: Text('Eliminar Meta')),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('¿Eliminar la meta "${goal.name}"?'),
-          
-          
-          if (hasProgress) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.green.withOpacity(0.3)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.green[700], size: 18),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Devolución de dinero',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Se devolverán \$${Formatters.formatCurrency(goal.currentAmount)} a tu billetera',
-                    style: TextStyle(fontSize: 12, color: Colors.green[700]),
-                  ),
-                ],
-              ),
-            ),
+    final l10n = AppLocalizations.of(context)!;
+    final hasProgress = goal.currentAmount > 0;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Text(goal.emoji, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 8),
+            const Expanded(child: Text('Eliminar Meta')),
           ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('¿Eliminar la meta "${goal.name}"?'),
+
+            if (hasProgress) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.green[700],
+                          size: 18,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Devolución de dinero',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Se devolverán \$${Formatters.formatCurrency(goal.currentAmount)} a tu billetera',
+                      style: TextStyle(fontSize: 12, color: Colors.green[700]),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.pop(context);
+
+              if (hasProgress) {
+                final record = SavingsRecord(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  physicalAmount: 0,
+                  digitalAmount: goal.currentAmount,
+                  description: 'Devolución de meta eliminada: ${goal.name}',
+                  createdAt: DateTime.now(),
+                  type: RecordType.deposit,
+                  category: 'Meta de Ahorro',
+                  notes:
+                      '${goal.emoji} Meta eliminada - Dinero devuelto automáticamente',
+                );
+
+                await widget.dataManager.addRecord(record);
+                debugPrint('💰 Dinero devuelto: \$${goal.currentAmount}');
+              }
+
+              final success = await widget.dataManager.deleteGoal(goal.id);
+
+              if (success) {
+                await _loadGoals();
+                DataChangeNotifier().notifyDataChanged();
+
+                if (hasProgress) {
+                  _showSuccessSnackBar(
+                    '✅ Meta eliminada\n💰 \$${Formatters.formatCurrency(goal.currentAmount)} devuelto a tu billetera',
+                  );
+                } else {
+                  _showSuccessSnackBar('Meta eliminada');
+                }
+              } else {
+                _showErrorSnackBar('Error al eliminar meta');
+              }
+            },
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: Text(l10n.delete),
+          ),
         ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () async {
-            Navigator.pop(context);
-            
-            
-            if (hasProgress) {
-              
-              final record = SavingsRecord(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                physicalAmount: 0, 
-                digitalAmount: goal.currentAmount,
-                description: 'Devolución de meta eliminada: ${goal.name}',
-                createdAt: DateTime.now(),
-                type: RecordType.deposit, 
-                category: 'Meta de Ahorro',
-                notes: '${goal.emoji} Meta eliminada - Dinero devuelto automáticamente',
-              );
-              
-              await widget.dataManager.addRecord(record);
-              debugPrint('💰 Dinero devuelto: \$${goal.currentAmount}');
-            }
-            
-            
-            final success = await widget.dataManager.deleteGoal(goal.id);
-            
-            if (success) {
-              await _loadGoals();
-              DataChangeNotifier().notifyDataChanged(); 
-              
-              if (hasProgress) {
-                _showSuccessSnackBar(
-                  '✅ Meta eliminada\n💰 \$${Formatters.formatCurrency(goal.currentAmount)} devuelto a tu billetera'
-                );
-              } else {
-                _showSuccessSnackBar('Meta eliminada');
-              }
-            } else {
-              _showErrorSnackBar('Error al eliminar meta');
-            }
-          },
-          style: FilledButton.styleFrom(backgroundColor: Colors.red),
-          child: Text(l10n.delete),
-        ),
-      ],
-    ),
-  );
-}
+    );
+  }
 
   void _showMoneyDialog(SavingsGoal goal) {
     final controller = TextEditingController();
@@ -276,7 +294,6 @@ void _showEditGoalDialog(SavingsGoal goal) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -289,11 +306,18 @@ void _showEditGoalDialog(SavingsGoal goal) {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.account_balance_wallet, size: 16, color: Colors.blue),
+                          const Icon(
+                            Icons.account_balance_wallet,
+                            size: 16,
+                            color: Colors.blue,
+                          ),
                           const SizedBox(width: 8),
                           const Text(
                             'Balance Disponible',
-                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -303,7 +327,10 @@ void _showEditGoalDialog(SavingsGoal goal) {
                         children: [
                           Column(
                             children: [
-                              const Text('💵 Físico', style: TextStyle(fontSize: 10)),
+                              const Text(
+                                '💵 Físico',
+                                style: TextStyle(fontSize: 10),
+                              ),
                               Text(
                                 '\$${Formatters.formatCurrency(_walletStatistics['totalPhysical']?.toDouble() ?? 0.0)}',
                                 style: const TextStyle(
@@ -316,7 +343,10 @@ void _showEditGoalDialog(SavingsGoal goal) {
                           ),
                           Column(
                             children: [
-                              const Text('💳 Digital', style: TextStyle(fontSize: 10)),
+                              const Text(
+                                '💳 Digital',
+                                style: TextStyle(fontSize: 10),
+                              ),
                               Text(
                                 '\$${Formatters.formatCurrency(_walletStatistics['totalDigital']?.toDouble() ?? 0.0)}',
                                 style: const TextStyle(
@@ -333,12 +363,19 @@ void _showEditGoalDialog(SavingsGoal goal) {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
-                
+
                 SegmentedButton<bool>(
                   segments: const [
-                    ButtonSegment(value: true, label: Text('Agregar'), icon: Icon(Icons.add)),
-                    ButtonSegment(value: false, label: Text('Retirar'), icon: Icon(Icons.remove)),
+                    ButtonSegment(
+                      value: true,
+                      label: Text('Agregar'),
+                      icon: Icon(Icons.add),
+                    ),
+                    ButtonSegment(
+                      value: false,
+                      label: Text('Retirar'),
+                      icon: Icon(Icons.remove),
+                    ),
                   ],
                   selected: {isAdding},
                   onSelectionChanged: (Set<bool> newSelection) {
@@ -348,8 +385,7 @@ void _showEditGoalDialog(SavingsGoal goal) {
                   },
                 ),
                 const SizedBox(height: 16),
-                
-                
+
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -364,12 +400,17 @@ void _showEditGoalDialog(SavingsGoal goal) {
                       Row(
                         children: [
                           Icon(
-                            isPhysical ? Icons.account_balance_wallet : Icons.credit_card,
+                            isPhysical
+                                ? Icons.account_balance_wallet
+                                : Icons.credit_card,
                             size: 16,
                             color: isPhysical ? Colors.blue : Colors.purple,
                           ),
                           const SizedBox(width: 8),
-                          const Text('Tipo de dinero:', style: TextStyle(fontSize: 12)),
+                          const Text(
+                            'Tipo de dinero:',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 8),
@@ -377,19 +418,30 @@ void _showEditGoalDialog(SavingsGoal goal) {
                         width: double.infinity,
                         child: SegmentedButton<bool>(
                           style: SegmentedButton.styleFrom(
-                            selectedBackgroundColor: isPhysical ? Colors.blue : Colors.purple,
+                            selectedBackgroundColor: isPhysical
+                                ? Colors.blue
+                                : Colors.purple,
                             selectedForegroundColor: Colors.white,
                           ),
                           segments: const [
                             ButtonSegment(
                               value: true,
-                              icon: Icon(Icons.account_balance_wallet, size: 16),
-                              label: Text('Físico', style: TextStyle(fontSize: 12)),
+                              icon: Icon(
+                                Icons.account_balance_wallet,
+                                size: 16,
+                              ),
+                              label: Text(
+                                'Físico',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                             ButtonSegment(
                               value: false,
                               icon: Icon(Icons.credit_card, size: 16),
-                              label: Text('Digital', style: TextStyle(fontSize: 12)),
+                              label: Text(
+                                'Digital',
+                                style: TextStyle(fontSize: 12),
+                              ),
                             ),
                           ],
                           selected: {isPhysical},
@@ -404,15 +456,16 @@ void _showEditGoalDialog(SavingsGoal goal) {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
-                
+
                 TextField(
                   controller: controller,
                   decoration: InputDecoration(
                     labelText: 'Monto',
                     prefixText: '\$',
                     border: const OutlineInputBorder(),
-                    helperText: isPhysical ? '💵 Dinero físico' : '💳 Dinero digital',
+                    helperText: isPhysical
+                        ? '💵 Dinero físico'
+                        : '💳 Dinero digital',
                     helperStyle: TextStyle(
                       color: isPhysical ? Colors.blue : Colors.purple,
                       fontWeight: FontWeight.w500,
@@ -436,56 +489,67 @@ void _showEditGoalDialog(SavingsGoal goal) {
             ),
             FilledButton(
               onPressed: () async {
-                final cleanAmount = controller.text.replaceAll('.', '').replaceAll(',', '');
+                final cleanAmount = controller.text
+                    .replaceAll('.', '')
+                    .replaceAll(',', '');
                 final amount = double.tryParse(cleanAmount);
-                
+
                 if (amount != null && amount > 0) {
                   Navigator.pop(context);
-                  
-                  
+
                   final record = SavingsRecord(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     physicalAmount: isPhysical ? amount : 0,
                     digitalAmount: isPhysical ? 0 : amount,
-                    description: isAdding 
+                    description: isAdding
                         ? 'Aporte a meta: ${goal.name}'
                         : 'Retiro de meta: ${goal.name}',
                     createdAt: DateTime.now(),
                     type: isAdding ? RecordType.withdrawal : RecordType.deposit,
                     category: 'Meta de Ahorro',
-                    notes: '${goal.emoji} ${goal.name} | ${isPhysical ? "💵 Dinero físico" : "💳 Dinero digital"}',
+                    notes:
+                        '${goal.emoji} ${goal.name} | ${isPhysical ? "💵 Dinero físico" : "💳 Dinero digital"}',
                   );
-                  
-                  
-                  final recordSuccess = await widget.dataManager.addRecord(record);
-                  debugPrint('📝 Registro creado: ${recordSuccess ? "✅" : "❌"}');
-                  debugPrint('💰 Tipo: ${isAdding ? "RETIRO (para meta)" : "DEPÓSITO (desde meta)"}');
-                  debugPrint('💵 Físico: \$${record.physicalAmount}, Digital: \$${record.digitalAmount}');
-                  
-                 
+
+                  final recordSuccess = await widget.dataManager.addRecord(
+                    record,
+                  );
+                  debugPrint(
+                    '📝 Registro creado: ${recordSuccess ? "✅" : "❌"}',
+                  );
+                  debugPrint(
+                    '💰 Tipo: ${isAdding ? "RETIRO (para meta)" : "DEPÓSITO (desde meta)"}',
+                  );
+                  debugPrint(
+                    '💵 Físico: \$${record.physicalAmount}, Digital: \$${record.digitalAmount}',
+                  );
+
                   final goalSuccess = isAdding
                       ? await widget.dataManager.addMoneyToGoal(goal.id, amount)
-                      : await widget.dataManager.removeMoneyFromGoal(goal.id, amount);
-                  
+                      : await widget.dataManager.removeMoneyFromGoal(
+                          goal.id,
+                          amount,
+                        );
+
                   if (recordSuccess && goalSuccess) {
-                    
                     await _loadGoals();
                     DataChangeNotifier().notifyDataChanged();
-                    
+
                     final updatedGoal = _activeGoals.firstWhere(
                       (g) => g.id == goal.id,
-                      orElse: () => _completedGoals.firstWhere((g) => g.id == goal.id),
+                      orElse: () =>
+                          _completedGoals.firstWhere((g) => g.id == goal.id),
                     );
-                    
+
                     if (updatedGoal.isCompleted && isAdding) {
                       _showGoalCompletedDialog(updatedGoal);
                     } else {
                       final moneyType = isPhysical ? 'físico' : 'digital';
                       final moneyIcon = isPhysical ? '💵' : '💳';
                       _showSuccessSnackBar(
-                        isAdding 
-                          ? '$moneyIcon \$${Formatters.formatCurrency(amount)} $moneyType agregado a la meta'
-                          : '$moneyIcon \$${Formatters.formatCurrency(amount)} $moneyType retirado de la meta'
+                        isAdding
+                            ? '$moneyIcon \$${Formatters.formatCurrency(amount)} $moneyType agregado a la meta'
+                            : '$moneyIcon \$${Formatters.formatCurrency(amount)} $moneyType retirado de la meta',
                       );
                     }
                   } else {
@@ -544,7 +608,6 @@ void _showEditGoalDialog(SavingsGoal goal) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(message),
-          backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 3),
         ),
@@ -570,7 +633,6 @@ void _showEditGoalDialog(SavingsGoal goal) {
 
     return Column(
       children: [
-        
         Container(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Row(
@@ -593,15 +655,27 @@ void _showEditGoalDialog(SavingsGoal goal) {
                 icon: const Icon(Icons.add, size: 20),
                 label: const Text('Nueva'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  backgroundColor: () {
+                    final hsl = HSLColor.fromColor(widget.palette.seedColor);
+                    final isLight =
+                        Theme.of(context).brightness == Brightness.light;
+                    // Light Mode: Darken slightly (0.05)
+                    // Dark Mode: Lighten slightly (0.05)
+                    final lightness = isLight
+                        ? (hsl.lightness - 0.05).clamp(0.0, 1.0)
+                        : (hsl.lightness + 0.05).clamp(0.0, 1.0);
+
+                    return hsl.withLightness(lightness).toColor();
+                  }(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-
-
 
         if (_statistics.isNotEmpty && !_isLoading) _buildStatisticsCard(),
 
@@ -713,7 +787,9 @@ void _showEditGoalDialog(SavingsGoal goal) {
             ),
             const SizedBox(height: 16),
             Text(
-              isActive ? 'No tienes metas activas' : 'Aún no has completado ninguna meta',
+              isActive
+                  ? 'No tienes metas activas'
+                  : 'Aún no has completado ninguna meta',
               style: TextStyle(color: Colors.grey[600]),
             ),
             if (isActive) ...[

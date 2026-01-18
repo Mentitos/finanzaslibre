@@ -8,7 +8,6 @@ import '../utils/formatters.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/category_translations.dart';
 
-
 class ThousandsSeparatorInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -19,21 +18,28 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    
     String text = newValue.text.replaceAll('.', '');
-    
-    
+
     if (!RegExp(r'^\d+$').hasMatch(text)) {
       return oldValue;
     }
 
-    
     String formatted = _formatWithThousands(text);
-    
+
     int selectionIndex = newValue.selection.end;
-    int oldDots = oldValue.text.substring(0, oldValue.selection.end).split('.').length - 1;
-    int newDots = formatted.substring(0, selectionIndex + (formatted.split('.').length - 1 - oldDots)).split('.').length - 1;
-    
+    int oldDots =
+        oldValue.text.substring(0, oldValue.selection.end).split('.').length -
+        1;
+    int newDots =
+        formatted
+            .substring(
+              0,
+              selectionIndex + (formatted.split('.').length - 1 - oldDots),
+            )
+            .split('.')
+            .length -
+        1;
+
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(
@@ -44,17 +50,17 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
 
   String _formatWithThousands(String text) {
     if (text.isEmpty) return text;
-    
+
     String reversed = text.split('').reversed.join();
     String formatted = '';
-    
+
     for (int i = 0; i < reversed.length; i++) {
       if (i > 0 && i % 3 == 0) {
         formatted += '.';
       }
       formatted += reversed[i];
     }
-    
+
     return formatted.split('').reversed.join();
   }
 }
@@ -65,7 +71,7 @@ class QuickMoneyDialog extends StatefulWidget {
   final List<String> categories;
   final Map<String, Color>? categoryColors;
   final double currentAmount;
-  final UserManager? userManager; 
+  final UserManager? userManager;
 
   const QuickMoneyDialog({
     super.key,
@@ -85,20 +91,20 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     with SingleTickerProviderStateMixin {
   final _depositFormKey = GlobalKey<FormState>();
   final _withdrawalFormKey = GlobalKey<FormState>();
-  
+
   final _depositAmountController = TextEditingController();
   final _depositDescriptionController = TextEditingController();
   final _withdrawalAmountController = TextEditingController();
   final _withdrawalDescriptionController = TextEditingController();
-  
+
   late TabController _tabController;
   String _depositCategory = 'General';
   String _withdrawalCategory = 'General';
   bool _isLoading = false;
 
-  List<double> get quickAmounts => widget.moneyType == MoneyType.physical 
-    ? [1000, 2000, 5000, 10000, 20000, 50000]
-    : [5000, 10000, 25000, 50000, 100000, 200000];
+  List<double> get quickAmounts => widget.moneyType == MoneyType.physical
+      ? [1000, 2000, 5000, 10000, 20000, 50000]
+      : [5000, 10000, 25000, 50000, 100000, 200000];
 
   @override
   void initState() {
@@ -118,17 +124,17 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     super.dispose();
   }
 
-  String _getMoneyTypeLabel(AppLocalizations l10n) => 
-      widget.moneyType == MoneyType.physical 
-          ? l10n.physicalMoney 
-          : l10n.digitalMoney;
+  String _getMoneyTypeLabel(AppLocalizations l10n) =>
+      widget.moneyType == MoneyType.physical
+      ? l10n.physicalMoney
+      : l10n.digitalMoney;
 
-  IconData get _moneyTypeIcon => widget.moneyType == MoneyType.physical 
-      ? Icons.account_balance_wallet 
+  IconData get _moneyTypeIcon => widget.moneyType == MoneyType.physical
+      ? Icons.account_balance_wallet
       : Icons.credit_card;
 
-  Color get _moneyTypeColor => widget.moneyType == MoneyType.physical 
-      ? AppConstants.physicalMoneyColor 
+  Color get _moneyTypeColor => widget.moneyType == MoneyType.physical
+      ? AppConstants.physicalMoneyColor
       : AppConstants.digitalMoneyColor;
 
   @override
@@ -148,10 +154,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
             Flexible(
               child: TabBarView(
                 controller: _tabController,
-                children: [
-                  _buildDepositTab(),
-                  _buildWithdrawalTab(),
-                ],
+                children: [_buildDepositTab(), _buildWithdrawalTab()],
               ),
             ),
           ],
@@ -163,7 +166,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
   Widget _buildHeader() {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = widget.userManager?.getCurrentUserSync();
-    
+
     return Container(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       decoration: BoxDecoration(
@@ -181,11 +184,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
               color: _moneyTypeColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              _moneyTypeIcon,
-              color: _moneyTypeColor,
-              size: 24,
-            ),
+            child: Icon(_moneyTypeIcon, color: _moneyTypeColor, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -194,9 +193,9 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
               children: [
                 Text(
                   l10n.quickDepositWithdrawal,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 Row(
                   children: [
@@ -211,10 +210,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
                       const SizedBox(width: 8),
                       Text(
                         '• ${currentUser.name}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
                       ),
                     ],
                   ],
@@ -297,7 +293,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     final isDeposit = type == RecordType.deposit;
     final color = isDeposit ? Colors.green : Colors.red;
     final icon = isDeposit ? Icons.add_circle : Icons.remove_circle;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       child: Form(
@@ -315,7 +311,15 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
             const SizedBox(height: AppConstants.defaultPadding),
             _buildDescriptionField(descriptionController),
             const SizedBox(height: AppConstants.largePadding),
-            _buildActionButtons(type, color, icon, formKey, amountController, descriptionController, selectedCategory),
+            _buildActionButtons(
+              type,
+              color,
+              icon,
+              formKey,
+              amountController,
+              descriptionController,
+              selectedCategory,
+            ),
           ],
         ),
       ),
@@ -324,7 +328,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
 
   Widget _buildCurrentBalanceCard() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -339,10 +343,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
           const SizedBox(width: 8),
           Text(
             '${l10n.currentBalance}: ',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
           ),
           Text(
             '\$${Formatters.formatCurrency(widget.currentAmount)}',
@@ -359,27 +360,32 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
 
   Widget _buildQuickAmountsSection(TextEditingController controller) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           l10n.quickAmounts,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: quickAmounts.map((amount) => _buildQuickAmountChip(amount, controller)).toList(),
+          children: quickAmounts
+              .map((amount) => _buildQuickAmountChip(amount, controller))
+              .toList(),
         ),
       ],
     );
   }
 
-  Widget _buildQuickAmountChip(double amount, TextEditingController controller) {
+  Widget _buildQuickAmountChip(
+    double amount,
+    TextEditingController controller,
+  ) {
     return ActionChip(
       label: Text(
         '\$${Formatters.formatCurrency(amount)}',
@@ -387,7 +393,6 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
       ),
       onPressed: () {
         setState(() {
-
           String amountStr = amount.toStringAsFixed(0);
           controller.text = _formatNumberWithDots(amountStr);
         });
@@ -401,20 +406,20 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     if (number.isEmpty) return number;
     String reversed = number.split('').reversed.join();
     String formatted = '';
-    
+
     for (int i = 0; i < reversed.length; i++) {
       if (i > 0 && i % 3 == 0) {
         formatted += '.';
       }
       formatted += reversed[i];
     }
-    
+
     return formatted.split('').reversed.join();
   }
 
   Widget _buildAmountField(TextEditingController controller) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -426,18 +431,17 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
       ),
       keyboardType: TextInputType.number,
       inputFormatters: [
-        
         FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-       
+
         ThousandsSeparatorInputFormatter(),
-        
+
         LengthLimitingTextInputFormatter(15),
       ],
       validator: (value) {
         if (value?.isEmpty == true) {
           return l10n.enterAmount;
         }
-      
+
         final cleanValue = value!.replaceAll('.', '');
         final amount = double.tryParse(cleanValue);
         if (amount == null || amount <= 0) {
@@ -448,9 +452,12 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     );
   }
 
-  Widget _buildCategorySelector(String selectedCategory, Function(String) onChanged) {
+  Widget _buildCategorySelector(
+    String selectedCategory,
+    Function(String) onChanged,
+  ) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return DropdownButtonFormField<String>(
       value: selectedCategory,
       decoration: InputDecoration(
@@ -458,24 +465,32 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
         border: const OutlineInputBorder(),
         prefixIcon: const Icon(Icons.category),
       ),
-      items: widget.categories.map((category) => DropdownMenuItem(
-        value: category,
-        child: Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: AppConstants.getCategoryColor(category, widget.categoryColors),
-                shape: BoxShape.circle,
+      items: widget.categories
+          .map(
+            (category) => DropdownMenuItem(
+              value: category,
+              child: Row(
+                children: [
+                  Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: AppConstants.getCategoryColor(
+                        category,
+                        widget.categoryColors,
+                      ),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppLocalizations.of(context)!.translateCategory(category),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(width: 8),
-            Text(AppLocalizations.of(context)!.translateCategory(category)),
-
-          ],
-        ),
-      )).toList(),
+          )
+          .toList(),
       onChanged: (value) => onChanged(value!),
       validator: (value) => value == null ? l10n.selectCategory : null,
     );
@@ -483,7 +498,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
 
   Widget _buildDescriptionField(TextEditingController controller) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return TextFormField(
       controller: controller,
       decoration: InputDecoration(
@@ -510,7 +525,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     final l10n = AppLocalizations.of(context)!;
     final isDeposit = type == RecordType.deposit;
     final actionText = isDeposit ? l10n.makeDeposit : l10n.makeWithdrawal;
-    
+
     return Row(
       children: [
         Expanded(
@@ -527,18 +542,23 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
         Expanded(
           flex: 2,
           child: FilledButton.icon(
-            onPressed: _isLoading ? null : () => _saveRecord(
-              type,
-              formKey,
-              amountController,
-              descriptionController,
-              selectedCategory,
-            ),
-            icon: _isLoading 
+            onPressed: _isLoading
+                ? null
+                : () => _saveRecord(
+                    type,
+                    formKey,
+                    amountController,
+                    descriptionController,
+                    selectedCategory,
+                  ),
+            icon: _isLoading
                 ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
                   )
                 : Icon(icon),
             label: Text(_isLoading ? l10n.saving : actionText),
@@ -560,40 +580,45 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     String selectedCategory,
   ) async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (!formKey.currentState!.validate()) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     await Future.delayed(const Duration(milliseconds: 300));
-    
 
     final cleanAmount = amountController.text.replaceAll('.', '');
     final amount = double.parse(cleanAmount);
     final moneyTypeLabel = _getMoneyTypeLabel(l10n).toLowerCase();
-    
+
     final record = SavingsRecord(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       physicalAmount: widget.moneyType == MoneyType.physical ? amount : 0,
       digitalAmount: widget.moneyType == MoneyType.digital ? amount : 0,
-      description: descriptionController.text.trim().isEmpty 
+      description: descriptionController.text.trim().isEmpty
           ? '${type == RecordType.deposit ? l10n.deposit : l10n.withdrawal} ${l10n.quick.toLowerCase()} $moneyTypeLabel'
           : descriptionController.text.trim(),
       createdAt: DateTime.now(),
       type: type,
       category: selectedCategory,
     );
-    
+
     widget.onSave(record);
-    
+
     if (mounted) {
       Navigator.pop(context);
-      
-      final typeLabel = type == RecordType.deposit ? l10n.deposit : l10n.withdrawal;
+
+      final typeLabel = type == RecordType.deposit
+          ? l10n.deposit
+          : l10n.withdrawal;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(l10n.transactionCompleted(typeLabel, Formatters.formatCurrency(amount))),
-          backgroundColor: type == RecordType.deposit ? Colors.green : Colors.orange,
+          content: Text(
+            l10n.transactionCompleted(
+              typeLabel,
+              Formatters.formatCurrency(amount),
+            ),
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );

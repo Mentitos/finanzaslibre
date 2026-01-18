@@ -1,15 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum PaletteType {
-  green,
-  pink,
-  blue,
-  purple,
-  orange,
-  pastel,
-  monochrome,
-  custom,
-}
+enum PaletteType { green, pink, blue, purple, orange, pastel, custom }
 
 class ColorPalette {
   final String id;
@@ -17,6 +8,8 @@ class ColorPalette {
   final PaletteType type;
   final Color seedColor;
   final String? customHex;
+  final bool useWhiteText;
+  final bool affectTotalCard;
 
   const ColorPalette({
     required this.id,
@@ -24,6 +17,8 @@ class ColorPalette {
     required this.type,
     required this.seedColor,
     this.customHex,
+    this.useWhiteText = true,
+    this.affectTotalCard = false,
   });
 
   // Paletas predeterminadas
@@ -33,6 +28,7 @@ class ColorPalette {
       name: 'Verde',
       type: PaletteType.green,
       seedColor: Colors.green,
+      useWhiteText: false,
     ),
     ColorPalette(
       id: 'pink',
@@ -56,19 +52,13 @@ class ColorPalette {
       id: 'orange',
       name: 'Naranja',
       type: PaletteType.orange,
-      seedColor: Color(0xFFFF6F00), 
+      seedColor: Color(0xFFFF6F00),
     ),
     ColorPalette(
       id: 'pastel',
       name: 'Púrpura Pastel',
       type: PaletteType.pastel,
       seedColor: Color(0xFFB39DDB),
-    ),
-    ColorPalette(
-      id: 'monochrome',
-      name: '⚫ Mono',
-      type: PaletteType.monochrome,
-      seedColor: Color(0xFF607D8B),
     ),
   ];
 
@@ -79,6 +69,8 @@ class ColorPalette {
       'type': type.index,
       'seedColor': seedColor.value,
       'customHex': customHex,
+      'useWhiteText': useWhiteText,
+      'affectTotalCard': affectTotalCard,
     };
   }
 
@@ -89,6 +81,8 @@ class ColorPalette {
       type: PaletteType.values[json['type'] as int],
       seedColor: Color(json['seedColor'] as int),
       customHex: json['customHex'] as String?,
+      useWhiteText: json['useWhiteText'] as bool? ?? true,
+      affectTotalCard: json['affectTotalCard'] as bool? ?? false,
     );
   }
 
@@ -98,6 +92,8 @@ class ColorPalette {
     PaletteType? type,
     Color? seedColor,
     String? customHex,
+    bool? useWhiteText,
+    bool? affectTotalCard,
   }) {
     return ColorPalette(
       id: id ?? this.id,
@@ -105,6 +101,8 @@ class ColorPalette {
       type: type ?? this.type,
       seedColor: seedColor ?? this.seedColor,
       customHex: customHex ?? this.customHex,
+      useWhiteText: useWhiteText ?? this.useWhiteText,
+      affectTotalCard: affectTotalCard ?? this.affectTotalCard,
     );
   }
 }

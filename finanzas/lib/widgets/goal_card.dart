@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/savings_goal_model.dart';
 import '../utils/formatters.dart';
@@ -25,18 +26,15 @@ class GoalCard extends StatelessWidget {
     Color cardColor = isCompleted
         ? Colors.green
         : isOverdue
-            ? Colors.red
-            : Colors.blue;
+        ? Colors.red
+        : Colors.blue;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: cardColor.withOpacity(0.3),
-          width: 2,
-        ),
+        side: BorderSide(color: cardColor.withOpacity(0.3), width: 2),
       ),
       child: InkWell(
         onTap: onTap,
@@ -55,10 +53,20 @@ class GoalCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Text(
-                    goal.emoji,
-                    style: const TextStyle(fontSize: 32),
-                  ),
+                  goal.imagePath != null && File(goal.imagePath!).existsSync()
+                      ? Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                              image: FileImage(File(goal.imagePath!)),
+                              fit: BoxFit.cover,
+                            ),
+                            border: Border.all(color: cardColor, width: 2),
+                          ),
+                        )
+                      : Text(goal.emoji, style: const TextStyle(fontSize: 32)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -73,12 +81,15 @@ class GoalCard extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        if (goal.description != null && goal.description!.isNotEmpty)
+                        if (goal.description != null &&
+                            goal.description!.isNotEmpty)
                           Text(
                             goal.description!,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? Colors.grey[400] : Colors.grey[600],
+                              color: isDark
+                                  ? Colors.grey[400]
+                                  : Colors.grey[600],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -104,9 +115,16 @@ class GoalCard extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(Icons.delete, size: 20, color: Colors.red[700]),
+                            Icon(
+                              Icons.delete,
+                              size: 20,
+                              color: Colors.red[700],
+                            ),
                             const SizedBox(width: 8),
-                            Text('Eliminar', style: TextStyle(color: Colors.red[700])),
+                            Text(
+                              'Eliminar',
+                              style: TextStyle(color: Colors.red[700]),
+                            ),
                           ],
                         ),
                       ),
@@ -148,18 +166,20 @@ class GoalCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Barra de progreso
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
                     child: LinearProgressIndicator(
                       value: goal.progress,
                       minHeight: 12,
-                      backgroundColor: isDark ? Colors.grey[800] : Colors.grey[300],
+                      backgroundColor: isDark
+                          ? Colors.grey[800]
+                          : Colors.grey[300],
                       valueColor: AlwaysStoppedAnimation<Color>(cardColor),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -184,7 +204,8 @@ class GoalCard extends StatelessWidget {
                   ),
 
                   // Información adicional
-                  if (goal.deadline != null || goal.dailySavingsNeeded != null) ...[
+                  if (goal.deadline != null ||
+                      goal.dailySavingsNeeded != null) ...[
                     const SizedBox(height: 12),
                     const Divider(),
                     const SizedBox(height: 8),
@@ -199,12 +220,18 @@ class GoalCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: Colors.green.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        border: Border.all(
+                          color: Colors.green.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.check_circle, color: Colors.green[700], size: 20),
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green[700],
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             '¡Meta Completada!',
@@ -226,7 +253,12 @@ class GoalCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(BuildContext context, SavingsGoal goal, bool isDark, bool isOverdue) {
+  Widget _buildInfoRow(
+    BuildContext context,
+    SavingsGoal goal,
+    bool isDark,
+    bool isOverdue,
+  ) {
     return Row(
       children: [
         // Días restantes
@@ -242,14 +274,15 @@ class GoalCard extends StatelessWidget {
             ),
           ),
         ],
-        
+
         // Ahorro diario necesario
         if (goal.dailySavingsNeeded != null && !goal.isCompleted) ...[
           const SizedBox(width: 8),
           Expanded(
             child: _buildInfoChip(
               icon: Icons.savings,
-              label: '\$${Formatters.formatCurrency(goal.dailySavingsNeeded!)} / día',
+              label:
+                  '\$${Formatters.formatCurrency(goal.dailySavingsNeeded!)} / día',
               color: Colors.orange,
               isDark: isDark,
             ),

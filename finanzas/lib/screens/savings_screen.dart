@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/savings_record.dart';
+import '../models/color_palette.dart';
 import '../services/savings_data_manager.dart';
 import '../services/user_manager.dart';
 import '../widgets/record_dialog.dart';
@@ -14,13 +15,16 @@ import '../l10n/app_localizations.dart';
 import 'goals_screen.dart';
 import 'package:finanzas/services/data_change_notifier.dart';
 
-
 class SavingsScreen extends StatefulWidget {
   final UserManager userManager;
+  final SavingsDataManager dataManager;
+  final ColorPalette palette;
 
   const SavingsScreen({
     super.key,
+    required this.dataManager,
     required this.userManager,
+    required this.palette,
   });
 
   @override
@@ -28,7 +32,7 @@ class SavingsScreen extends StatefulWidget {
 }
 
 class _SavingsScreenState extends State<SavingsScreen>
- with TickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int _userRefreshKey = 0;
   late TabController _tabController;
   late UserManager _userManager;
@@ -60,7 +64,7 @@ class _SavingsScreenState extends State<SavingsScreen>
 
   @override
   void dispose() {
-     _dataNotifier.removeListener(_onDataChanged);
+    _dataNotifier.removeListener(_onDataChanged);
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -73,7 +77,13 @@ class _SavingsScreenState extends State<SavingsScreen>
       final records = await _dataManager.loadRecords();
       final categories = await _dataManager.loadCategories();
       final stats = await _dataManager.getStatistics();
-      final privacyMode = await _dataManager.loadPrivacyMode();
+      final hideOnStartup = await _dataManager.loadHideBalancesOnStartup();
+      final privacyModeSaved = await _dataManager.loadPrivacyMode();
+
+      // Si la opción de ocultar al inicio está activa, forzamos privacyMode a true.
+      // Si no, respetamos el último estado guardado.
+      final privacyMode = hideOnStartup ? true : privacyModeSaved;
+
       final categoryColors = await _dataManager.loadAllCategoryColors();
 
       setState(() {
@@ -93,10 +103,12 @@ class _SavingsScreenState extends State<SavingsScreen>
       }
     }
   }
+
   void _onDataChanged() {
     debugPrint('📢 Cambio en datos detectado, recargando Summary...');
     _loadData();
   }
+
   void _applyFilters() {
     setState(() {
       _filteredRecords = _allRecords.where((record) {
@@ -106,13 +118,19 @@ class _SavingsScreenState extends State<SavingsScreen>
           _ => true,
         };
 
-        bool matchesCategory = _selectedCategory == 'all' ||
-            record.category == _selectedCategory;
+        bool matchesCategory =
+            _selectedCategory == 'all' || record.category == _selectedCategory;
 
-        bool matchesSearch = _searchQuery.isEmpty ||
-            record.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            record.category.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            (record.notes?.toLowerCase().contains(_searchQuery.toLowerCase()) ?? false);
+        bool matchesSearch =
+            _searchQuery.isEmpty ||
+            record.description.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ) ||
+            record.category.toLowerCase().contains(
+              _searchQuery.toLowerCase(),
+            ) ||
+            (record.notes?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
+                false);
 
         return matchesType && matchesCategory && matchesSearch;
       }).toList();
@@ -243,7 +261,6 @@ class _SavingsScreenState extends State<SavingsScreen>
   }
 
   void _showSettingsMenu() async {
-    
     await Navigator.push(
       context,
       MaterialPageRoute(
@@ -253,7 +270,7 @@ class _SavingsScreenState extends State<SavingsScreen>
           onDataChanged: () async {
             _dataManager.setUserManager(_userManager);
             await _loadData();
-            
+
             setState(() {
               _userRefreshKey++;
             });
@@ -270,7 +287,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         ),
       ),
     );
-    
+
     setState(() {
       _userRefreshKey++;
     });
@@ -279,11 +296,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   void _showSuccessSnackBar(String message) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: AppConstants.successColor,
-          behavior: SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
       );
     }
   }
@@ -300,11 +313,10 @@ class _SavingsScreenState extends State<SavingsScreen>
     }
   }
 
-  
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -333,8 +345,6 @@ class _SavingsScreenState extends State<SavingsScreen>
             ),
           ],
         ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        elevation: 0,
         actions: [
           IconButton(
             icon: Icon(_privacyMode ? Icons.visibility_off : Icons.visibility),
@@ -349,6 +359,11 @@ class _SavingsScreenState extends State<SavingsScreen>
         ],
         bottom: TabBar(
           controller: _tabController,
+          labelColor: Theme.of(context).appBarTheme.foregroundColor,
+          unselectedLabelColor: Theme.of(
+            context,
+          ).appBarTheme.foregroundColor?.withOpacity(0.7),
+          indicatorColor: Theme.of(context).appBarTheme.foregroundColor,
           tabs: [
             Tab(text: l10n.summary, icon: const Icon(Icons.dashboard)),
             Tab(text: l10n.history, icon: const Icon(Icons.history)),
@@ -371,6 +386,7 @@ class _SavingsScreenState extends State<SavingsScreen>
                   onEditRecord: _showEditRecordDialog,
                   onQuickMoneyTap: _showQuickMoneyDialog,
                   onViewAllTap: () => _tabController.animateTo(1),
+                  palette: widget.palette,
                 ),
                 HistoryTab(
                   allRecords: _allRecords,
@@ -418,18 +434,19 @@ class _SavingsScreenState extends State<SavingsScreen>
                   onDeleteCategory: _deleteCategory,
                 ),
                 GoalsScreen(
-  dataManager: _dataManager,
-  onGoalUpdated: _loadData, // Esto recarga el Summary automáticamente
-),
-
+                  dataManager: _dataManager,
+                  palette: widget.palette,
+                  onGoalUpdated:
+                      _loadData, // Esto recarga el Summary automáticamente
+                ),
               ],
             ),
       floatingActionButton: FloatingActionButton(
-  onPressed: _showAddRecordDialog,
-  backgroundColor: Colors.green,
-  foregroundColor: Colors.white,
-  child: const Icon(Icons.add),
-),
+        onPressed: _showAddRecordDialog,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

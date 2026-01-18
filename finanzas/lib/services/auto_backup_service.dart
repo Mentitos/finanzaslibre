@@ -17,17 +17,18 @@ class AutoBackupService {
   static const int _maxAutoBackups = 2;
   static const int _maxManualBackups = 2;
 
-  final FlutterLocalNotificationsPlugin _notifications = 
+  final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
 
   bool _isInitialized = false;
 
-  
   Future<void> initialize() async {
     if (_isInitialized) return;
 
     try {
-      const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
       const iosSettings = DarwinInitializationSettings();
       const initSettings = InitializationSettings(
         android: androidSettings,
@@ -59,7 +60,7 @@ class AutoBackupService {
   Future<void> setAutoBackupEnabled(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_autoBackupEnabledKey, enabled);
-    
+
     if (enabled) {
       await _scheduleAutoBackup();
       debugPrint('✅ Backup automático habilitado');
@@ -69,22 +70,19 @@ class AutoBackupService {
     }
   }
 
-  
   Future<void> setAutoBackupTime(TimeOfDay time) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_autoBackupHourKey, time.hour);
     await prefs.setInt(_autoBackupMinuteKey, time.minute);
-    
-    
+
     final enabled = await isAutoBackupEnabled();
     if (enabled) {
       await _scheduleAutoBackup();
     }
-    
+
     debugPrint('✅ Hora de backup configurada: ${time.hour}:${time.minute}');
   }
 
- 
   Future<void> _scheduleAutoBackupIfEnabled() async {
     final enabled = await isAutoBackupEnabled();
     if (enabled) {
@@ -92,12 +90,11 @@ class AutoBackupService {
     }
   }
 
-  
   Future<void> _scheduleAutoBackup() async {
     try {
       final time = await getAutoBackupTime();
       final scheduledDate = _nextInstanceOfTime(time.hour, time.minute);
-      
+
       await _notifications.zonedSchedule(
         1,
         '🔄 Backup Automático',
@@ -159,36 +156,40 @@ class AutoBackupService {
   Future<bool> executeAutoBackup(SavingsDataManager dataManager) async {
     try {
       debugPrint('🔄 Ejecutando backup automático...');
-      
+
       final driveService = GoogleDriveService();
-      
+
       if (!driveService.isSignedIn) {
         debugPrint('⚠️ No hay sesión activa en Google Drive');
         return false;
       }
 
       final data = await dataManager.exportData();
-      
-      
-      final fileName = 'finanzas_libre_auto_${DateTime.now().millisecondsSinceEpoch}.json';
-      final success = await driveService.uploadBackup(data, isAuto: true, customFileName: fileName);
-      
+
+      final fileName =
+          'finanzas_libre_auto_${DateTime.now().millisecondsSinceEpoch}.json';
+      final success = await driveService.uploadBackup(
+        data,
+        isAuto: true,
+        customFileName: fileName,
+      );
+
       if (success) {
-        
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setInt(_lastAutoBackupKey, DateTime.now().millisecondsSinceEpoch);
-        
-        
+        await prefs.setInt(
+          _lastAutoBackupKey,
+          DateTime.now().millisecondsSinceEpoch,
+        );
+
         await _cleanupOldAutoBackups();
-        
+
         debugPrint('✅ Backup automático completado');
-        
-        
+
         await _showSuccessNotification();
-        
+
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('❌ Error en backup automático: $e');
@@ -197,30 +198,68 @@ class AutoBackupService {
     }
   }
 
-  
   Future<bool> executeManualBackup(SavingsDataManager dataManager) async {
     try {
       debugPrint('🔄 Ejecutando backup manual...');
-      
+
+      // Verificar límite diario
+      if (!await _canPerformManualBackup()) {
+        debugPrint('⚠️ Límite de backups manuales alcanzado por hoy');
+        await _notifications.show(
+          4,
+          'Límite alcanzado',
+          'Solo puedes realizar $_maxManualBackups copias manuales por día',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'backup_status',
+              'Estado del Backup',
+              importance: Importance.high,
+              priority: Priority.high,
+            ),
+          ),
+        );
+        return false;
+      }
+
       final driveService = GoogleDriveService();
-      
+
       if (!driveService.isSignedIn) {
         debugPrint('⚠️ No hay sesión activa en Google Drive');
         return false;
       }
 
       final data = await dataManager.exportData();
-      
-      final fileName = 'finanzas_libre_manual_${DateTime.now().millisecondsSinceEpoch}.json';
-      final success = await driveService.uploadBackup(data, isAuto: false, customFileName: fileName);
-      
+
+      final fileName =
+          'finanzas_libre_manual_${DateTime.now().millisecondsSinceEpoch}.json';
+      final success = await driveService.uploadBackup(
+        data,
+        isAuto: false,
+        customFileName: fileName,
+      );
+
       if (success) {
-        
+        await _incrementManualBackupCount();
         await _cleanupOldManualBackups();
         debugPrint('✅ Backup manual completado');
+
+        await _notifications.show(
+          2,
+          '✅ Backup Manual Completado',
+          'Tus datos se guardaron correctamente (${await _getManualBackupsTodayCount()}/$_maxManualBackups hoy)',
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'backup_status',
+              'Estado del Backup',
+              importance: Importance.defaultImportance,
+              priority: Priority.defaultPriority,
+            ),
+          ),
+        );
+
         return true;
       }
-      
+
       return false;
     } catch (e) {
       debugPrint('❌ Error en backup manual: $e');
@@ -228,27 +267,46 @@ class AutoBackupService {
     }
   }
 
-  
+  Future<bool> _canPerformManualBackup() async {
+    final count = await _getManualBackupsTodayCount();
+    return count < _maxManualBackups;
+  }
+
+  Future<int> _getManualBackupsTodayCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = 'manual_backup_count_${_getTodayDateString()}';
+    return prefs.getInt(todayKey) ?? 0;
+  }
+
+  Future<void> _incrementManualBackupCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    final todayKey = 'manual_backup_count_${_getTodayDateString()}';
+    final current = await _getManualBackupsTodayCount();
+    await prefs.setInt(todayKey, current + 1);
+  }
+
+  String _getTodayDateString() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month}-${now.day}';
+  }
+
   Future<void> _cleanupOldAutoBackups() async {
     try {
       final driveService = GoogleDriveService();
       final backups = await driveService.listBackups();
-      
-      
+
       final autoBackups = backups
           .where((b) => b.name.contains('finanzas_libre_auto_'))
           .toList();
-      
-      
+
       autoBackups.sort((a, b) {
         if (a.createdTime == null || b.createdTime == null) return 0;
         return b.createdTime!.compareTo(a.createdTime!);
       });
 
-      
       if (autoBackups.length > _maxAutoBackups) {
         final toDelete = autoBackups.sublist(_maxAutoBackups);
-        
+
         for (final backup in toDelete) {
           await driveService.deleteBackup(backup.id);
           debugPrint('🗑️ Backup automático antiguo eliminado: ${backup.name}');
@@ -259,27 +317,23 @@ class AutoBackupService {
     }
   }
 
- 
   Future<void> _cleanupOldManualBackups() async {
     try {
       final driveService = GoogleDriveService();
       final backups = await driveService.listBackups();
-      
-      
+
       final manualBackups = backups
           .where((b) => b.name.contains('finanzas_libre_manual_'))
           .toList();
-      
-      
+
       manualBackups.sort((a, b) {
         if (a.createdTime == null || b.createdTime == null) return 0;
         return b.createdTime!.compareTo(a.createdTime!);
       });
 
-      
       if (manualBackups.length > _maxManualBackups) {
         final toDelete = manualBackups.sublist(_maxManualBackups);
-        
+
         for (final backup in toDelete) {
           await driveService.deleteBackup(backup.id);
           debugPrint('🗑️ Backup manual antiguo eliminado: ${backup.name}');
@@ -290,7 +344,6 @@ class AutoBackupService {
     }
   }
 
-  
   Future<void> _showSuccessNotification() async {
     try {
       await _notifications.show(
@@ -314,7 +367,6 @@ class AutoBackupService {
     }
   }
 
-  
   Future<void> _showErrorNotification() async {
     try {
       await _notifications.show(
@@ -338,29 +390,33 @@ class AutoBackupService {
     }
   }
 
- 
   Future<DateTime?> getLastAutoBackupTime() async {
     final prefs = await SharedPreferences.getInstance();
     final timestamp = prefs.getInt(_lastAutoBackupKey);
-    
+
     if (timestamp != null) {
       return DateTime.fromMillisecondsSinceEpoch(timestamp);
     }
-    
+
     return null;
   }
 
-  
   String getTimeUntilNextBackup(TimeOfDay time) {
     final now = DateTime.now();
-    var nextBackup = DateTime(now.year, now.month, now.day, time.hour, time.minute);
-    
+    var nextBackup = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      time.hour,
+      time.minute,
+    );
+
     if (nextBackup.isBefore(now)) {
       nextBackup = nextBackup.add(const Duration(days: 1));
     }
-    
+
     final difference = nextBackup.difference(now);
-    
+
     if (difference.inHours > 0) {
       return '${difference.inHours}h ${difference.inMinutes.remainder(60)}m';
     } else if (difference.inMinutes > 0) {

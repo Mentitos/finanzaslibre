@@ -23,7 +23,7 @@ class GoogleDriveSyncScreen extends StatefulWidget {
 class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
   final GoogleDriveService _driveService = GoogleDriveService();
   final AutoBackupService _autoBackupService = AutoBackupService();
-  
+
   bool _isLoading = false;
   bool _isSignedIn = false;
   bool _autoBackupEnabled = false;
@@ -39,10 +39,10 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Future<void> _initialize() async {
     setState(() => _isLoading = true);
-    
+
     await _driveService.initialize();
     await _autoBackupService.initialize();
-    
+
     if (mounted) {
       setState(() {
         _isSignedIn = _driveService.isSignedIn;
@@ -60,7 +60,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
     final enabled = await _autoBackupService.isAutoBackupEnabled();
     final time = await _autoBackupService.getAutoBackupTime();
     final lastBackup = await _autoBackupService.getLastAutoBackupTime();
-    
+
     if (mounted) {
       setState(() {
         _autoBackupEnabled = enabled;
@@ -72,10 +72,10 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Future<void> _loadBackups() async {
     if (!mounted) return;
-    
+
     setState(() => _isLoading = true);
     final backups = await _driveService.listBackups();
-    
+
     if (mounted) {
       setState(() {
         _backups = backups;
@@ -87,9 +87,9 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
   Future<void> _signIn() async {
     setState(() => _isLoading = true);
     final success = await _driveService.signIn();
-    
+
     if (!mounted) return;
-    
+
     if (success) {
       setState(() => _isSignedIn = true);
       widget.onShowSnackBar('✅ Sesión iniciada correctamente', false);
@@ -97,18 +97,15 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
       await _loadBackups();
     } else {
       setState(() => _isLoading = false);
-      widget.onShowSnackBar(
-        '❌ Error al iniciar sesión',
-        true
-      );
+      widget.onShowSnackBar('❌ Error al iniciar sesión', true);
     }
   }
 
   Future<void> _signOut() async {
     await _driveService.signOut();
-    
+
     if (!mounted) return;
-    
+
     setState(() {
       _isSignedIn = false;
       _backups = [];
@@ -119,12 +116,14 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Future<void> _uploadManualBackup() async {
     setState(() => _isLoading = true);
-    
+
     try {
-      final success = await _autoBackupService.executeManualBackup(widget.dataManager);
-      
+      final success = await _autoBackupService.executeManualBackup(
+        widget.dataManager,
+      );
+
       if (!mounted) return;
-      
+
       if (success) {
         widget.onShowSnackBar('✅ Backup manual creado', false);
         await _loadBackups();
@@ -141,13 +140,13 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Future<void> _toggleAutoBackup(bool value) async {
     setState(() => _autoBackupEnabled = value);
-    
+
     await _autoBackupService.setAutoBackupEnabled(value);
-    
+
     if (value) {
       widget.onShowSnackBar(
         '✅ Backup automático activado\nPróximo: ${_autoBackupService.getTimeUntilNextBackup(_autoBackupTime)}',
-        false
+        false,
       );
     } else {
       widget.onShowSnackBar('Backup automático desactivado', false);
@@ -156,7 +155,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Future<void> _selectBackupTime() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _autoBackupTime,
@@ -170,13 +169,13 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
     if (picked != null && picked != _autoBackupTime) {
       setState(() => _autoBackupTime = picked);
-      
+
       await _autoBackupService.setAutoBackupTime(picked);
-      
+
       if (_autoBackupEnabled) {
         widget.onShowSnackBar(
           'Hora actualizada\nPróximo: ${_autoBackupService.getTimeUntilNextBackup(picked)}',
-          false
+          false,
         );
       }
     }
@@ -184,7 +183,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Future<void> _downloadBackup(DriveBackupFile backup) async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -213,14 +212,14 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
     try {
       final data = await _driveService.downloadBackup(backup.id);
-      
+
       if (!mounted) return;
-      
+
       if (data != null) {
         final success = await widget.dataManager.importData(data);
-        
+
         if (!mounted) return;
-        
+
         if (success) {
           await widget.onDataChanged();
           widget.onShowSnackBar('✅ Datos restaurados correctamente', false);
@@ -242,7 +241,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
   Future<void> _deleteBackup(DriveBackupFile backup) async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -270,9 +269,9 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
 
     try {
       final success = await _driveService.deleteBackup(backup.id);
-      
+
       if (!mounted) return;
-      
+
       if (success) {
         widget.onShowSnackBar('✅ Backup eliminado', false);
         await _loadBackups();
@@ -300,13 +299,12 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
             const Text('Google Drive'),
           ],
         ),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : !_isSignedIn
-              ? _buildSignInView(isDark)
-              : _buildSyncView(isDark),
+          ? _buildSignInView(isDark)
+          : _buildSyncView(isDark),
     );
   }
 
@@ -332,9 +330,9 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
             const SizedBox(height: 32),
             Text(
               'Sincroniza con Google Drive',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -426,9 +424,13 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
   }
 
   Widget _buildSyncView(bool isDark) {
-    final autoBackups = _backups.where((b) => b.name.contains('_auto_')).toList();
-    final manualBackups = _backups.where((b) => b.name.contains('_manual_')).toList();
-    
+    final autoBackups = _backups
+        .where((b) => b.name.contains('_auto_'))
+        .toList();
+    final manualBackups = _backups
+        .where((b) => b.name.contains('_manual_'))
+        .toList();
+
     return RefreshIndicator(
       onRefresh: _loadBackups,
       child: ListView(
@@ -445,8 +447,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
             onPressed: _uploadManualBackup,
           ),
           const SizedBox(height: 24),
-          
-          
+
           if (autoBackups.isNotEmpty) ...[
             Row(
               children: [
@@ -461,10 +462,12 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            ...autoBackups.map((backup) => _buildBackupCard(backup, isDark, isAuto: true)),
+            ...autoBackups.map(
+              (backup) => _buildBackupCard(backup, isDark, isAuto: true),
+            ),
             const SizedBox(height: 24),
           ],
-          
+
           // Sección de backups manuales
           Row(
             children: [
@@ -472,9 +475,9 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
               const SizedBox(width: 8),
               Text(
                 'Backups Manuales (${manualBackups.length}/2)',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -482,7 +485,9 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
           if (manualBackups.isEmpty)
             _buildEmptyBackupsCard(isDark, 'No hay backups manuales')
           else
-            ...manualBackups.map((backup) => _buildBackupCard(backup, isDark, isAuto: false)),
+            ...manualBackups.map(
+              (backup) => _buildBackupCard(backup, isDark, isAuto: false),
+            ),
         ],
       ),
     );
@@ -567,9 +572,8 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
                     children: [
                       Text(
                         'Backup Automático',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -593,13 +597,12 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
                 ),
               ],
             ),
-            
+
             if (_autoBackupEnabled) ...[
               const SizedBox(height: 16),
               const Divider(),
               const SizedBox(height: 12),
-              
-              
+
               InkWell(
                 onTap: _selectBackupTime,
                 borderRadius: BorderRadius.circular(8),
@@ -648,18 +651,15 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 12),
-              
-             
+
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.blue.withOpacity(0.3),
-                  ),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -747,9 +747,13 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
     );
   }
 
-  Widget _buildBackupCard(DriveBackupFile backup, bool isDark, {required bool isAuto}) {
+  Widget _buildBackupCard(
+    DriveBackupFile backup,
+    bool isDark, {
+    required bool isAuto,
+  }) {
     final color = isAuto ? Colors.blue : Colors.green;
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(

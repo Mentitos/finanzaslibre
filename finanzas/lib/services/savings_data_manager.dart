@@ -12,7 +12,7 @@ import '../models/savings_goal_model.dart';
 
 class SavingsDataManager {
   static final SavingsDataManager _instance = SavingsDataManager._internal();
-  
+
   factory SavingsDataManager() => _instance;
   SavingsDataManager._internal();
 
@@ -30,14 +30,14 @@ class SavingsDataManager {
 
   Future<void> initialize() async {
     _prefs = await SharedPreferences.getInstance();
-    
+
     _recordsManager = RecordsManager(_prefs);
     _categoriesManager = CategoriesManager(_prefs);
     _securityManager = SecurityManager(_prefs);
     _privacyManager = PrivacyManager(_prefs);
     _importExportManager = ImportExportManager();
     _dataCleanupManager = DataCleanupManager(_prefs);
-     _goalsManager = GoalsManager(_prefs);
+    _goalsManager = GoalsManager(_prefs);
   }
 
   // --- DELEGACIÓN A RECORDS MANAGER ---
@@ -53,8 +53,7 @@ class SavingsDataManager {
   Future<bool> updateRecord(SavingsRecord updatedRecord) =>
       _recordsManager.updateRecord(updatedRecord);
 
-  Future<bool> deleteRecord(String id) =>
-      _recordsManager.deleteRecord(id);
+  Future<bool> deleteRecord(String id) => _recordsManager.deleteRecord(id);
 
   Future<List<SavingsRecord>> searchRecords({
     String? query,
@@ -102,20 +101,16 @@ class SavingsDataManager {
   Future<bool> savePinData(String pin, bool biometricEnabled) =>
       _securityManager.savePinData(pin, biometricEnabled);
 
-  Future<bool> savePin(String pin) =>
-      _securityManager.savePin(pin);
+  Future<bool> savePin(String pin) => _securityManager.savePin(pin);
 
-  Future<String?> loadPin() =>
-      _securityManager.loadPin();
+  Future<String?> loadPin() => _securityManager.loadPin();
 
-  Future<bool> isPinEnabled() =>
-      _securityManager.isPinEnabled();
+  Future<bool> isPinEnabled() => _securityManager.isPinEnabled();
 
   Future<bool> setPinEnabled(bool enabled) =>
       _securityManager.setPinEnabled(enabled);
 
-  Future<bool> removePin() =>
-      _securityManager.removePin();
+  Future<bool> removePin() => _securityManager.removePin();
 
   Future<bool> setBiometricEnabled(bool enabled) =>
       _securityManager.setBiometricEnabled(enabled);
@@ -127,21 +122,29 @@ class SavingsDataManager {
   Future<bool> savePrivacyMode(bool enabled) =>
       _privacyManager.savePrivacyMode(enabled);
 
-  Future<bool> loadPrivacyMode() =>
-      _privacyManager.loadPrivacyMode();
+  Future<bool> loadPrivacyMode() => _privacyManager.loadPrivacyMode();
 
- // --- DELEGACIÓN A IMPORT/EXPORT MANAGER ---
-Future<Map<String, dynamic>> exportData() =>
-    _importExportManager.exportData(_recordsManager, _categoriesManager);
+  Future<bool> saveHideBalancesOnStartup(bool enabled) =>
+      _privacyManager.saveHideBalancesOnStartup(enabled);
 
-Future<String> exportToCSV() =>
-    _importExportManager.exportToCSV(_recordsManager, _categoriesManager);
+  Future<bool> loadHideBalancesOnStartup() =>
+      _privacyManager.loadHideBalancesOnStartup();
 
-Future<List<int>> exportToExcel() =>
-    _importExportManager.exportToExcel(_recordsManager, _categoriesManager);
+  // --- DELEGACIÓN A IMPORT/EXPORT MANAGER ---
+  Future<Map<String, dynamic>> exportData() => _importExportManager.exportData(
+    _recordsManager,
+    _categoriesManager,
+    _goalsManager,
+  );
 
-Future<bool> importData(Map<String, dynamic> data) =>
-    _importExportManager.importData(data, _recordsManager, _categoriesManager);
+  Future<String> exportToCSV() =>
+      _importExportManager.exportToCSV(_recordsManager, _categoriesManager);
+
+  Future<List<int>> exportToExcel() =>
+      _importExportManager.exportToExcel(_recordsManager, _categoriesManager);
+
+  Future<bool> importData(Map<String, dynamic> data) => _importExportManager
+      .importData(data, _recordsManager, _categoriesManager, _goalsManager);
 
   // --- DELEGACIÓN A DATA CLEANUP MANAGER ---
   Future<bool> clearAllDataExceptDefaultUser() =>
@@ -150,43 +153,38 @@ Future<bool> importData(Map<String, dynamic> data) =>
   Future<bool> clearUserData() =>
       _dataCleanupManager.clearUserData(_recordsManager, _categoriesManager);
 
-  Future<bool> clearAllData() =>
-      _dataCleanupManager.clearAllData();
+  Future<bool> clearAllData() => _dataCleanupManager.clearAllData();
 
-  
   // --- DELEGACIÓN A GOALS MANAGER ---
-Future<List<SavingsGoal>> loadGoals({bool forceReload = false}) =>
-    _goalsManager.loadGoals(forceReload: forceReload);
+  Future<List<SavingsGoal>> loadGoals({bool forceReload = false}) =>
+      _goalsManager.loadGoals(forceReload: forceReload);
 
-Future<bool> saveGoals(List<SavingsGoal> goals) =>
-    _goalsManager.saveGoals(goals);
+  Future<bool> saveGoals(List<SavingsGoal> goals) =>
+      _goalsManager.saveGoals(goals);
 
-Future<bool> addGoal(SavingsGoal goal) =>
-    _goalsManager.addGoal(goal);
+  Future<bool> addGoal(SavingsGoal goal) => _goalsManager.addGoal(goal);
 
-Future<bool> updateGoal(SavingsGoal updatedGoal) =>
-    _goalsManager.updateGoal(updatedGoal);
+  Future<bool> updateGoal(SavingsGoal updatedGoal) =>
+      _goalsManager.updateGoal(updatedGoal);
 
-Future<bool> deleteGoal(String id) =>
-    _goalsManager.deleteGoal(id);
+  Future<bool> deleteGoal(String id) => _goalsManager.deleteGoal(id);
 
-Future<bool> addMoneyToGoal(String goalId, double amount) =>
-    _goalsManager.addMoneyToGoal(goalId, amount);
+  Future<bool> addMoneyToGoal(String goalId, double amount) =>
+      _goalsManager.addMoneyToGoal(goalId, amount);
 
-Future<bool> removeMoneyFromGoal(String goalId, double amount) =>
-    _goalsManager.removeMoneyFromGoal(goalId, amount);
+  Future<bool> removeMoneyFromGoal(String goalId, double amount) =>
+      _goalsManager.removeMoneyFromGoal(goalId, amount);
 
-Future<bool> completeGoal(String goalId) =>
-    _goalsManager.completeGoal(goalId);
+  Future<bool> completeGoal(String goalId) =>
+      _goalsManager.completeGoal(goalId);
 
-Future<List<SavingsGoal>> getActiveGoals() =>
-    _goalsManager.getActiveGoals();
+  Future<List<SavingsGoal>> getActiveGoals() => _goalsManager.getActiveGoals();
 
-Future<List<SavingsGoal>> getCompletedGoals() =>
-    _goalsManager.getCompletedGoals();
+  Future<List<SavingsGoal>> getCompletedGoals() =>
+      _goalsManager.getCompletedGoals();
 
-Future<Map<String, dynamic>> getGoalsStatistics() =>
-    _goalsManager.getGoalsStatistics();
+  Future<Map<String, dynamic>> getGoalsStatistics() =>
+      _goalsManager.getGoalsStatistics();
 
   // Para compatibilidad con otros servicios
   void setUserManager(dynamic userManager) {

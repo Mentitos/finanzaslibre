@@ -10,8 +10,8 @@ class UpdateService {
   factory UpdateService() => _instance;
   UpdateService._internal();
 
-  static const String _versionCheckUrl = 
-    'https://drive.google.com/uc?export=download&id=1wnJeAwIAgcudn5PVkEzHJPU_LiYEuZZz';
+  static const String _versionCheckUrl =
+      'https://drive.google.com/uc?export=download&id=1wnJeAwIAgcudn5PVkEzHJPU_LiYEuZZz';
 
   static const String _lastUpdateDateKey = 'last_known_update_date';
   static const String _dismissedUpdateKey = 'dismissed_update_date';
@@ -19,16 +19,20 @@ class UpdateService {
   Future<UpdateInfo?> checkForUpdates() async {
     try {
       debugPrint('🔄 Verificando actualizaciones...');
-      
+
       final prefs = await SharedPreferences.getInstance();
       final lastKnownUpdate = prefs.getString(_lastUpdateDateKey);
-      
-      debugPrint('📱 Última actualización conocida: ${lastKnownUpdate ?? "Ninguna"}');
+
+      debugPrint(
+        '📱 Última actualización conocida: ${lastKnownUpdate ?? "Ninguna"}',
+      );
 
       final response = await http.get(Uri.parse(_versionCheckUrl));
-      
+
       if (response.statusCode != 200) {
-        debugPrint('❌ Error al obtener info de actualización: ${response.statusCode}');
+        debugPrint(
+          '❌ Error al obtener info de actualización: ${response.statusCode}',
+        );
         return null;
       }
 
@@ -42,9 +46,9 @@ class UpdateService {
       debugPrint('🆕 Última actualización disponible: $lastUpdateDate');
 
       final remoteDate = DateTime.parse(lastUpdateDate);
-      final localDate = lastKnownUpdate != null 
-          ? DateTime.parse(lastKnownUpdate) 
-          : DateTime(2000); 
+      final localDate = lastKnownUpdate != null
+          ? DateTime.parse(lastKnownUpdate)
+          : DateTime(2000);
 
       if (remoteDate.isAfter(localDate)) {
         return UpdateInfo(
@@ -65,9 +69,7 @@ class UpdateService {
     }
   }
 
-  
   Future<void> checkForUpdatesOnStartup(BuildContext context) async {
-    
     await Future.delayed(const Duration(seconds: 2));
 
     final updateInfo = await checkForUpdates();
@@ -75,11 +77,12 @@ class UpdateService {
     if (updateInfo != null && context.mounted) {
       final prefs = await SharedPreferences.getInstance();
       final dismissedUpdate = prefs.getString(_dismissedUpdateKey);
-      
-      
-      if (!updateInfo.isMandatory && 
+
+      if (!updateInfo.isMandatory &&
           dismissedUpdate == updateInfo.lastUpdateDate.toIso8601String()) {
-        debugPrint('⏭️ Usuario descartó actualización del ${updateInfo.formattedDate}');
+        debugPrint(
+          '⏭️ Usuario descartó actualización del ${updateInfo.formattedDate}',
+        );
         return;
       }
 
@@ -90,7 +93,7 @@ class UpdateService {
   void _showUpdateBanner(BuildContext context, UpdateInfo info) {
     final overlay = Overlay.of(context);
     late OverlayEntry overlayEntry;
-    
+
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         top: MediaQuery.of(context).padding.top + 8,
@@ -105,10 +108,7 @@ class UpdateService {
             builder: (context, value, child) {
               return Transform.translate(
                 offset: Offset(0, -50 * (1 - value)),
-                child: Opacity(
-                  opacity: value,
-                  child: child,
-                ),
+                child: Opacity(opacity: value, child: child),
               );
             },
             child: GestureDetector(
@@ -122,13 +122,19 @@ class UpdateService {
                   gradient: LinearGradient(
                     colors: info.isMandatory
                         ? [Colors.orange.shade600, Colors.orange.shade800]
-                        : [Colors.blue.shade600, Colors.blue.shade800],
+                        : [
+                            Theme.of(context).colorScheme.primary,
+                            Theme.of(context).colorScheme.tertiary,
+                          ],
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: (info.isMandatory ? Colors.orange : Colors.blue)
-                          .withOpacity(0.4),
+                      color:
+                          (info.isMandatory
+                                  ? Colors.orange
+                                  : Theme.of(context).colorScheme.primary)
+                              .withOpacity(0.4),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -202,7 +208,9 @@ class UpdateService {
   void showUpdateDialog(BuildContext context, UpdateInfo info) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
-    final releaseNotes = locale == 'es' ? info.releaseNotesEs : info.releaseNotesEn;
+    final releaseNotes = locale == 'es'
+        ? info.releaseNotesEs
+        : info.releaseNotesEn;
 
     showDialog(
       context: context,
@@ -214,13 +222,15 @@ class UpdateService {
             children: [
               Icon(
                 info.isMandatory ? Icons.warning : Icons.system_update,
-                color: info.isMandatory ? Colors.orange : Colors.blue,
+                color: info.isMandatory
+                    ? Colors.orange
+                    : Theme.of(context).colorScheme.primary,
                 size: 28,
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  info.isMandatory 
+                  info.isMandatory
                       ? 'Actualización Requerida'
                       : 'Nueva Versión Disponible',
                 ),
@@ -232,27 +242,44 @@ class UpdateService {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color:
+                        (info.isMandatory
+                                ? Colors.orange
+                                : Theme.of(context).colorScheme.primary)
+                            .withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    border: Border.all(
+                      color:
+                          (info.isMandatory
+                                  ? Colors.orange
+                                  : Theme.of(context).colorScheme.primary)
+                              .withOpacity(0.3),
+                    ),
                   ),
                   child: Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.new_releases, color: Colors.blue[700], size: 20),
+                          Icon(
+                            Icons.new_releases,
+                            color: info.isMandatory
+                                ? Colors.orange[700]
+                                : Theme.of(context).colorScheme.primary,
+                            size: 20,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Versión ${info.appVersion}',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
+                              color: info.isMandatory
+                                  ? Colors.orange[700]
+                                  : Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ],
@@ -261,7 +288,11 @@ class UpdateService {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.calendar_today, size: 14, color: Colors.grey[600]),
+                          Icon(
+                            Icons.calendar_today,
+                            size: 14,
+                            color: Colors.grey[600],
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'Actualizado: ${info.formattedDate}',
@@ -287,7 +318,11 @@ class UpdateService {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.info_outline, color: Colors.orange[700], size: 20),
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.orange[700],
+                          size: 20,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -314,48 +349,50 @@ class UpdateService {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  ...releaseNotes.map((note) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Text(
-                      note.toString(),
-                      style: const TextStyle(fontSize: 13),
+                  ...releaseNotes.map(
+                    (note) => Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        note.toString(),
+                        style: const TextStyle(fontSize: 13),
+                      ),
                     ),
-                  )),
+                  ),
                 ],
               ],
             ),
           ),
           actions: [
-            
             if (!info.isMandatory)
               TextButton(
                 onPressed: () async {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setString(
-                    _dismissedUpdateKey, 
-                    info.lastUpdateDate.toIso8601String()
+                    _dismissedUpdateKey,
+                    info.lastUpdateDate.toIso8601String(),
                   );
                   if (context.mounted) Navigator.pop(context);
                 },
                 child: const Text('Después'),
               ),
-            
+
             FilledButton.icon(
               onPressed: () async {
                 Navigator.pop(context);
                 await _downloadUpdate(info.downloadUrl);
-                
+
                 // Guardar que se conoce la actualización
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setString(
                   _lastUpdateDateKey,
-                  info.lastUpdateDate.toIso8601String()
+                  info.lastUpdateDate.toIso8601String(),
                 );
               },
               icon: const Icon(Icons.download),
               label: const Text('Descargar'),
               style: FilledButton.styleFrom(
-                backgroundColor: Colors.green,
+                backgroundColor: Theme.of(context).colorScheme.primary,
+                foregroundColor: Theme.of(context).colorScheme.onPrimary,
               ),
             ),
           ],

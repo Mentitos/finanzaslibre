@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart' as picker;
 import '../../../models/color_palette.dart';
 import '../../../services/palette_manager.dart';
-import '../../../l10n/app_localizations.dart';
 
 class PaletteSelectorDialog extends StatefulWidget {
   final ColorPalette currentPalette;
@@ -110,8 +110,13 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
                 labelColor: Colors.white,
-                unselectedLabelColor: isDark ? Colors.grey[400] : Colors.grey[700],
-                labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                unselectedLabelColor: isDark
+                    ? Colors.grey[400]
+                    : Colors.grey[700],
+                labelStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
                 tabs: const [
                   Tab(text: 'Predeterminadas'),
                   Tab(text: 'Personalizado'),
@@ -177,49 +182,54 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _customPalettes.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.palette_outlined,
-                              size: 64, color: Colors.grey[400]),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No hay paletas personalizadas',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.palette_outlined,
+                        size: 64,
+                        color: Colors.grey[400],
                       ),
-                    )
-                  : GridView.builder(
-                      padding: const EdgeInsets.all(16),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 1.3,
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
+                      const SizedBox(height: 16),
+                      Text(
+                        'No hay paletas personalizadas',
+                        style: TextStyle(color: Colors.grey[600]),
                       ),
-                      itemCount: _customPalettes.length,
-                      itemBuilder: (context, index) {
-                        final palette = _customPalettes[index];
-                        final isSelected = palette.id == widget.currentPalette.id;
-                        return _buildPaletteCard(palette, isSelected, true);
-                      },
-                    ),
+                    ],
+                  ),
+                )
+              : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 1.3,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: _customPalettes.length,
+                  itemBuilder: (context, index) {
+                    final palette = _customPalettes[index];
+                    final isSelected = palette.id == widget.currentPalette.id;
+                    return _buildPaletteCard(palette, isSelected, true);
+                  },
+                ),
         ),
       ],
     );
   }
 
-  Widget _buildPaletteCard(ColorPalette palette, bool isSelected, bool isCustom) {
+  Widget _buildPaletteCard(
+    ColorPalette palette,
+    bool isSelected,
+    bool isCustom,
+  ) {
     return InkWell(
       onTap: () async {
         await PaletteManager.savePalette(palette);
         widget.onPaletteSelected(palette);
         if (mounted) Navigator.pop(context);
       },
-      onLongPress: isCustom ? () => _showDeletePaletteDialog(palette) : null,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
@@ -282,15 +292,36 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
                     const SizedBox(height: 2),
                     Text(
                       palette.customHex!,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 10, color: Colors.grey[600]),
                     ),
                   ],
                 ],
               ),
             ),
+
+            // Edit Button (Only for Custom)
+            if (isCustom)
+              Positioned(
+                top: 4,
+                left: 4,
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () =>
+                        _showCreateCustomPaletteDialog(paletteToEdit: palette),
+                    onLongPress: () => _showDeletePaletteDialog(palette),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.edit,
+                        size: 16,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
 
             // Check de selección
             if (isSelected)
@@ -303,45 +334,26 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
                     color: palette.seedColor,
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 14,
-                  ),
+                  child: const Icon(Icons.check, color: Colors.white, size: 14),
                 ),
               ),
 
             // Icono de eliminar (solo custom)
-            if (isCustom && !isSelected)
-              Positioned(
-                top: 8,
-                right: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.8),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.delete_outline,
-                    color: Colors.white,
-                    size: 14,
-                  ),
-                ),
-              ),
           ],
         ),
       ),
     );
   }
 
-  void _showCreateCustomPaletteDialog() {
+  void _showCreateCustomPaletteDialog({ColorPalette? paletteToEdit}) {
     showDialog(
       context: context,
       builder: (context) => _CustomPaletteCreatorDialog(
-        onPaletteCreated: (palette) async {
-          await PaletteManager.saveCustomPalette(palette);
-          await _loadCustomPalettes();
+        currentPalette: widget.currentPalette,
+        paletteToEdit: paletteToEdit,
+        onPaletteCreated: (newPalette) async {
+          await PaletteManager.saveCustomPalette(newPalette);
+          _loadCustomPalettes();
         },
       ),
     );
@@ -358,13 +370,15 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancelar'),
           ),
-          FilledButton(
+          TextButton(
             onPressed: () async {
               await PaletteManager.deleteCustomPalette(palette.id);
-              await _loadCustomPalettes();
-              if (context.mounted) Navigator.pop(context);
+              if (mounted) {
+                Navigator.pop(context);
+                _loadCustomPalettes();
+              }
             },
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Eliminar'),
           ),
         ],
@@ -378,9 +392,15 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
 // ============================================
 
 class _CustomPaletteCreatorDialog extends StatefulWidget {
+  final ColorPalette currentPalette;
+  final ColorPalette? paletteToEdit; // Optional, for editing
   final Function(ColorPalette) onPaletteCreated;
 
-  const _CustomPaletteCreatorDialog({required this.onPaletteCreated});
+  const _CustomPaletteCreatorDialog({
+    required this.currentPalette,
+    this.paletteToEdit,
+    required this.onPaletteCreated,
+  });
 
   @override
   State<_CustomPaletteCreatorDialog> createState() =>
@@ -392,11 +412,21 @@ class _CustomPaletteCreatorDialogState
   final _nameController = TextEditingController();
   final _hexController = TextEditingController();
   Color _previewColor = const Color(0xFFFF004A);
+  bool _useWhiteText = true;
+  bool _affectTotalCard = false;
 
   @override
   void initState() {
     super.initState();
-    _hexController.text = '#FF004A';
+    if (widget.paletteToEdit != null) {
+      _nameController.text = widget.paletteToEdit!.name;
+      _previewColor = widget.paletteToEdit!.seedColor;
+      _hexController.text = _toHex(_previewColor);
+      _useWhiteText = widget.paletteToEdit!.useWhiteText;
+      _affectTotalCard = widget.paletteToEdit!.affectTotalCard;
+    } else {
+      _hexController.text = '#FF004A';
+    }
   }
 
   @override
@@ -406,18 +436,9 @@ class _CustomPaletteCreatorDialogState
     super.dispose();
   }
 
-  void _updateColorFromHex(String hex) {
-    try {
-      String cleanHex = hex.replaceAll('#', '').toUpperCase();
-      if (cleanHex.length == 6) {
-        setState(() {
-          _previewColor = Color(int.parse('FF$cleanHex', radix: 16));
-        });
-      }
-    } catch (e) {
-      // Ignorar errores
-    }
-  }
+  // Helper to format Color to Hex string
+  String _toHex(Color color) =>
+      '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
 
   @override
   Widget build(BuildContext context) {
@@ -439,7 +460,10 @@ class _CustomPaletteCreatorDialogState
                     const Expanded(
                       child: Text(
                         'Paleta Personalizada',
-                        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -450,41 +474,105 @@ class _CustomPaletteCreatorDialogState
                 TextField(
                   controller: _nameController,
                   decoration: const InputDecoration(
-                    labelText: 'Nombre',
+                    labelText: 'Nombre de la Paleta',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.label),
                   ),
                   maxLength: 20,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                // Código Hexadecimal
-                TextField(
-                  controller: _hexController,
-                  decoration: InputDecoration(
-                    labelText: 'Código Hexadecimal',
-                    hintText: '#FF004A',
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.tag),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.content_paste),
-                      onPressed: () async {
-                        final data = await Clipboard.getData('text/plain');
-                        if (data?.text != null) {
-                          _hexController.text = data!.text!;
-                          _updateColorFromHex(data.text!);
-                        }
-                      },
-                      tooltip: 'Pegar',
+                // HEX FIELD (Replacing "Elige tu color")
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _hexController,
+                        decoration: InputDecoration(
+                          labelText: 'Color Hex',
+                          prefixIcon: const Icon(Icons.tag),
+                          border: const OutlineInputBorder(),
+                          suffixIcon: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(Icons.copy, size: 20),
+                                onPressed: () {
+                                  Clipboard.setData(
+                                    ClipboardData(text: _hexController.text),
+                                  );
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Copiado al portapapeles'),
+                                      duration: Duration(seconds: 1),
+                                    ),
+                                  );
+                                },
+                                tooltip: 'Copiar',
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.content_paste, size: 20),
+                                onPressed: () async {
+                                  final data = await Clipboard.getData(
+                                    'text/plain',
+                                  );
+                                  if (data?.text != null) {
+                                    final text = data!.text!;
+                                    _hexController.text = text;
+                                    // Parse Hex to Color for Preview
+                                    try {
+                                      String clean = text
+                                          .replaceAll('#', '')
+                                          .toUpperCase();
+                                      if (clean.length == 6) {
+                                        setState(() {
+                                          _previewColor = Color(
+                                            int.parse('FF$clean', radix: 16),
+                                          );
+                                        });
+                                      }
+                                    } catch (_) {}
+                                  }
+                                },
+                                tooltip: 'Pegar',
+                              ),
+                            ],
+                          ),
+                        ),
+                        onChanged: (value) {
+                          try {
+                            String clean = value
+                                .replaceAll('#', '')
+                                .toUpperCase();
+                            if (clean.length == 6) {
+                              setState(() {
+                                _previewColor = Color(
+                                  int.parse('FF$clean', radix: 16),
+                                );
+                              });
+                            }
+                          } catch (_) {}
+                        },
+                      ),
                     ),
-                  ),
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9A-Fa-f#]')),
-                    LengthLimitingTextInputFormatter(7),
                   ],
-                  onChanged: _updateColorFromHex,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 12),
+                picker.ColorPicker(
+                  pickerColor: _previewColor,
+                  onColorChanged: (color) {
+                    setState(() {
+                      _previewColor = color;
+                      _hexController.text =
+                          '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+                    });
+                  },
+                  showLabel: false,
+                  pickerAreaHeightPercent: 0.7,
+                  enableAlpha: false,
+                  displayThumbColor: true,
+                  paletteType: picker.PaletteType.hsvWithHue,
+                ),
 
                 // Vista previa grande
                 Container(
@@ -492,10 +580,7 @@ class _CustomPaletteCreatorDialogState
                   height: 120,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        _previewColor,
-                        _previewColor.withOpacity(0.6),
-                      ],
+                      colors: [_previewColor, _previewColor.withOpacity(0.6)],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -511,23 +596,73 @@ class _CustomPaletteCreatorDialogState
                         ),
                       ),
                       const SizedBox(height: 8),
+                      // Mock AppBar Preview
                       Container(
-                        width: 50,
+                        width: 200,
                         height: 50,
                         decoration: BoxDecoration(
                           color: _previewColor,
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: _previewColor.withOpacity(0.5),
-                              blurRadius: 12,
-                              spreadRadius: 4,
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.menu,
+                              color: _useWhiteText
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Text(
+                                _nameController.text.isEmpty
+                                    ? 'Título'
+                                    : _nameController.text,
+                                style: TextStyle(
+                                  color: _useWhiteText
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
+                ),
+                const SizedBox(height: 16),
+
+                // Switch Texto Blanco
+                SwitchListTile(
+                  title: const Text('Usar Texto Blanco'),
+                  value: _useWhiteText,
+                  onChanged: (value) => setState(() => _useWhiteText = value),
+                  activeColor: _previewColor,
+                ),
+
+                // Switch Colorear Total Principal
+                SwitchListTile(
+                  title: const Text('Colorear Total Principal'),
+                  subtitle: const Text(
+                    'Aplica el color seleccionado a la tarjeta de balance total.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  value: _affectTotalCard,
+                  onChanged: (value) =>
+                      setState(() => _affectTotalCard = value),
+                  activeColor: _previewColor,
                 ),
                 const SizedBox(height: 16),
 
@@ -541,40 +676,96 @@ class _CustomPaletteCreatorDialogState
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _buildQuickColor(const Color(0xFFFF004A), '#FF004A'), // Fucsia
-                    _buildQuickColor(const Color(0xFFE91E63), '#E91E63'), // Pink
-                    _buildQuickColor(const Color(0xFF9C27B0), '#9C27B0'), // Purple
-                    _buildQuickColor(const Color(0xFF673AB7), '#673AB7'), // Deep Purple
-                    _buildQuickColor(const Color(0xFF3F51B5), '#3F51B5'), // Indigo
-                    _buildQuickColor(const Color(0xFF2196F3), '#2196F3'), // Blue
-                    _buildQuickColor(const Color(0xFF00BCD4), '#00BCD4'), // Cyan
-                    _buildQuickColor(const Color(0xFF009688), '#009688'), // Teal
-                    _buildQuickColor(const Color(0xFF4CAF50), '#4CAF50'), // Green
-                    _buildQuickColor(const Color(0xFF8BC34A), '#8BC34A'), // Light Green
-                    _buildQuickColor(const Color(0xFFFF9800), '#FF9800'), // Orange
-                    _buildQuickColor(const Color(0xFFFF5722), '#FF5722'), // Deep Orange
+                    _buildQuickColor(
+                      const Color(0xFFFF004A),
+                      '#FF004A',
+                    ), // Fucsia
+                    _buildQuickColor(
+                      const Color(0xFFE91E63),
+                      '#E91E63',
+                    ), // Pink
+                    _buildQuickColor(
+                      const Color(0xFF9C27B0),
+                      '#9C27B0',
+                    ), // Purple
+                    _buildQuickColor(
+                      const Color(0xFF673AB7),
+                      '#673AB7',
+                    ), // Deep Purple
+                    _buildQuickColor(
+                      const Color(0xFF3F51B5),
+                      '#3F51B5',
+                    ), // Indigo
+                    _buildQuickColor(
+                      const Color(0xFF2196F3),
+                      '#2196F3',
+                    ), // Blue
+                    _buildQuickColor(
+                      const Color(0xFF00BCD4),
+                      '#00BCD4',
+                    ), // Cyan
+                    _buildQuickColor(
+                      const Color(0xFF009688),
+                      '#009688',
+                    ), // Teal
+                    _buildQuickColor(
+                      const Color(0xFF4CAF50),
+                      '#4CAF50',
+                    ), // Green
+                    _buildQuickColor(
+                      const Color(0xFF8BC34A),
+                      '#8BC34A',
+                    ), // Light Green
+                    _buildQuickColor(
+                      const Color(0xFFFF9800),
+                      '#FF9800',
+                    ), // Orange
+                    _buildQuickColor(
+                      const Color(0xFFFF5722),
+                      '#FF5722',
+                    ), // Deep Orange
                   ],
                 ),
                 const SizedBox(height: 24),
 
-                // Botones
+                // Botones 50/50
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancelar'),
+                      flex: 1,
+                      child: SizedBox(
+                        height: 48,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Cancelar'),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      flex: 2,
-                      child: FilledButton(
-                        onPressed: _createPalette,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: _previewColor,
+                      flex: 1,
+                      child: SizedBox(
+                        height: 48,
+                        child: FilledButton(
+                          onPressed: _createPalette,
+                          style: FilledButton.styleFrom(
+                            backgroundColor: _previewColor,
+                            foregroundColor: _useWhiteText
+                                ? Colors.white
+                                : Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            widget.paletteToEdit != null ? 'Editar' : 'Crear',
+                          ),
                         ),
-                        child: const Text('Crear'),
                       ),
                     ),
                   ],
@@ -589,7 +780,7 @@ class _CustomPaletteCreatorDialogState
 
   Widget _buildQuickColor(Color color, String hex) {
     final isSelected = _previewColor.value == color.value;
-    
+
     return InkWell(
       onTap: () {
         setState(() {
@@ -628,18 +819,23 @@ class _CustomPaletteCreatorDialogState
   void _createPalette() {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ingresa un nombre')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Ingresa un nombre')));
       return;
     }
 
     final palette = ColorPalette(
-      id: 'custom_${DateTime.now().millisecondsSinceEpoch}',
-      name: name,
+      // Keep ID if editing, otherwise generate new one
+      id:
+          widget.paletteToEdit?.id ??
+          DateTime.now().millisecondsSinceEpoch.toString(),
+      name: _nameController.text.trim(),
       type: PaletteType.custom,
       seedColor: _previewColor,
       customHex: _hexController.text,
+      useWhiteText: _useWhiteText,
+      affectTotalCard: _affectTotalCard,
     );
 
     widget.onPaletteCreated(palette);

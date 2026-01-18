@@ -10,7 +10,7 @@ class SavingsGoal {
   final DateTime? deadline;
   final String emoji;
   final GoalStatus status;
-  final String? imageUrl; // Para futuras mejoras
+  final String? imagePath; // Ruta de la imagen local
 
   SavingsGoal({
     required this.id,
@@ -22,19 +22,19 @@ class SavingsGoal {
     this.deadline,
     this.emoji = '🎯',
     this.status = GoalStatus.active,
-    this.imageUrl,
+    this.imagePath,
   });
 
   // Progreso en porcentaje (0.0 a 1.0)
-  double get progress => targetAmount > 0 
-      ? (currentAmount / targetAmount).clamp(0.0, 1.0) 
-      : 0.0;
+  double get progress =>
+      targetAmount > 0 ? (currentAmount / targetAmount).clamp(0.0, 1.0) : 0.0;
 
   // Progreso en porcentaje (0 a 100)
   int get progressPercentage => (progress * 100).round();
 
   // Cuánto falta para completar
-  double get remainingAmount => (targetAmount - currentAmount).clamp(0.0, double.infinity);
+  double get remainingAmount =>
+      (targetAmount - currentAmount).clamp(0.0, double.infinity);
 
   // Está completada?
   bool get isCompleted => currentAmount >= targetAmount;
@@ -72,7 +72,7 @@ class SavingsGoal {
       'deadline': deadline?.toIso8601String(),
       'emoji': emoji,
       'status': status.index,
-      'imageUrl': imageUrl,
+      'imagePath': imagePath,
     };
   }
 
@@ -84,12 +84,14 @@ class SavingsGoal {
       targetAmount: (json['targetAmount'] as num).toDouble(),
       currentAmount: (json['currentAmount'] as num?)?.toDouble() ?? 0.0,
       createdAt: DateTime.parse(json['createdAt'] as String),
-      deadline: json['deadline'] != null 
-          ? DateTime.parse(json['deadline'] as String) 
+      deadline: json['deadline'] != null
+          ? DateTime.parse(json['deadline'] as String)
           : null,
       emoji: json['emoji'] as String? ?? '🎯',
       status: GoalStatus.values[json['status'] as int? ?? 0],
-      imageUrl: json['imageUrl'] as String?,
+      imagePath:
+          json['imagePath'] as String? ??
+          json['imageUrl'] as String?, // Retrocompatibilidad
     );
   }
 
@@ -103,7 +105,7 @@ class SavingsGoal {
     DateTime? deadline,
     String? emoji,
     GoalStatus? status,
-    String? imageUrl,
+    String? imagePath,
   }) {
     return SavingsGoal(
       id: id ?? this.id,
@@ -115,7 +117,7 @@ class SavingsGoal {
       deadline: deadline ?? this.deadline,
       emoji: emoji ?? this.emoji,
       status: status ?? this.status,
-      imageUrl: imageUrl ?? this.imageUrl,
+      imagePath: imagePath ?? this.imagePath,
     );
   }
 

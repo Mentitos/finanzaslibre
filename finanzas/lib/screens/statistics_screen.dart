@@ -3,7 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../models/savings_record.dart';
 import '../constants/app_constants.dart';
 import '../utils/formatters.dart';
-import '../../l10n/app_localizations.dart'; 
+import '../../l10n/app_localizations.dart';
 import '../../l10n/category_translations.dart';
 
 enum StatisticsPeriod { day, week, month, specificMonth, specificDay }
@@ -26,7 +26,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   StatisticsPeriod _selectedPeriod = StatisticsPeriod.month;
   DateTime? _selectedSpecificMonth;
   DateTime? _selectedSpecificDay;
-bool _showPieChart = true;
+  bool _showPieChart = true;
 
   @override
   void initState() {
@@ -41,21 +41,17 @@ bool _showPieChart = true;
     final l10n = AppLocalizations.of(context)!;
     final filteredRecords = _getFilteredRecords();
     final categoryData = _calculateCategoryData(filteredRecords);
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.statistics),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: AppBar(title: Text(l10n.statistics)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column( 
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [ 
-            
+          children: [
             _buildPeriodSelector(l10n),
             const SizedBox(height: 24),
-            
+
             _buildSummaryCards(filteredRecords, l10n),
             const SizedBox(height: 24),
 
@@ -64,13 +60,13 @@ bool _showPieChart = true;
                 segments: [
                   ButtonSegment<bool>(
                     value: true,
-                    
+
                     label: const Text('Torta'),
                     icon: const Icon(Icons.pie_chart_outline),
                   ),
                   ButtonSegment<bool>(
                     value: false,
-                   
+
                     label: const Text('Portafolio'),
                     icon: const Icon(Icons.bar_chart),
                   ),
@@ -90,7 +86,7 @@ bool _showPieChart = true;
               transitionBuilder: (Widget child, Animation<double> animation) {
                 return FadeTransition(opacity: animation, child: child);
               },
-              
+
               child: _showPieChart
                   ? _buildPieChart(categoryData, l10n)
                   : _buildPortfolioBarChart(categoryData, l10n),
@@ -98,9 +94,8 @@ bool _showPieChart = true;
 
             const SizedBox(height: 24),
             _buildCategoryList(categoryData, l10n),
-
-          ], 
-        ), 
+          ],
+        ),
       ),
     );
   }
@@ -124,23 +119,38 @@ bool _showPieChart = true;
       case StatisticsPeriod.specificMonth:
         final monthToUse = _selectedSpecificMonth ?? now;
         startDate = DateTime(monthToUse.year, monthToUse.month, 1);
-        endDate = DateTime(monthToUse.year, monthToUse.month + 1, 0, 23, 59, 59);
+        endDate = DateTime(
+          monthToUse.year,
+          monthToUse.month + 1,
+          0,
+          23,
+          59,
+          59,
+        );
         break;
       case StatisticsPeriod.specificDay:
         final dayToUse = _selectedSpecificDay ?? now;
         startDate = DateTime(dayToUse.year, dayToUse.month, dayToUse.day);
-        endDate = DateTime(dayToUse.year, dayToUse.month, dayToUse.day, 23, 59, 59);
+        endDate = DateTime(
+          dayToUse.year,
+          dayToUse.month,
+          dayToUse.day,
+          23,
+          59,
+          59,
+        );
         break;
     }
 
     return widget.allRecords.where((record) {
-      final isAfterStart = record.createdAt.isAfter(startDate) ||
+      final isAfterStart =
+          record.createdAt.isAfter(startDate) ||
           record.createdAt.isAtSameMomentAs(startDate);
-      
+
       if (endDate != null) {
         return isAfterStart && record.createdAt.isBefore(endDate);
       }
-      
+
       return isAfterStart;
     }).toList();
   }
@@ -151,10 +161,10 @@ bool _showPieChart = true;
     for (var record in records) {
       double amount;
       if (record.type == RecordType.adjustment) {
-        amount = record.totalAmount; 
+        amount = record.totalAmount;
       } else if (record.type == RecordType.deposit) {
         amount = record.totalAmount;
-      } else { 
+      } else {
         amount = -record.totalAmount;
       }
       data[record.category] = (data[record.category] ?? 0) + amount;
@@ -230,7 +240,11 @@ bool _showPieChart = true;
     );
   }
 
-  Widget _buildPeriodButton(String label, StatisticsPeriod period, IconData icon) {
+  Widget _buildPeriodButton(
+    String label,
+    StatisticsPeriod period,
+    IconData icon,
+  ) {
     final isSelected = _selectedPeriod == period;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -272,7 +286,10 @@ bool _showPieChart = true;
     );
   }
 
-  Widget _buildSummaryCards(List<SavingsRecord> records, AppLocalizations l10n) {
+  Widget _buildSummaryCards(
+    List<SavingsRecord> records,
+    AppLocalizations l10n,
+  ) {
     double totalDeposits = 0;
     double totalWithdrawals = 0;
 
@@ -285,11 +302,11 @@ bool _showPieChart = true;
         }
       } else if (record.type == RecordType.deposit) {
         totalDeposits += record.totalAmount;
-      } else { 
+      } else {
         totalWithdrawals += record.totalAmount;
       }
     }
-    
+
     final balance = totalDeposits - totalWithdrawals;
 
     return Row(
@@ -324,7 +341,12 @@ bool _showPieChart = true;
     );
   }
 
-  Widget _buildSummaryCard(String title, double amount, Color color, IconData icon) {
+  Widget _buildSummaryCard(
+    String title,
+    double amount,
+    Color color,
+    IconData icon,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -354,8 +376,10 @@ bool _showPieChart = true;
     );
   }
 
-  Widget _buildPieChart(Map<String, double> categoryData, AppLocalizations l10n) {
-    
+  Widget _buildPieChart(
+    Map<String, double> categoryData,
+    AppLocalizations l10n,
+  ) {
     final validData = categoryData.entries
         .where((entry) => entry.value.abs() > 0.01)
         .toList();
@@ -373,8 +397,12 @@ bool _showPieChart = true;
       );
     }
 
-    final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
-    final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
+    final sortedEntries = validData
+      ..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
+    final total = sortedEntries.fold<double>(
+      0,
+      (sum, e) => sum + e.value.abs(),
+    );
 
     if (total <= 0) {
       return Card(
@@ -412,7 +440,9 @@ bool _showPieChart = true;
 
                     return PieChartSectionData(
                       color: AppConstants.getCategoryColor(
-                          entry.key, widget.categoryColors),
+                        entry.key,
+                        widget.categoryColors,
+                      ),
                       value: entry.value.abs(),
                       title: '${percentage.toStringAsFixed(0)}%',
                       radius: 80,
@@ -434,16 +464,22 @@ bool _showPieChart = true;
     );
   }
 
-  Widget _buildCategoryList(Map<String, double> categoryData, AppLocalizations l10n) {
-    
+  Widget _buildCategoryList(
+    Map<String, double> categoryData,
+    AppLocalizations l10n,
+  ) {
     final validData = categoryData.entries
         .where((entry) => entry.value.abs() > 0.01)
         .toList();
 
     if (validData.isEmpty) return const SizedBox.shrink();
 
-    final sortedEntries = validData..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
-    final total = sortedEntries.fold<double>(0, (sum, e) => sum + e.value.abs());
+    final sortedEntries = validData
+      ..sort((a, b) => b.value.abs().compareTo(a.value.abs()));
+    final total = sortedEntries.fold<double>(
+      0,
+      (sum, e) => sum + e.value.abs(),
+    );
 
     if (total <= 0) return const SizedBox.shrink();
 
@@ -460,7 +496,7 @@ bool _showPieChart = true;
             const SizedBox(height: 16),
             ...sortedEntries.map((entry) {
               final percentage = (entry.value.abs() / total) * 100;
-              
+
               return Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
@@ -472,7 +508,10 @@ bool _showPieChart = true;
                           width: 16,
                           height: 16,
                           decoration: BoxDecoration(
-                            color: AppConstants.getCategoryColor(entry.key, widget.categoryColors),
+                            color: AppConstants.getCategoryColor(
+                              entry.key,
+                              widget.categoryColors,
+                            ),
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -496,10 +535,15 @@ bool _showPieChart = true;
                     ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: percentage > 0 ? (percentage / 100).clamp(0.0, 1.0) : 0,
+                        value: percentage > 0
+                            ? (percentage / 100).clamp(0.0, 1.0)
+                            : 0,
                         backgroundColor: Colors.grey[300],
                         valueColor: AlwaysStoppedAnimation(
-                          AppConstants.getCategoryColor(entry.key, widget.categoryColors),
+                          AppConstants.getCategoryColor(
+                            entry.key,
+                            widget.categoryColors,
+                          ),
                         ),
                         minHeight: 8,
                       ),
@@ -507,10 +551,7 @@ bool _showPieChart = true;
                     const SizedBox(height: 4),
                     Text(
                       '${percentage.toStringAsFixed(1)}% ${l10n.ofTotal}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -525,8 +566,10 @@ bool _showPieChart = true;
   //           GRÁFICO DE BARRAS PORTAFOLIO
   //==============================================================
 
-  Widget _buildPortfolioBarChart(Map<String, double> categoryData, AppLocalizations l10n) {
-    
+  Widget _buildPortfolioBarChart(
+    Map<String, double> categoryData,
+    AppLocalizations l10n,
+  ) {
     final validData = categoryData.entries
         .where((entry) => entry.value.abs() > 0.01)
         .toList();
@@ -545,7 +588,7 @@ bool _showPieChart = true;
     }
 
     validData.sort((a, b) => b.value.compareTo(a.value));
-    
+
     final List<BarChartGroupData> barGroups = [];
     for (int i = 0; i < validData.length; i++) {
       final entry = validData[i];
@@ -555,10 +598,12 @@ bool _showPieChart = true;
           barRods: [
             BarChartRodData(
               toY: entry.value,
-              
+
               color: entry.value >= 0 ? Colors.green : Colors.red,
               width: 16,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(4),
+              ),
             ),
           ],
         ),
@@ -572,7 +617,7 @@ bool _showPieChart = true;
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Portafolio por Categoría", 
+              "Portafolio por Categoría",
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 32),
@@ -582,10 +627,10 @@ bool _showPieChart = true;
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   barGroups: barGroups,
-                  
+
                   titlesData: FlTitlesData(
                     show: true,
-                   
+
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
@@ -596,36 +641,44 @@ bool _showPieChart = true;
                           if (index < 0 || index >= validData.length) {
                             return Container();
                           }
-                          
-                          final categoryName = l10n.translateCategory(validData[index].key);
+
+                          final categoryName = l10n.translateCategory(
+                            validData[index].key,
+                          );
                           return SideTitleWidget(
                             axisSide: meta.axisSide,
                             space: 4.0,
                             child: Text(
-                              categoryName.length > 3 ? categoryName.substring(0, 3) : categoryName,
+                              categoryName.length > 3
+                                  ? categoryName.substring(0, 3)
+                                  : categoryName,
                               style: const TextStyle(fontSize: 10),
                             ),
                           );
                         },
                       ),
                     ),
-                    
+
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 40,
                         getTitlesWidget: (value, meta) {
                           return Text(
-                            _formatCurrencySimple(value), 
+                            _formatCurrencySimple(value),
                             style: const TextStyle(fontSize: 10),
                           );
                         },
                       ),
                     ),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
-                 
+
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: false,
@@ -637,27 +690,33 @@ bool _showPieChart = true;
                       );
                     },
                   ),
-                  
+
                   borderData: FlBorderData(show: false),
-                  
+
                   barTouchData: BarTouchData(
                     enabled: true,
                     touchTooltipData: BarTouchTooltipData(
-                      getTooltipColor: (BarChartGroupData group) { 
-  return Colors.blueGrey.shade800; 
-  
-},
+                      getTooltipColor: (BarChartGroupData group) {
+                        return Colors.blueGrey.shade800;
+                      },
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        final categoryName = l10n.translateCategory(validData[group.x].key);
+                        final categoryName = l10n.translateCategory(
+                          validData[group.x].key,
+                        );
                         final amount = rod.toY;
                         return BarTooltipItem(
                           '$categoryName\n',
-                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                           children: [
                             TextSpan(
                               text: Formatters.formatCurrency(amount),
                               style: TextStyle(
-                                color: amount >= 0 ? Colors.lightGreenAccent : Colors.redAccent,
+                                color: amount >= 0
+                                    ? Colors.lightGreenAccent
+                                    : Colors.redAccent,
                               ),
                             ),
                           ],
@@ -700,25 +759,25 @@ bool _showPieChart = true;
 
     final range = maxVal - minVal;
     if (range == 0) {
-     
       return (maxVal.abs() / 2).clamp(1, double.infinity);
     }
-    
-    double interval = range / 5; 
+
+    double interval = range / 5;
 
     if (interval == 0) return 100;
-    
+
     if (interval > 1000) return (interval / 1000).round() * 1000;
     if (interval > 100) return (interval / 100).round() * 100;
     if (interval > 50) return (interval / 50).round() * 50;
     if (interval > 10) return (interval / 10).round() * 10;
-    
+
     return interval.round().toDouble().clamp(1, double.infinity);
   }
+
   Widget _buildMonthSelector(AppLocalizations l10n) {
     final now = DateTime.now();
     final selectedMonth = _selectedSpecificMonth ?? now;
-    
+
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: () => _selectMonth(context, l10n),
@@ -732,8 +791,8 @@ bool _showPieChart = true;
         child: Row(
           children: [
             Icon(
-              Icons.calendar_month, 
-              color: Theme.of(context).colorScheme.primary, 
+              Icons.calendar_month,
+              color: Theme.of(context).colorScheme.primary,
               size: 40,
             ),
             const SizedBox(width: 8),
@@ -746,7 +805,7 @@ bool _showPieChart = true;
                 ),
               ),
             ),
-            const Icon(Icons.arrow_drop_down), 
+            const Icon(Icons.arrow_drop_down),
           ],
         ),
       ),
@@ -756,7 +815,7 @@ bool _showPieChart = true;
   Widget _buildDaySelector(AppLocalizations l10n) {
     final now = DateTime.now();
     final selectedDay = _selectedSpecificDay ?? now;
-    
+
     return InkWell(
       borderRadius: BorderRadius.circular(8),
       onTap: () => _selectDay(context),
@@ -770,8 +829,8 @@ bool _showPieChart = true;
         child: Row(
           children: [
             Icon(
-              Icons.event, 
-              color: Theme.of(context).colorScheme.primary, 
+              Icons.event,
+              color: Theme.of(context).colorScheme.primary,
               size: 40,
             ),
             const SizedBox(width: 8),
@@ -803,7 +862,7 @@ bool _showPieChart = true;
   Future<void> _selectMonth(BuildContext context, AppLocalizations l10n) async {
     final now = DateTime.now();
     final initialDate = _selectedSpecificMonth ?? now;
-    
+
     await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -830,14 +889,14 @@ bool _showPieChart = true;
   Future<void> _selectDay(BuildContext context) async {
     final now = DateTime.now();
     final initialDate = _selectedSpecificDay ?? now;
-    
+
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate,
       firstDate: DateTime(2020),
       lastDate: now,
     );
-    
+
     if (picked != null) {
       setState(() {
         _selectedSpecificDay = picked;
@@ -875,15 +934,21 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final now = DateTime.now();
-    final years = List.generate(
-      now.year - 2019,
-      (index) => 2020 + index,
-    );
+    final years = List.generate(now.year - 2019, (index) => 2020 + index);
 
     final months = [
-      l10n.january, l10n.february, l10n.march, l10n.april,
-      l10n.may, l10n.june, l10n.july, l10n.august,
-      l10n.september, l10n.october, l10n.november, l10n.december
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december,
     ];
 
     return Column(
@@ -895,10 +960,7 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
             border: const OutlineInputBorder(),
           ),
           items: years.map((year) {
-            return DropdownMenuItem(
-              value: year,
-              child: Text(year.toString()),
-            );
+            return DropdownMenuItem(value: year, child: Text(year.toString()));
           }).toList(),
           onChanged: (value) {
             if (value != null) {
@@ -924,12 +986,14 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
               final isFuture = _selectedYear == now.year && month > now.month;
 
               return InkWell(
-                onTap: isFuture ? null : () {
-                  setState(() {
-                    _selectedMonth = month;
-                  });
-                  widget.onDateSelected(DateTime(_selectedYear, month));
-                },
+                onTap: isFuture
+                    ? null
+                    : () {
+                        setState(() {
+                          _selectedMonth = month;
+                        });
+                        widget.onDateSelected(DateTime(_selectedYear, month));
+                      },
                 child: Container(
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
@@ -949,7 +1013,9 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
                       color: isSelected
                           ? Colors.white
                           : (isFuture ? Colors.grey : Colors.black87),
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                       fontSize: 12,
                     ),
                   ),

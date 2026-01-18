@@ -10,7 +10,7 @@ import '../../l10n/app_localizations.dart';
 class ExportImportDialogs {
   static Future<Directory> _getExportDirectory() async {
     late Directory exportDir;
-    
+
     if (Platform.isAndroid) {
       try {
         final String? downloadsPath = await _getDownloadsPath();
@@ -25,18 +25,18 @@ class ExportImportDialogs {
       } catch (e) {
         debugPrint('⚠️ No se pudo acceder a Downloads: $e');
       }
-      
+
       final appDocDir = await getApplicationDocumentsDirectory();
       exportDir = Directory('${appDocDir.path}/SavingsExport');
     } else {
       final appDocDir = await getApplicationDocumentsDirectory();
       exportDir = Directory('${appDocDir.path}/SavingsExport');
     }
-    
+
     if (!await exportDir.exists()) {
       await exportDir.create(recursive: true);
     }
-    
+
     debugPrint('✅ Carpeta SavingsExport creada en: ${exportDir.path}');
     return exportDir;
   }
@@ -61,12 +61,12 @@ class ExportImportDialogs {
     final List<dynamic> usersData = data['users'] ?? [];
     int totalRecords = 0;
     int totalUsers = usersData.length;
-    
+
     for (final userData in usersData) {
       final records = userData['records'] as List? ?? [];
       totalRecords += records.length;
     }
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -77,7 +77,9 @@ class ExportImportDialogs {
             const SizedBox(width: 8),
             Text(
               l10n.dataExported,
-              style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color),
+              style: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color,
+              ),
             ),
           ],
         ),
@@ -85,7 +87,7 @@ class ExportImportDialogs {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-            
+
             children: [
               Container(
                 padding: const EdgeInsets.all(12),
@@ -156,7 +158,8 @@ class ExportImportDialogs {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).brightness == Brightness.dark
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
                                 ? Colors.blue[300]
                                 : Colors.blue[700],
                           ),
@@ -289,7 +292,9 @@ class ExportImportDialogs {
             const SizedBox(width: 8),
             Text(
               l10n.exportJson,
-              style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color),
+              style: TextStyle(
+                color: Theme.of(context).textTheme.titleLarge?.color,
+              ),
             ),
           ],
         ),
@@ -340,12 +345,14 @@ class ExportImportDialogs {
                         SnackBar(
                           content: Row(
                             children: [
-                              const Icon(Icons.check_circle, color: Colors.white),
+                              const Icon(
+                                Icons.check_circle,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 8),
                               Text(l10n.jsonCopiedToClipboard),
                             ],
                           ),
-                          backgroundColor: Colors.green,
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -358,30 +365,43 @@ class ExportImportDialogs {
                   onPressed: () async {
                     try {
                       final exportDir = await _getExportDirectory();
-                      final file = File('${exportDir.path}/datos_finanzas_completo.json');
+                      final file = File(
+                        '${exportDir.path}/datos_finanzas_completo.json',
+                      );
                       await file.writeAsString(jsonString);
-                      
+
                       debugPrint('✅ JSON guardado en: ${file.path}');
 
                       if (dialogContext.mounted) {
                         Navigator.pop(dialogContext);
-                        
+
                         ScaffoldMessenger.of(dialogContext).showSnackBar(
                           SnackBar(
                             content: Row(
                               children: [
-                                const Icon(Icons.check_circle, color: Colors.white),
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.white,
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(l10n.fileSaved('datos_finanzas_completo.json')),
+                                      Text(
+                                        l10n.fileSaved(
+                                          'datos_finanzas_completo.json',
+                                        ),
+                                      ),
                                       const SizedBox(height: 4),
                                       Text(
                                         file.path,
-                                        style: const TextStyle(fontSize: 9, color: Colors.white70),
+                                        style: const TextStyle(
+                                          fontSize: 9,
+                                          color: Colors.white70,
+                                        ),
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -391,12 +411,20 @@ class ExportImportDialogs {
                                         children: [
                                           GestureDetector(
                                             onTap: () {
-                                              Clipboard.setData(ClipboardData(text: file.path));
+                                              Clipboard.setData(
+                                                ClipboardData(text: file.path),
+                                              );
                                               if (dialogContext.mounted) {
-                                                ScaffoldMessenger.of(dialogContext).showSnackBar(
+                                                ScaffoldMessenger.of(
+                                                  dialogContext,
+                                                ).showSnackBar(
                                                   SnackBar(
-                                                    content: Text(l10n.pathCopied),
-                                                    duration: const Duration(seconds: 1),
+                                                    content: Text(
+                                                      l10n.pathCopied,
+                                                    ),
+                                                    duration: const Duration(
+                                                      seconds: 1,
+                                                    ),
                                                   ),
                                                 );
                                               }
@@ -407,13 +435,16 @@ class ExportImportDialogs {
                                                 fontSize: 11,
                                                 color: Colors.yellow,
                                                 fontWeight: FontWeight.bold,
-                                                decoration: TextDecoration.underline,
+                                                decoration:
+                                                    TextDecoration.underline,
                                               ),
                                             ),
                                           ),
                                           GestureDetector(
                                             onTap: () {
-                                              Share.shareXFiles([XFile(file.path)]);
+                                              Share.shareXFiles([
+                                                XFile(file.path),
+                                              ]);
                                             },
                                             child: Text(
                                               l10n.share,
@@ -421,7 +452,8 @@ class ExportImportDialogs {
                                                 fontSize: 11,
                                                 color: Colors.yellow,
                                                 fontWeight: FontWeight.bold,
-                                                decoration: TextDecoration.underline,
+                                                decoration:
+                                                    TextDecoration.underline,
                                               ),
                                             ),
                                           ),
@@ -432,7 +464,6 @@ class ExportImportDialogs {
                                 ),
                               ],
                             ),
-                            backgroundColor: Colors.green,
                             behavior: SnackBarBehavior.floating,
                             duration: const Duration(seconds: 6),
                           ),
@@ -557,7 +588,10 @@ class ExportImportDialogs {
                       const SizedBox(height: 4),
                       Text(
                         file.path,
-                        style: const TextStyle(fontSize: 9, color: Colors.white70),
+                        style: const TextStyle(
+                          fontSize: 9,
+                          color: Colors.white70,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -608,7 +642,6 @@ class ExportImportDialogs {
                 ),
               ],
             ),
-            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 6),
           ),
@@ -664,7 +697,10 @@ class ExportImportDialogs {
                       const SizedBox(height: 4),
                       Text(
                         file.path,
-                        style: const TextStyle(fontSize: 9, color: Colors.white70),
+                        style: const TextStyle(
+                          fontSize: 9,
+                          color: Colors.white70,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -715,7 +751,6 @@ class ExportImportDialogs {
                 ),
               ],
             ),
-            backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
             duration: const Duration(seconds: 6),
           ),
@@ -742,220 +777,229 @@ class ExportImportDialogs {
   }
 
   static void showImportDialog(
-  BuildContext context,
-  SavingsDataManager dataManager,
-  Future<void> Function() onDataChanged,
-  Function(String message, bool isError) onShowSnackBar,
-  AppLocalizations l10n,
-) {
-  final controller = TextEditingController();
+    BuildContext context,
+    SavingsDataManager dataManager,
+    Future<void> Function() onDataChanged,
+    Function(String message, bool isError) onShowSnackBar,
+    AppLocalizations l10n,
+  ) {
+    final controller = TextEditingController();
 
-  showDialog(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      scrollable: true, 
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      title: Text(
-        l10n.importData,
-        style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color),
-      ),
-      content: SingleChildScrollView( 
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.blue[900]?.withOpacity(0.3)
-                    : Colors.blue[50],
-                border: Border.all(
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        scrollable: true,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        title: Text(
+          l10n.importData,
+          style: TextStyle(
+            color: Theme.of(context).textTheme.titleLarge?.color,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.blue[700]!
-                      : Colors.blue,
-                ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.info,
+                      ? Colors.blue[900]?.withOpacity(0.3)
+                      : Colors.blue[50],
+                  border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.blue[300]
-                        : Colors.blue[700],
+                        ? Colors.blue[700]!
+                        : Colors.blue,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      l10n.onlyJsonFilesAccepted,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.blue[300]
-                            : Colors.blue,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Info adicional sobre importación multi-usuario
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.green[900]?.withOpacity(0.3)
-                    : Colors.green[50],
-                border: Border.all(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.green[700]!
-                      : Colors.green,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.people,
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.green[300]
-                            : Colors.green[700],
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Importación inteligente',
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.blue[300]
+                          : Colors.blue[700],
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        l10n.onlyJsonFilesAccepted,
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).brightness == Brightness.dark
+                              ? Colors.blue[300]
+                              : Colors.blue,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Info adicional sobre importación multi-usuario
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.green[900]?.withOpacity(0.3)
+                      : Colors.green[50],
+                  border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.green[700]!
+                        : Colors.green,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.people,
                           color: Theme.of(context).brightness == Brightness.dark
                               ? Colors.green[300]
                               : Colors.green[700],
+                          size: 18,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    '✓ Detecta automáticamente el formato\n✓ Crea usuarios que no existen\n✓ Compatible con backups antiguos',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Importación inteligente',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? Colors.green[300]
+                                : Colors.green[700],
+                          ),
+                        ),
+                      ],
                     ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '✓ Detecta automáticamente el formato\n✓ Crea usuarios que no existen\n✓ Compatible con backups antiguos',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Theme.of(context).textTheme.bodySmall?.color,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.pasteExportedData,
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final clipboardData = await Clipboard.getData(
+                        'text/plain',
+                      );
+                      if (clipboardData?.text != null) {
+                        controller.text = clipboardData!.text!;
+                        onShowSnackBar(l10n.jsonPastedFromClipboard, false);
+                      } else {
+                        onShowSnackBar(l10n.noTextInClipboard, true);
+                      }
+                    },
+                    icon: const Icon(Icons.paste),
+                    label: Text(l10n.paste),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      try {
+                        final result = await _pickJsonFile();
+                        if (result != null) {
+                          controller.text = result;
+                          onShowSnackBar(l10n.jsonFileLoaded, false);
+                        }
+                      } catch (e) {
+                        debugPrint('Error al seleccionar archivo: $e');
+                        onShowSnackBar(l10n.errorOpeningFile, true);
+                      }
+                    },
+                    icon: const Icon(Icons.folder_open),
+                    label: Text(l10n.file),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              l10n.pasteExportedData,
-              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    final clipboardData =
-                        await Clipboard.getData('text/plain');
-                    if (clipboardData?.text != null) {
-                      controller.text = clipboardData!.text!;
-                      onShowSnackBar(l10n.jsonPastedFromClipboard, false);
-                    } else {
-                      onShowSnackBar(l10n.noTextInClipboard, true);
-                    }
-                  },
-                  icon: const Icon(Icons.paste),
-                  label: Text(l10n.paste),
+              const SizedBox(height: 16),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText:
+                      '{"exportDate": "...", "version": "2.0", "users": [...]}',
+                  fillColor: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[900]
+                      : Colors.grey[100],
+                  filled: true,
                 ),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    try {
-                      final result = await _pickJsonFile();
-                      if (result != null) {
-                        controller.text = result;
-                        onShowSnackBar(l10n.jsonFileLoaded, false);
-                      }
-                    } catch (e) {
-                      debugPrint('Error al seleccionar archivo: $e');
-                      onShowSnackBar(l10n.errorOpeningFile, true);
-                    }
-                  },
-                  icon: const Icon(Icons.folder_open),
-                  label: Text(l10n.file),
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                hintText: '{"exportDate": "...", "version": "2.0", "users": [...]}',
-                fillColor: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[900]
-                    : Colors.grey[100],
-                filled: true,
+                maxLines: 8,
               ),
-              style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
-              maxLines: 8,
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(dialogContext),
-          child: Text(l10n.cancel),
-        ),
-        FilledButton(
-          onPressed: () async {
-            try {
-              final data = jsonDecode(controller.text);
-              final success = await dataManager.importData(data);
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () async {
+              try {
+                final data = jsonDecode(controller.text);
+                final success = await dataManager.importData(data);
 
-              if (success) {
-                await onDataChanged();
-                if (dialogContext.mounted) {
-                  Navigator.pop(dialogContext);
-                  
-                  // Mostrar mensaje diferente según la versión importada
-                  final version = data['version'] ?? '1.0';
-                  final usersData = data['users'] as List? ?? [];
-                  
-                  String message = l10n.dataImportedSuccessfully;
-                  if (version == '2.0' && usersData.isNotEmpty) {
-                    message = '${l10n.dataImportedSuccessfully}\n${usersData.length} usuario(s) importado(s)';
+                if (success) {
+                  await onDataChanged();
+                  if (dialogContext.mounted) {
+                    Navigator.pop(dialogContext);
+
+                    // Mostrar mensaje diferente según la versión importada
+                    final version = data['version'] ?? '1.0';
+                    final usersData = data['users'] as List? ?? [];
+
+                    String message = l10n.dataImportedSuccessfully;
+                    if (version == '2.0' && usersData.isNotEmpty) {
+                      message =
+                          '${l10n.dataImportedSuccessfully}\n${usersData.length} usuario(s) importado(s)';
+                    }
+
+                    onShowSnackBar(message, false);
                   }
-                  
-                  onShowSnackBar(message, false);
+                } else {
+                  onShowSnackBar(l10n.errorImportingData, true);
                 }
-              } else {
-                onShowSnackBar(l10n.errorImportingData, true);
+              } catch (e) {
+                onShowSnackBar(l10n.invalidDataFormat, true);
               }
-            } catch (e) {
-              onShowSnackBar(l10n.invalidDataFormat, true);
-            }
-          },
-          child: Text(l10n.import),
-        ),
-      ],
-    ),
-  );
-}
-
+            },
+            child: Text(l10n.import),
+          ),
+        ],
+      ),
+    );
+  }
 
   static Future<String?> _pickJsonFile() async {
     try {
       if (Platform.isAndroid) {
         const platform = MethodChannel('com.example.finanzas/filepicker');
-        
+
         try {
           final String result = await platform.invokeMethod('openJsonPicker');
           debugPrint('✅ Archivo seleccionado');
@@ -965,7 +1009,7 @@ class ExportImportDialogs {
           return null;
         }
       }
-      
+
       return null;
     } catch (e) {
       debugPrint('Error seleccionando archivo: $e');

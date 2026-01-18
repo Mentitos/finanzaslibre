@@ -6,6 +6,8 @@ import '../../models/user_model.dart';
 import '../../services/user_manager.dart';
 import 'records_manager.dart';
 import 'categories_manager.dart';
+import 'goals_manager.dart';
+import '../../models/savings_goal_model.dart';
 
 class ImportExportManager {
   ImportExportManager();
@@ -14,23 +16,27 @@ class ImportExportManager {
   Future<Map<String, dynamic>> exportData(
     RecordsManager recordsManager,
     CategoriesManager categoriesManager,
+    GoalsManager goalsManager,
   ) async {
     final userManager = UserManager();
     final allUsers = await userManager.getAllUsers();
     final currentUser = await userManager.getCurrentUser();
-    
+
     // Estructura para almacenar datos de todos los usuarios
     final List<Map<String, dynamic>> usersData = [];
-    
+
     // Recorrer cada usuario y obtener sus datos
     for (final user in allUsers) {
       // Temporalmente cambiar al usuario para obtener sus datos
       await userManager.setCurrentUser(user);
-      
+
       final records = await recordsManager.loadRecords(forceReload: true);
-      final categories = await categoriesManager.loadCategories(forceReload: true);
+      final categories = await categoriesManager.loadCategories(
+        forceReload: true,
+      );
       final categoryColors = await categoriesManager.loadAllCategoryColors();
-      
+      final goals = await goalsManager.loadGoals(forceReload: true);
+
       usersData.add({
         'userId': user.id,
         'userName': user.name,
@@ -38,15 +44,18 @@ class ImportExportManager {
         'profileImagePath': user.profileImagePath,
         'records': records.map((r) => r.toJson()).toList(),
         'categories': categories,
-        'categoryColors': categoryColors.map((key, value) => MapEntry(key, value.value)),
+        'categoryColors': categoryColors.map(
+          (key, value) => MapEntry(key, value.value),
+        ),
+        'goals': goals.map((g) => g.toJson()).toList(),
       });
     }
-    
+
     // Restaurar usuario original
     if (currentUser != null) {
       await userManager.setCurrentUser(currentUser);
     }
-    
+
     return {
       'exportDate': DateTime.now().toIso8601String(),
       'version': '2.0', // Nueva versión para indicar formato multi-usuario
@@ -76,9 +85,11 @@ class ImportExportManager {
       for (final user in allUsers) {
         await userManager.setCurrentUser(user);
         final records = await recordsManager.loadRecords(forceReload: true);
-        
+
         for (final record in records) {
-          final tipo = record.type == RecordType.deposit ? 'Depósito' : 'Retiro';
+          final tipo = record.type == RecordType.deposit
+              ? 'Depósito'
+              : 'Retiro';
           final fecha = dateFormatter.format(record.createdAt);
           final fisica = record.physicalAmount.toStringAsFixed(2);
           final digital = record.digitalAmount.toStringAsFixed(2);
@@ -201,7 +212,9 @@ class ImportExportManager {
         final records = await recordsManager.loadRecords(forceReload: true);
 
         for (final record in records) {
-          final tipo = record.type == RecordType.deposit ? 'Depósito' : 'Retiro';
+          final tipo = record.type == RecordType.deposit
+              ? 'Depósito'
+              : 'Retiro';
           final fecha = dateFormatter.format(record.createdAt);
 
           sheetRegistros.appendRow([
@@ -235,16 +248,16 @@ class ImportExportManager {
         // Crear hoja para este usuario (nombre seguro para Excel)
         String safeName = user.name.replaceAll(RegExp(r'[:\\/\*\?\[\]]'), '_');
         if (safeName.length > 30) safeName = safeName.substring(0, 30);
-        
+
         Sheet userSheet = excel[safeName];
-        
+
         userSheet.appendRow([TextCellValue('BILLETERA: ${user.name}')]);
         userSheet.appendRow([]);
         userSheet.appendRow([
           TextCellValue('Total Registros'),
           IntCellValue(records.length),
         ]);
-        
+
         final stats = _calculateStats(records);
         userSheet.appendRow([
           TextCellValue('Dinero Físico'),
@@ -259,7 +272,7 @@ class ImportExportManager {
           DoubleCellValue(double.parse(stats['total'])),
         ]);
         userSheet.appendRow([]);
-        
+
         // Encabezados
         userSheet.appendRow([
           TextCellValue('Fecha'),
@@ -270,10 +283,12 @@ class ImportExportManager {
           TextCellValue('Categoría'),
           TextCellValue('Notas'),
         ]);
-        
+
         // Registros del usuario
         for (final record in records) {
-          final tipo = record.type == RecordType.deposit ? 'Depósito' : 'Retiro';
+          final tipo = record.type == RecordType.deposit
+              ? 'Depósito'
+              : 'Retiro';
           final fecha = dateFormatter.format(record.createdAt);
 
           userSheet.appendRow([
@@ -350,16 +365,27 @@ class ImportExportManager {
     Map<String, dynamic> data,
     RecordsManager recordsManager,
     CategoriesManager categoriesManager,
+    GoalsManager goalsManager,
   ) async {
     try {
       final version = data['version'] ?? '1.0';
-      
+
       if (version == '2.0') {
         // Formato multi-usuario (nuevo)
-        return await _importMultiUserData(data, recordsManager, categoriesManager);
+        return await _importMultiUserData(
+          data,
+          recordsManager,
+          categoriesManager,
+          goalsManager,
+        );
       } else {
         // Formato usuario único (compatibilidad retroactiva)
-        return await _importSingleUserData(data, recordsManager, categoriesManager);
+        return await _importSingleUserData(
+          data,
+          recordsManager,
+          categoriesManager,
+          goalsManager,
+        );
       }
     } catch (e) {
       debugPrint('❌ Error importando: $e');
@@ -371,6 +397,7 @@ class ImportExportManager {
     Map<String, dynamic> data,
     RecordsManager recordsManager,
     CategoriesManager categoriesManager,
+    GoalsManager goalsManager,
   ) async {
     try {
       final userManager = UserManager();
@@ -382,7 +409,7 @@ class ImportExportManager {
       for (final userData in usersData) {
         final userId = userData['userId'] as String;
         final userName = userData['userName'] as String;
-        
+
         // Buscar si el usuario ya existe
         final existingUsers = await userManager.getAllUsers();
         User? targetUser = existingUsers.cast<User?>().firstWhere(
@@ -403,19 +430,23 @@ class ImportExportManager {
 
         // Importar registros
         if (userData['records'] != null) {
-          final List<SavingsRecord> importedRecords = (userData['records'] as List)
-              .map((json) => SavingsRecord.fromJson(json))
-              .toList();
+          final List<SavingsRecord> importedRecords =
+              (userData['records'] as List)
+                  .map((json) => SavingsRecord.fromJson(json))
+                  .toList();
           await recordsManager.saveRecords(importedRecords);
           debugPrint('  📝 ${importedRecords.length} registros importados');
         }
 
         // Importar categorías
         if (userData['categories'] != null) {
-          final List<String> importedCategories =
-              List<String>.from(userData['categories']);
+          final List<String> importedCategories = List<String>.from(
+            userData['categories'],
+          );
           await categoriesManager.saveCategories(importedCategories);
-          debugPrint('  🏷️ ${importedCategories.length} categorías importadas');
+          debugPrint(
+            '  🏷️ ${importedCategories.length} categorías importadas',
+          );
         }
 
         // Importar colores de categorías
@@ -427,6 +458,15 @@ class ImportExportManager {
               Color(entry.value as int),
             );
           }
+        }
+
+        // Importar metas
+        if (userData['goals'] != null) {
+          final List<SavingsGoal> importedGoals = (userData['goals'] as List)
+              .map((json) => SavingsGoal.fromJson(json))
+              .toList();
+          await goalsManager.saveGoals(importedGoals);
+          debugPrint('  🎯 ${importedGoals.length} metas importadas');
         }
       }
 
@@ -447,6 +487,7 @@ class ImportExportManager {
     Map<String, dynamic> data,
     RecordsManager recordsManager,
     CategoriesManager categoriesManager,
+    GoalsManager goalsManager,
   ) async {
     try {
       // Mantener compatibilidad con formato antiguo (solo usuario actual)
@@ -458,9 +499,17 @@ class ImportExportManager {
       }
 
       if (data['categories'] != null) {
-        final List<String> importedCategories =
-            List<String>.from(data['categories']);
+        final List<String> importedCategories = List<String>.from(
+          data['categories'],
+        );
         await categoriesManager.saveCategories(importedCategories);
+      }
+
+      if (data['goals'] != null) {
+        final List<SavingsGoal> importedGoals = (data['goals'] as List)
+            .map((json) => SavingsGoal.fromJson(json))
+            .toList();
+        await goalsManager.saveGoals(importedGoals);
       }
 
       debugPrint('✅ Datos importados (formato antiguo)');

@@ -36,10 +36,7 @@ class SettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settings),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -65,28 +62,27 @@ class SettingsScreen extends StatelessWidget {
             },
           ),
           const SizedBox(height: 12),
-          
 
-_buildSettingsCard(
-  context: context,
-  icon: Icons.cloud,
-  iconColor: Colors.blue,
-  title: 'Google Drive',
-  subtitle: 'Sincroniza tus datos en la nube',
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GoogleDriveSyncScreen(
-          dataManager: dataManager,
-          onShowSnackBar: onShowSnackBar,
-          onDataChanged: onDataChanged,
-        ),
-      ),
-    );
-  },
-),
-const SizedBox(height: 12),
+          _buildSettingsCard(
+            context: context,
+            icon: Icons.cloud,
+            iconColor: Colors.blue,
+            title: 'Google Drive',
+            subtitle: 'Sincroniza tus datos en la nube',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GoogleDriveSyncScreen(
+                    dataManager: dataManager,
+                    onShowSnackBar: onShowSnackBar,
+                    onDataChanged: onDataChanged,
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
           // Preferencias
           _buildSettingsCard(
             context: context,
@@ -131,40 +127,38 @@ const SizedBox(height: 12),
             },
           ),
           const SizedBox(height: 12),
-_buildSettingsCard(
-  context: context,
-  icon: Icons.system_update,
-  iconColor: Colors.blue,
-  title: 'Buscar actualizaciones',
-  subtitle: 'Versión ${AppConstants.appVersion}',
-  onTap: () async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+          _buildSettingsCard(
+            context: context,
+            icon: Icons.system_update,
+            iconColor: Colors.blue,
+            title: 'Buscar actualizaciones',
+            subtitle: 'Versión ${AppConstants.appVersion}',
+            onTap: () async {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) =>
+                    const Center(child: CircularProgressIndicator()),
+              );
 
-    final updateInfo = await UpdateService().checkForUpdates();
+              final updateInfo = await UpdateService().checkForUpdates();
 
-    if (context.mounted) {
-      Navigator.pop(context);
+              if (context.mounted) {
+                Navigator.pop(context);
 
-      if (updateInfo != null) {
-        UpdateService().showUpdateDialog(context, updateInfo);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Tienes la última versión instalada'),
-            backgroundColor: Colors.green,
+                if (updateInfo != null) {
+                  UpdateService().showUpdateDialog(context, updateInfo);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Tienes la última versión instalada'),
+                    ),
+                  );
+                }
+              }
+            },
           ),
-        );
-      }
-    }
-  },
-),
-        const SizedBox(height: 12),
+          const SizedBox(height: 12),
           const Divider(height: 40),
 
           // Acerca de
@@ -187,9 +181,7 @@ _buildSettingsCard(
   }) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -203,11 +195,7 @@ _buildSettingsCard(
                   color: iconColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 28,
-                ),
+                child: Icon(icon, color: iconColor, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -223,17 +211,14 @@ _buildSettingsCard(
                     const SizedBox(height: 4),
                     Text(
                       subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-              ),
+              Icon(Icons.chevron_right, color: Colors.grey[400]),
             ],
           ),
         ),
@@ -243,7 +228,7 @@ _buildSettingsCard(
 }
 
 // ============================================
-//            PANTALLAS SECUNDARIAS 
+//            PANTALLAS SECUNDARIAS
 // ============================================
 
 class _PreferencesSettingsScreen extends StatelessWidget {
@@ -260,10 +245,7 @@ class _PreferencesSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.preferences),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: AppBar(title: Text(l10n.preferences)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -371,10 +353,7 @@ class _DataSettingsScreen extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.data),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: AppBar(title: Text(l10n.data)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

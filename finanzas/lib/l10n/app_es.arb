@@ -190,6 +190,7 @@
   "month": "Mes",
   "specificMonth": "Mes específico",
   "specificDay": "Día específico",
+  "specificYear": "Año específico",
   "distributionByCategory": "Distribución por categoría",
   "categoryDetails": "Detalle por categoría",
   "ofTotal": "del total",
