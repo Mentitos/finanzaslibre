@@ -2,8 +2,6 @@ import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 
 class Formatters {
-  
- 
   static final NumberFormat _currencyFormat = NumberFormat('#,##0', 'de_DE');
   static final DateFormat _dateTimeFormat = DateFormat('dd/MM/yyyy HH:mm');
   static final DateFormat _dateFormat = DateFormat('dd/MM/yyyy');
@@ -13,8 +11,25 @@ class Formatters {
     return _currencyFormat.format(amount);
   }
 
-  static String formatCurrencyWithSign(double amount, {bool showPositiveSign = true}) {
-    final formatted = formatCurrency(amount.abs());
+  static String formatCurrencyWithSign(
+    double amount, {
+    bool showPositiveSign = true,
+    bool useScientificNotation = false,
+  }) {
+    // If usage of scientific notation is valid (e.g. extremely large numbers)
+    // and requested, we prioritize it.
+    // Threshold: e.g. 1 Trillion (1e12) or user Preference?
+    // User requested "only when it is very long".
+    // 100,000,000,000 (100 Billion) is 12 chars + dots.
+
+    String formatted;
+    if (useScientificNotation && amount.abs() >= 1e10) {
+      // 10 Billion threshold as an example for "very long"
+      formatted = NumberFormat.scientificPattern().format(amount.abs());
+    } else {
+      formatted = formatCurrency(amount.abs());
+    }
+
     if (amount > 0 && showPositiveSign) {
       return '+\$$formatted';
     } else if (amount < 0) {
@@ -40,7 +55,7 @@ class Formatters {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final date = DateTime(dateTime.year, dateTime.month, dateTime.day);
-    
+
     final difference = today.difference(date).inDays;
 
     if (difference == 0) {
@@ -60,17 +75,24 @@ class Formatters {
 
   static String capitalizeWords(String text) {
     if (text.isEmpty) return text;
-    
-    return text.split(' ')
-        .map((word) => word.isEmpty 
-            ? word 
-            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}')
+
+    return text
+        .split(' ')
+        .map(
+          (word) => word.isEmpty
+              ? word
+              : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+        )
         .join(' ');
   }
 
-  static String truncateText(String text, int maxLength, {String suffix = '...'}) {
+  static String truncateText(
+    String text,
+    int maxLength, {
+    String suffix = '...',
+  }) {
     if (text.length <= maxLength) return text;
-    
+
     return '${text.substring(0, maxLength - suffix.length)}$suffix';
   }
 
@@ -132,8 +154,8 @@ class Formatters {
 
   static bool isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
-           date1.month == date2.month &&
-           date1.day == date2.day;
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   static bool isSameMonth(DateTime date1, DateTime date2) {
@@ -142,19 +164,32 @@ class Formatters {
 
   static String getMonthName(int month, AppLocalizations l10n) {
     final months = [
-      l10n.january, l10n.february, l10n.march, l10n.april,
-      l10n.may, l10n.june, l10n.july, l10n.august,
-      l10n.september, l10n.october, l10n.november, l10n.december
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december,
     ];
     return months[month - 1];
   }
 
   static String getDayName(int weekday, AppLocalizations l10n) {
     final days = [
-      l10n.monday, l10n.tuesday, l10n.wednesday, l10n.thursday,
-      l10n.friday, l10n.saturday, l10n.sunday
+      l10n.monday,
+      l10n.tuesday,
+      l10n.wednesday,
+      l10n.thursday,
+      l10n.friday,
+      l10n.saturday,
+      l10n.sunday,
     ];
     return days[weekday - 1];
   }
-  
 }

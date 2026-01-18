@@ -1094,6 +1094,12 @@ abstract class AppLocalizations {
   /// **'Día específico'**
   String get specificDay;
 
+  /// No description provided for @specificYear.
+  ///
+  /// In es, this message translates to:
+  /// **'Año específico'**
+  String get specificYear;
+
   /// No description provided for @distributionByCategory.
   ///
   /// In es, this message translates to:

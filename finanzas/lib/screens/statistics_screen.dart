@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:math';
 import '../models/savings_record.dart';
 import '../constants/app_constants.dart';
 import '../utils/formatters.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/category_translations.dart';
 
-enum StatisticsPeriod { day, week, month, specificMonth, specificDay }
+enum StatisticsPeriod {
+  day,
+  week,
+  month,
+  specificMonth,
+  specificDay,
+  specificYear,
+}
 
 class StatisticsScreen extends StatefulWidget {
   final List<SavingsRecord> allRecords;
@@ -26,6 +34,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   StatisticsPeriod _selectedPeriod = StatisticsPeriod.month;
   DateTime? _selectedSpecificMonth;
   DateTime? _selectedSpecificDay;
+  int? _selectedSpecificYear;
   bool _showPieChart = true;
 
   @override
@@ -34,6 +43,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     final now = DateTime.now();
     _selectedSpecificMonth = now;
     _selectedSpecificDay = now;
+    _selectedSpecificYear = now.year;
   }
 
   @override
@@ -140,6 +150,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           59,
         );
         break;
+
+      case StatisticsPeriod.specificYear:
+        final yearToUse = _selectedSpecificYear ?? now.year;
+        startDate = DateTime(yearToUse, 1, 1);
+        endDate = DateTime(yearToUse, 12, 31, 23, 59, 59);
+        break;
     }
 
     return widget.allRecords.where((record) {
@@ -204,6 +220,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     Icons.calendar_month,
                   ),
                 ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildPeriodButton(
+                    l10n.year,
+                    StatisticsPeriod.specificYear,
+                    Icons.calendar_today,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -233,6 +257,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             if (_selectedPeriod == StatisticsPeriod.specificDay) ...[
               const SizedBox(height: 12),
               _buildDaySelector(l10n),
+            ],
+            if (_selectedPeriod == StatisticsPeriod.specificYear) ...[
+              const SizedBox(height: 12),
+              _buildYearSelector(l10n),
             ],
           ],
         ),
@@ -354,12 +382,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           children: [
             Icon(icon, color: color, size: 32),
             const SizedBox(height: 8),
-            Text(
-              '${amount < 0 ? '-' : ''}${AppConstants.currencySymbol}${Formatters.formatCurrency(amount.abs())}',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '${amount < 0 ? '-' : ''}${AppConstants.currencySymbol}${Formatters.formatCurrency(amount.abs())}',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
               ),
             ),
             const SizedBox(height: 4),
@@ -429,7 +460,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
             const SizedBox(height: 24),
             SizedBox(
-              height: 250,
+              height: 300,
               child: PieChart(
                 PieChartData(
                   sectionsSpace: 2,
@@ -444,7 +475,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         widget.categoryColors,
                       ),
                       value: entry.value.abs(),
-                      title: '${percentage.toStringAsFixed(0)}%',
+                      title: percentage >= 5
+                          ? '${percentage.toStringAsFixed(0)}%'
+                          : '',
                       radius: 80,
                       titleStyle: const TextStyle(
                         fontSize: 14,
@@ -523,7 +556,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ),
                         ),
                         Text(
-                          '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value.abs())}',
+                          '${AppConstants.currencySymbol}${Formatters.formatCurrencyWithSign(entry.value.abs(), showPositiveSign: false, useScientificNotation: true)}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: entry.value >= 0 ? Colors.green : Colors.red,
@@ -737,8 +770,14 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   String _formatCurrencySimple(double value) {
     if (value == 0) return '0';
-    if (value.abs() >= 1000000) {
-      return '${(value / 1000000).toStringAsFixed(1)}M';
+    if (value.abs() >= 1e12) {
+      return '${(value / 1e12).toStringAsFixed(1)}T';
+    }
+    if (value.abs() >= 1e9) {
+      return '${(value / 1e9).toStringAsFixed(1)}B';
+    }
+    if (value.abs() >= 1e6) {
+      return '${(value / 1e6).toStringAsFixed(1)}M';
     }
     if (value.abs() >= 1000) {
       return '${(value / 1000).toStringAsFixed(1)}k';
@@ -759,19 +798,28 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
     final range = maxVal - minVal;
     if (range == 0) {
-      return (maxVal.abs() / 2).clamp(1, double.infinity);
+      return (maxVal.abs() / 2).clamp(1.0, double.infinity);
     }
 
-    double interval = range / 5;
+    // Target about 4-6 intervals
+    final rawInterval = range / 5;
 
-    if (interval == 0) return 100;
+    // Calculate magnitude of the interval
+    final magnitude = pow(10, (log(rawInterval) / ln10).floor()).toDouble();
+    final residual = rawInterval / magnitude;
 
-    if (interval > 1000) return (interval / 1000).round() * 1000;
-    if (interval > 100) return (interval / 100).round() * 100;
-    if (interval > 50) return (interval / 50).round() * 50;
-    if (interval > 10) return (interval / 10).round() * 10;
+    double interval;
+    if (residual > 5) {
+      interval = 10 * magnitude;
+    } else if (residual > 2) {
+      interval = 5 * magnitude;
+    } else if (residual > 1) {
+      interval = 2 * magnitude;
+    } else {
+      interval = magnitude;
+    }
 
-    return interval.round().toDouble().clamp(1, double.infinity);
+    return interval == 0 ? 100.0 : interval;
   }
 
   Widget _buildMonthSelector(AppLocalizations l10n) {
@@ -850,6 +898,44 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
+  Widget _buildYearSelector(AppLocalizations l10n) {
+    final now = DateTime.now();
+    final selectedYear = _selectedSpecificYear ?? now.year;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(8),
+      onTap: () => _selectYear(context, l10n),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Theme.of(context).colorScheme.primary),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.calendar_today,
+              color: Theme.of(context).colorScheme.primary,
+              size: 40,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                selectedYear.toString(),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const Icon(Icons.arrow_drop_down),
+          ],
+        ),
+      ),
+    );
+  }
+
   String _formatMonthYear(DateTime date) {
     final l10n = AppLocalizations.of(context)!;
     return '${Formatters.getMonthName(date.month, l10n)} ${date.year}';
@@ -902,6 +988,124 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         _selectedSpecificDay = picked;
       });
     }
+  }
+
+  Future<void> _selectYear(BuildContext context, AppLocalizations l10n) async {
+    final now = DateTime.now();
+    final currentYear = now.year;
+    final selectedYear = _selectedSpecificYear ?? currentYear;
+
+    // Generate years from current down to 1600
+    final years = List.generate(
+      currentYear - 1600 + 1,
+      (index) => currentYear - index,
+    );
+
+    final scrollController = FixedExtentScrollController(
+      initialItem: years.indexOf(selectedYear),
+    );
+
+    await showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          height: 350,
+          padding: const EdgeInsets.only(top: 16),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      l10n.year,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: Stack(
+                  children: [
+                    ListWheelScrollView.useDelegate(
+                      controller: scrollController,
+                      itemExtent: 50,
+                      perspective: 0.005,
+                      diameterRatio: 1.2,
+                      physics: const FixedExtentScrollPhysics(),
+                      onSelectedItemChanged: (index) {
+                        // Optional: Haptic feedback
+                      },
+                      childDelegate: ListWheelChildBuilderDelegate(
+                        childCount: years.length,
+                        builder: (context, index) {
+                          final year = years[index];
+                          return Center(
+                            child: Text(
+                              year.toString(),
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Center(
+                      child: IgnorePointer(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.arrow_right,
+                              size: 30,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(width: 80), // Space for text
+                            Icon(
+                              Icons.arrow_left,
+                              size: 30,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () {
+                      final selectedIndex = scrollController.selectedItem;
+                      setState(() {
+                        _selectedSpecificYear = years[selectedIndex];
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: Text(l10n.save),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 

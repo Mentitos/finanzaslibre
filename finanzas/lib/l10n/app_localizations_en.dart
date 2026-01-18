@@ -525,6 +525,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get specificDay => 'Specific day';
 
   @override
+  String get specificYear => 'Año específico';
+
+  @override
   String get distributionByCategory => 'Distribution by category';
 
   @override

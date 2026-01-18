@@ -4,7 +4,7 @@ import '../models/savings_record.dart';
 import '../utils/formatters.dart';
 import '../constants/app_constants.dart';
 import '../../l10n/category_translations.dart';
-
+import 'marquee_widget.dart';
 
 class RecordItem extends StatelessWidget {
   final SavingsRecord record;
@@ -27,26 +27,30 @@ class RecordItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categoryName = l10n.translateCategory(record.category);
-    
+
     Color transactionColor;
     IconData icon;
     String amountText;
 
     var typeForDisplay = record.type;
     if (typeForDisplay == RecordType.adjustment) {
-        typeForDisplay = record.totalAmount >= 0 ? RecordType.deposit : RecordType.withdrawal;
+      typeForDisplay = record.totalAmount >= 0
+          ? RecordType.deposit
+          : RecordType.withdrawal;
     }
 
     switch (typeForDisplay) {
       case RecordType.deposit:
         transactionColor = Colors.green;
         icon = Icons.arrow_upward;
-        amountText = '+\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        amountText =
+            '+\$${Formatters.formatCurrency(record.totalAmount.abs())}';
         break;
       case RecordType.withdrawal:
         transactionColor = Colors.red;
         icon = Icons.arrow_downward;
-        amountText = '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        amountText =
+            '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
         break;
       case RecordType.adjustment:
         // This case will not be reached due to the logic above, but kept for safety.
@@ -55,9 +59,12 @@ class RecordItem extends StatelessWidget {
         amountText = Formatters.formatCurrencyWithSign(record.totalAmount);
         break;
     }
-    
-    final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
-    
+
+    final categoryColor = AppConstants.getCategoryColor(
+      record.category,
+      categoryColors,
+    );
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: InkWell(
@@ -67,64 +74,62 @@ class RecordItem extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: transactionColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  icon,
-                  color: transactionColor,
-                  size: 20,
-                ),
+                child: Icon(icon, color: transactionColor, size: 20),
               ),
               const SizedBox(width: 12),
               Expanded(
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        record.description.isEmpty
-            ? categoryName   
-            : record.description,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 15,
-        ),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      const SizedBox(height: 4),
-      Row(
-        children: [
-          if (showCategory) ...[
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: categoryColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: categoryColor.withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  categoryName, 
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: categoryColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      record.description.isEmpty
+                          ? categoryName
+                          : record.description,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        if (showCategory) ...[
+                          Flexible(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: categoryColor.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: categoryColor.withOpacity(0.3),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                categoryName,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: categoryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                         Icon(
                           Icons.access_time,
                           size: 12,
@@ -133,7 +138,10 @@ class RecordItem extends StatelessWidget {
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
-                            Formatters.formatRelativeDate(record.createdAt, l10n),
+                            Formatters.formatRelativeDate(
+                              record.createdAt,
+                              l10n,
+                            ),
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[600],
@@ -164,13 +172,21 @@ class RecordItem extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  
-                  Text(
-                    amountText,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: transactionColor,
+                  SizedBox(
+                    width: 100, // Fixed width to force marquee if needed
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: MarqueeWidget(
+                        child: Text(
+                          amountText,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: transactionColor,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -185,7 +201,12 @@ class RecordItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          Formatters.formatCurrencyWithSign(record.physicalAmount, showPositiveSign: record.type == RecordType.adjustment),
+                          Formatters.formatCurrencyWithSign(
+                            record.physicalAmount,
+                            showPositiveSign:
+                                record.type == RecordType.adjustment,
+                            useScientificNotation: true,
+                          ),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[600],
@@ -201,7 +222,12 @@ class RecordItem extends StatelessWidget {
                         ),
                         const SizedBox(width: 2),
                         Text(
-                          Formatters.formatCurrencyWithSign(record.digitalAmount, showPositiveSign: record.type == RecordType.adjustment),
+                          Formatters.formatCurrencyWithSign(
+                            record.digitalAmount,
+                            showPositiveSign:
+                                record.type == RecordType.adjustment,
+                            useScientificNotation: true,
+                          ),
                           style: TextStyle(
                             fontSize: 11,
                             color: Colors.grey[600],
@@ -226,7 +252,6 @@ class RecordItem extends StatelessWidget {
   }
 }
 
-
 class RecentRecordItem extends StatelessWidget {
   final SavingsRecord record;
   final VoidCallback onTap;
@@ -249,19 +274,23 @@ class RecentRecordItem extends StatelessWidget {
 
     var typeForDisplay = record.type;
     if (typeForDisplay == RecordType.adjustment) {
-        typeForDisplay = record.totalAmount >= 0 ? RecordType.deposit : RecordType.withdrawal;
+      typeForDisplay = record.totalAmount >= 0
+          ? RecordType.deposit
+          : RecordType.withdrawal;
     }
 
     switch (typeForDisplay) {
       case RecordType.deposit:
         transactionColor = Colors.green;
         icon = Icons.arrow_upward;
-        amountText = '+\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        amountText =
+            '+\$${Formatters.formatCurrency(record.totalAmount.abs())}';
         break;
       case RecordType.withdrawal:
         transactionColor = Colors.red;
         icon = Icons.arrow_downward;
-        amountText = '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
+        amountText =
+            '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
         break;
       case RecordType.adjustment:
         // This case will not be reached
@@ -270,18 +299,17 @@ class RecentRecordItem extends StatelessWidget {
         amountText = Formatters.formatCurrencyWithSign(record.totalAmount);
         break;
     }
-    
-    final categoryColor = AppConstants.getCategoryColor(record.category, categoryColors);
-    
+
+    final categoryColor = AppConstants.getCategoryColor(
+      record.category,
+      categoryColors,
+    );
+
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
         backgroundColor: transactionColor.withOpacity(0.1),
-        child: Icon(
-          icon,
-          color: transactionColor,
-          size: 20,
-        ),
+        child: Icon(icon, color: transactionColor, size: 20),
       ),
       title: Text(
         record.description.isEmpty ? record.category : record.description,
@@ -324,12 +352,21 @@ class RecentRecordItem extends StatelessWidget {
           ),
         ],
       ),
-      trailing: Text(
-        amountText,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: transactionColor,
-          fontSize: 15,
+      trailing: SizedBox(
+        width: 100, // Constrain width for marquee
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: MarqueeWidget(
+            child: Text(
+              amountText,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: transactionColor,
+                fontSize: 15,
+              ),
+              maxLines: 1,
+            ),
+          ),
         ),
       ),
     );

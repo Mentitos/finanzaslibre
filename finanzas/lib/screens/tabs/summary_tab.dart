@@ -132,12 +132,15 @@ class SummaryTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            '${isPositive ? '' : '-'}${AppConstants.currencySymbol}${_formatPrivateAmount(totalAmount.abs())}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '${isPositive ? '' : '-'}${AppConstants.currencySymbol}${_formatPrivateAmount(totalAmount.abs())}',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           if (allRecords.isNotEmpty) ...[
@@ -221,12 +224,15 @@ class SummaryTab extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
-              Text(
-                '${amount < 0 ? '-' : ''}${AppConstants.currencySymbol}${_formatPrivateAmount(amount.abs())}',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: color,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '${amount < 0 ? '-' : ''}${AppConstants.currencySymbol}${_formatPrivateAmount(amount.abs())}',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
               ),
             ],

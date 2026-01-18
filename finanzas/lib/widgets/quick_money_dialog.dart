@@ -18,6 +18,46 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
+    // Smart delete: If the user deleted a dot, we should delete the number before it
+    // Check if a character was deleted but the digits remain the same (meaning a separator was deleted)
+    if (oldValue.text.length > newValue.text.length) {
+      final String cleanOld = oldValue.text.replaceAll('.', '');
+      final String cleanNew = newValue.text.replaceAll('.', '');
+
+      if (cleanOld == cleanNew) {
+        // A separator was deleted. We should manually delete the digit before the selection.
+        if (newValue.selection.baseOffset > 0) {
+          final int deleteIndex = newValue.selection.baseOffset - 1;
+          final String newTextRaw = newValue.text;
+          // Build new string removing the digit before the cursor
+          final String newTextProcessed =
+              newTextRaw.substring(0, deleteIndex) +
+              newTextRaw.substring(deleteIndex + 1);
+
+          // Manually format and map cursor
+          String formatted = _formatWithThousands(newTextProcessed);
+
+          // Map the raw cursor (deleteIndex) to the formatted string
+          int formattedCursor = 0;
+          int digitCount = 0;
+          for (int i = 0; i < formatted.length; i++) {
+            if (digitCount >= deleteIndex) {
+              break;
+            }
+            if (RegExp(r'\d').hasMatch(formatted[i])) {
+              digitCount++;
+            }
+            formattedCursor++;
+          }
+
+          return TextEditingValue(
+            text: formatted,
+            selection: TextSelection.collapsed(offset: formattedCursor),
+          );
+        }
+      }
+    }
+
     String text = newValue.text.replaceAll('.', '');
 
     if (!RegExp(r'^\d+$').hasMatch(text)) {
@@ -27,24 +67,23 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
     String formatted = _formatWithThousands(text);
 
     int selectionIndex = newValue.selection.end;
-    int oldDots =
-        oldValue.text.substring(0, oldValue.selection.end).split('.').length -
-        1;
-    int newDots =
-        formatted
-            .substring(
-              0,
-              selectionIndex + (formatted.split('.').length - 1 - oldDots),
-            )
-            .split('.')
-            .length -
-        1;
+
+    // Iteratively calculate new cursor position based on digit count
+    int newOffset = 0;
+    int currentDigits = 0;
+    for (int i = 0; i < formatted.length; i++) {
+      if (currentDigits >= selectionIndex) {
+        break;
+      }
+      if (RegExp(r'\d').hasMatch(formatted[i])) {
+        currentDigits++;
+      }
+      newOffset++;
+    }
 
     return TextEditingValue(
       text: formatted,
-      selection: TextSelection.collapsed(
-        offset: selectionIndex + newDots - oldDots,
-      ),
+      selection: TextSelection.collapsed(offset: newOffset),
     );
   }
 
@@ -106,22 +145,194 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
       ? [1000, 2000, 5000, 10000, 20000, 50000]
       : [5000, 10000, 25000, 50000, 100000, 200000];
 
+  int _depositLastSelection = 0;
+  int _withdrawalLastSelection = 0;
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _depositCategory = widget.categories.first;
     _withdrawalCategory = widget.categories.first;
+
+    _depositAmountController.addListener(_handleDepositSelection);
+    _withdrawalAmountController.addListener(_handleWithdrawalSelection);
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _depositAmountController.removeListener(_handleDepositSelection);
+    _withdrawalAmountController.removeListener(_handleWithdrawalSelection);
     _depositAmountController.dispose();
     _depositDescriptionController.dispose();
     _withdrawalAmountController.dispose();
     _withdrawalDescriptionController.dispose();
     super.dispose();
+  }
+
+  void _handleDepositSelection() =>
+      _handleCursorSelection(_depositAmountController, isDeposit: true);
+
+  void _handleWithdrawalSelection() =>
+      _handleCursorSelection(_withdrawalAmountController, isDeposit: false);
+
+  void _handleCursorSelection(
+    TextEditingController controller, {
+    required bool isDeposit,
+  }) {
+    final selection = controller.selection;
+    if (!selection.isValid || !selection.isCollapsed) return;
+
+    final text = controller.text;
+    final currentOffset = selection.baseOffset;
+    final lastOffset = isDeposit
+        ? _depositLastSelection
+        : _withdrawalLastSelection;
+
+    // Update last selection immediately to prevent infinite loops if we change it
+    if (isDeposit) {
+      _depositLastSelection = currentOffset;
+    } else {
+      _withdrawalLastSelection = currentOffset;
+    }
+
+    // Check if cursor is after a dot
+    if (currentOffset > 0 &&
+        currentOffset <= text.length &&
+        text[currentOffset - 1] == '.') {
+      // Determine direction or click
+      if (currentOffset > lastOffset) {
+        // Moving Right: Skip dot to the right (move to next digit)
+        // Check if there is a next digit? Usually yes if not at end.
+        // If at end: 123. -> impossible for currency, usually 1.234
+        // If 1.234, cursor at 2 (after .). Move to 2.
+        // Actually, we are AT 2. We want to be at 2?
+        // Wait, if I am at 1.|234 (index 2).
+        // I want to be at 1.2|34 (index 3)? No, that skips the 2.
+        // I want to be validly placed.
+        // If dot is untouchable, I cannot be adjacent to it?
+        // Let's force cursor to "Left of Dot" if landing on "Right of Dot" by click?
+        // And "Skip over" if navigating.
+
+        // Simpler heuristic: "Never stop immediately after a dot".
+        // If we landed after a dot, keep moving right?
+        // 1.|234 -> Move to 1.2|34 ? No.
+        // The user wants dot to be "aesthetic".
+        // It effectively binds to the left digit. 1.
+        // If I move right from 1, I should see 2.
+        // 1 -> 1.2 (visual skip).
+
+        // If I am at 2 (1.|2), I am technically at "Start of 2".
+        // If I move to 3 (1.2|), I am "After 2".
+        // So standard right movement 1->2 is correct for editing '2'.
+        // But visually user might dislike the cursor "flashing" after dot.
+        // But functionally it must be there to delete/add '2'.
+      }
+
+      // Let's try the user request: "Puntos no tocables".
+      // Maybe they mean "If I click or arrive at dot, move me to the other side".
+      // If I click 1.|234 -> Move to 1|.234.
+      // If I Right Arrow from 1|.234 -> Land at 1.|234 -> Auto-move to 1?. Loop?
+      // No, if I Right Arrow, I want to go to 2.
+      // But 2 is "Start of 2".
+      // Maybe I can't be at "Start of 2" if it implies "After dot"?
+      // This is tricky. Text cursors exist between characters.
+
+      // If I implement "Always left of dot":
+      // 1.|234 -> Force to 1|.234.
+      // Right Arrow from 1|.234 -> goes to 1.|234 -> Force back to 1|.234.
+      // Result: Can't move right.
+
+      // So we MUST distinguish "Right Movement" from "Click/Left Movement".
+      // If (current > last) [Right Move]: Allow? Or Skip?
+      // If we skip: 1|.234 -> Right -> 1.2|34 (Index 3).
+      // We skipped '2'? That means we can't edit '2' easily?
+      // We can backspace '2' from 3.
+      // Can we insert before '2'?
+      // If '1.234', and I want '1.5234'.
+      // I need cursor at 2 (before 2).
+      // If I skip to 3, I am after 2. Type 5 -> '1.2534'. Wrong.
+
+      // Conclusion: "Untouchable dots" in a raw text field is mostly a backspace/delete UX thing.
+      // Which I fixed.
+      // The cursor "between 1 and ." is what the user asked for in previous turn.
+      // "Clicking on dot" -> maybe nudge left?
+      // If I Click at 2 (1.|234), nudge to 1 (1|.234).
+      // If I Arrow to 2? Allow it?
+      // The user says "points directly untouchable".
+
+      // Let's implement: If selection lands after dot, move Left.
+      // EXCEPT if we think it was a typed character? No, this is selection listener.
+      // If we can't move right, that's bad.
+      // But maybe the "Right Arrow" skips the dot AND the next char? No.
+
+      // Alternative: Virtualize the dots.
+      // But we are using a TextField.
+
+      // Let's look at the user prompt again: "cursor entre el 1 y el ." (between 1 and dot).
+      // "que los puntos directamente no sean tocables... esteticos".
+
+      // If I move cursor right from 1.
+      // It normally lands at 2 (1.|2).
+      // If I force it to 3 (1.2|), I skip being able to insert before 2.
+      // UNLESS... typing at 3 inserts before 2? No.
+
+      // Maybe the user is OK with "Right arrow jumps dot"?
+      // If I am at 1 (1.|2), and I type '5'.
+      // Formatter sees '1.52...' -> '15.2...'.
+      // It works.
+
+      // What if I implement: If cursor is after dot, move to before dot.
+      // AND modify formatter or something? No.
+
+      // Let's assume the user is happy with "Clicking/Landing on dot moves to Left".
+      // And we accept that Right Arrow might get stuck or skip?
+      // If I make specific logic:
+      // If (Moving Right) -> Skip to 1.2|?
+      //    This means I can't insert before 2.
+      //    Is that acceptable?
+      //    "Currency format" implies filling from right? Or typing?
+      //    This is a "custom amount" field. Standard typing.
+
+      // Let's stick to: "If I land explicitly on the dot (click?), move left".
+      // How to distinguish click from arrow?
+      // Change in offset > 1? Or just logic.
+      // I will implement "Jump Left" strategy.
+      // As for "Right Arrow stuck", I'll test it mentally:
+      // 1|.2 -> Right -> 1.|2 -> Detected -> 1|.2. STUCK.
+
+      // Okay, "Jump Right" strategy for Right Move?
+      // 1|.2 -> Right -> 1.|2 -> Detected (Moving Right) -> Jump +1 -> 1.2| ?
+      // If I jump to 1.2|, I am after 2.
+      // I can't insert before 2.
+
+      // Maybe the user just means "Don't select the dot".
+      // Selection range? collapsed.
+
+      // I will implement: "If cursor is after dot, move it to before dot" ONLY IF not moving right?
+      // No...
+
+      // Recommendation: standard "untouchable" implementation allows cursor adjacent, but BACKSPACE skips it (done).
+      // Maybe "Delete" (forward) skips it.
+      // Maybe I just implement "Click adjustments".
+      // If (currentOffset != lastOffset + 1 && currentOffset != lastOffset - 1) { // Likely a click or jump }
+
+      // I will implement: If (abs(delta) > 1) { // Click or long jump
+      //   If char at offset-1 is '.', move offset - 1.
+      // }
+
+      if ((currentOffset - lastOffset).abs() > 1) {
+        // Likely a click
+        final newSelection = TextSelection.collapsed(offset: currentOffset - 1);
+        controller.selection = newSelection;
+        // Update last selection
+        if (isDeposit)
+          _depositLastSelection = currentOffset - 1;
+        else
+          _withdrawalLastSelection = currentOffset - 1;
+      }
+    }
   }
 
   String _getMoneyTypeLabel(AppLocalizations l10n) =>
@@ -345,12 +556,17 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
             '${l10n.currentBalance}: ',
             style: TextStyle(color: Colors.grey[600], fontSize: 14),
           ),
-          Text(
-            '\$${Formatters.formatCurrency(widget.currentAmount)}',
-            style: TextStyle(
-              color: _moneyTypeColor,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                '\$${Formatters.formatCurrency(widget.currentAmount)}',
+                style: TextStyle(
+                  color: _moneyTypeColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
@@ -435,7 +651,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
 
         ThousandsSeparatorInputFormatter(),
 
-        LengthLimitingTextInputFormatter(15),
+        LengthLimitingTextInputFormatter(25),
       ],
       validator: (value) {
         if (value?.isEmpty == true) {
