@@ -38,7 +38,7 @@ class ColorPalette {
       id: 'pink',
       name: 'Fucsia',
       type: PaletteType.pink,
-      seedColor: Color(0xFFFF004A), 
+      seedColor: Color(0xFFEC1C57),
     ),
     ColorPalette(
       id: 'blue',
