@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
 import '../dialogs/about_dialog.dart';
+import '../../../constants/app_constants.dart';
 
 class AboutSection extends StatelessWidget {
   final AppLocalizations l10n;
 
-  const AboutSection({
-    super.key,
-    required this.l10n,
-  });
+  const AboutSection({super.key, required this.l10n});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +22,6 @@ class AboutSection extends StatelessWidget {
   }
 
   String _getAppVersion() {
-    
-    return '1.2.0';
+    return AppConstants.appVersion;
   }
 }

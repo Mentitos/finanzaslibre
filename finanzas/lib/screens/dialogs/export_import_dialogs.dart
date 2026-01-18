@@ -4,49 +4,58 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../services/savings_data_manager.dart';
 import '../../l10n/app_localizations.dart';
 
 class ExportImportDialogs {
   static Future<Directory> _getExportDirectory() async {
-    late Directory exportDir;
+    Directory? exportDir;
 
     if (Platform.isAndroid) {
-      try {
-        final String? downloadsPath = await _getDownloadsPath();
-        if (downloadsPath != null) {
-          exportDir = Directory('$downloadsPath/SavingsExport');
+      // Intentar obtener permisos para guardar en Descargas (más visible para usuario)
+      bool permissionGranted = false;
+
+      // Para Android 11+ (API 30+)
+      if (await Permission.manageExternalStorage.request().isGranted) {
+        permissionGranted = true;
+      } else if (await Permission.storage.request().isGranted) {
+        // Para Android 10 e inferiores
+        permissionGranted = true;
+      }
+
+      if (permissionGranted) {
+        try {
+          // Ruta estándar de descargas
+          exportDir = Directory('/storage/emulated/0/Download/SavingsExport');
           if (!await exportDir.exists()) {
             await exportDir.create(recursive: true);
           }
-          debugPrint('✅ Carpeta SavingsExport creada en: ${exportDir.path}');
-          return exportDir;
+          debugPrint('✅ Usando carpeta de Descargas: ${exportDir.path}');
+        } catch (e) {
+          debugPrint('⚠️ Error al acceder a Descargas: $e');
+          exportDir = null; // Fallback
         }
-      } catch (e) {
-        debugPrint('⚠️ No se pudo acceder a Downloads: $e');
       }
+    }
 
-      final appDocDir = await getApplicationDocumentsDirectory();
-      exportDir = Directory('${appDocDir.path}/SavingsExport');
-    } else {
-      final appDocDir = await getApplicationDocumentsDirectory();
-      exportDir = Directory('${appDocDir.path}/SavingsExport');
+    // Fallback: usar directorio de la app si no hay permisos o falló lo anterior
+    if (exportDir == null) {
+      if (Platform.isAndroid) {
+        exportDir = await getExternalStorageDirectory();
+      }
+      // Fallback final (iOS/Windows)
+      exportDir ??= await getApplicationDocumentsDirectory();
+
+      exportDir = Directory('${exportDir!.path}/SavingsExport');
     }
 
     if (!await exportDir.exists()) {
       await exportDir.create(recursive: true);
     }
 
-    debugPrint('✅ Carpeta SavingsExport creada en: ${exportDir.path}');
+    debugPrint('✅ Directorio de exportación final: ${exportDir.path}');
     return exportDir;
-  }
-
-  static Future<String?> _getDownloadsPath() async {
-    final directory = Directory('/storage/emulated/0/Download');
-    if (await directory.exists()) {
-      return directory.path;
-    }
-    return null;
   }
 
   static void showExportDialog(

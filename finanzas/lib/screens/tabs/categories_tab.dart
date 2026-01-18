@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../../utils/formatters.dart';
 import '../../constants/app_constants.dart';
 import '../../l10n/app_localizations.dart';
@@ -22,8 +23,8 @@ class CategoriesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!; 
-    
+    final l10n = AppLocalizations.of(context)!;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       child: Column(
@@ -37,7 +38,8 @@ class CategoriesTab extends StatelessWidget {
   }
 
   Widget _buildCategoryTotalsCard(BuildContext context, AppLocalizations l10n) {
-    final categoryTotals = statistics['categoryTotals'] as Map<String, double>? ?? {};
+    final categoryTotals =
+        statistics['categoryTotals'] as Map<String, double>? ?? {};
     final categoryTotalsList = categoryTotals.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
@@ -48,44 +50,52 @@ class CategoriesTab extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.savingsByCategory, 
+              l10n.savingsByCategory,
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: AppConstants.defaultPadding),
             if (categoryTotalsList.isEmpty)
-              Text(l10n.noDataAvailable) 
+              Text(l10n.noDataAvailable)
             else
-              ...categoryTotalsList.map((entry) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: AppConstants.getCategoryColor(entry.key, categoryColors),
-                            shape: BoxShape.circle,
+              ...categoryTotalsList.map(
+                (entry) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: AppConstants.getCategoryColor(
+                            entry.key,
+                            categoryColors,
                           ),
+                          shape: BoxShape.circle,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(child: Text(l10n.translateCategory(entry.key))), 
-                        Text(
-                          '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value)}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: entry.value >= 0 ? Colors.green : Colors.red,
-                          ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(l10n.translateCategory(entry.key))),
+                      Text(
+                        '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: entry.value >= 0 ? Colors.green : Colors.red,
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       ),
     );
   }
 
- Widget _buildCategoryManagementCard(BuildContext context, AppLocalizations l10n) {
+  Widget _buildCategoryManagementCard(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -96,7 +106,7 @@ class CategoriesTab extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  l10n.manageCategories, 
+                  l10n.manageCategories,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 IconButton(
@@ -109,17 +119,28 @@ class CategoriesTab extends StatelessWidget {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: categories.map((category) => Chip(
-                label: Text(l10n.translateCategory(category)), 
-                avatar: CircleAvatar(
-                  backgroundColor: AppConstants.getCategoryColor(category, categoryColors),
-                  radius: 8,
-                ),
-                deleteIcon: const Icon(Icons.close, size: 16),
-                onDeleted: category != 'General'
-                    ? () => _showDeleteCategoryConfirmation(context, category, l10n)
-                    : null,
-              )).toList(),
+              children: categories
+                  .map(
+                    (category) => Chip(
+                      label: Text(l10n.translateCategory(category)),
+                      avatar: CircleAvatar(
+                        backgroundColor: AppConstants.getCategoryColor(
+                          category,
+                          categoryColors,
+                        ),
+                        radius: 8,
+                      ),
+                      deleteIcon: const Icon(Icons.close, size: 16),
+                      onDeleted: category != 'General'
+                          ? () => _showDeleteCategoryConfirmation(
+                              context,
+                              category,
+                              l10n,
+                            )
+                          : null,
+                    ),
+                  )
+                  .toList(),
             ),
           ],
         ),
@@ -133,16 +154,23 @@ class CategoriesTab extends StatelessWidget {
       builder: (dialogContext) => _CategoryDialog(
         categories: categories,
         onAddCategory: onAddCategory,
-        l10n: l10n, 
+        l10n: l10n,
       ),
     );
   }
 
-  void _showDeleteCategoryConfirmation(BuildContext context, String category, AppLocalizations l10n) {
-    final categoryTotals = statistics['categoryTotals'] as Map<String, double>? ?? {};
-    final recordsCount = statistics['categoryRecordsCount'] as Map<String, int>? ?? {};
+  void _showDeleteCategoryConfirmation(
+    BuildContext context,
+    String category,
+    AppLocalizations l10n,
+  ) {
+    final categoryTotals =
+        statistics['categoryTotals'] as Map<String, double>? ?? {};
+    final recordsCount =
+        statistics['categoryRecordsCount'] as Map<String, int>? ?? {};
     final usageCount = recordsCount[category] ?? 0;
-    final hasAmount = categoryTotals.containsKey(category) && categoryTotals[category] != 0;
+    final hasAmount =
+        categoryTotals.containsKey(category) && categoryTotals[category] != 0;
 
     showDialog(
       context: context,
@@ -154,14 +182,14 @@ class CategoriesTab extends StatelessWidget {
               color: usageCount > 0 ? Colors.orange : Colors.red,
             ),
             const SizedBox(width: 8),
-            Expanded(child: Text(l10n.deleteCategory)), 
+            Expanded(child: Text(l10n.deleteCategory)),
           ],
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('${l10n.deleteCategoryConfirm} "$category"?'), 
+            Text('${l10n.deleteCategoryConfirm} "$category"?'),
             if (usageCount > 0) ...[
               const SizedBox(height: 16),
               Container(
@@ -176,21 +204,25 @@ class CategoriesTab extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.info_outline, size: 20, color: Colors.orange[700]),
+                        Icon(
+                          Icons.info_outline,
+                          size: 20,
+                          color: Colors.orange[700],
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            l10n.categoryInUse, 
+                            l10n.categoryInUse,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 8),
-                    Text('• $usageCount ${l10n.recordsWillBeMoved}'), 
+                    Text('• $usageCount ${l10n.recordsWillBeMoved}'),
                     if (hasAmount)
                       Text(
-                        '• ${l10n.currentAmount}: \$${Formatters.formatCurrency(categoryTotals[category]!.abs())}', 
+                        '• ${l10n.currentAmount}: \$${Formatters.formatCurrency(categoryTotals[category]!.abs())}',
                       ),
                   ],
                 ),
@@ -201,7 +233,7 @@ class CategoriesTab extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(l10n.cancel), 
+            child: Text(l10n.cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -211,24 +243,23 @@ class CategoriesTab extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: usageCount > 0 ? Colors.orange : Colors.red,
             ),
-            child: Text(usageCount > 0 ? l10n.moveAndDelete : l10n.delete), 
+            child: Text(usageCount > 0 ? l10n.moveAndDelete : l10n.delete),
           ),
         ],
       ),
     );
   }
-
 }
 
 class _CategoryDialog extends StatefulWidget {
   final List<String> categories;
   final Function(String, Color) onAddCategory;
-  final AppLocalizations l10n; 
+  final AppLocalizations l10n;
 
   const _CategoryDialog({
     required this.categories,
     required this.onAddCategory,
-    required this.l10n, 
+    required this.l10n,
   });
 
   @override
@@ -240,10 +271,20 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   Color _selectedColor = Colors.blue;
 
   final List<Color> _colorPalette = [
-    Colors.blue, Colors.green, Colors.orange, Colors.red,
-    Colors.purple, Colors.pink, Colors.teal, Colors.cyan,
-    Colors.amber, Colors.indigo, Colors.lime, Colors.deepOrange,
-    Colors.brown, Colors.blueGrey, Colors.deepPurple,
+    Colors.blue,
+    Colors.green,
+    Colors.orange,
+    Colors.red,
+    Colors.purple,
+    Colors.pink,
+    Colors.teal,
+    Colors.cyan,
+    Colors.amber,
+    Colors.indigo,
+    Colors.lime,
+    Colors.deepOrange,
+    Colors.brown,
+    Colors.deepPurple,
   ];
 
   @override
@@ -255,7 +296,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.l10n.newCategory), 
+      title: Text(widget.l10n.newCategory),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -264,7 +305,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: widget.l10n.categoryName, 
+                hintText: widget.l10n.categoryName,
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.category),
               ),
@@ -273,46 +314,17 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             ),
             const SizedBox(height: 16),
             Text(
-              widget.l10n.chooseColor, 
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
+              widget.l10n.chooseColor,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _colorPalette.map((color) {
-                final isSelected = _selectedColor == color;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedColor = color),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Colors.black : Colors.grey.shade300,
-                        width: isSelected ? 3 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: color.withOpacity(0.5),
-                                blurRadius: 8,
-                                spreadRadius: 2,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: isSelected
-                        ? const Icon(Icons.check, color: Colors.white, size: 24)
-                        : null,
-                  ),
-                );
-              }).toList(),
+              children: [
+                ..._colorPalette.map((color) => _buildColorOption(color)),
+                _buildCustomColorButton(),
+              ],
             ),
             const SizedBox(height: 16),
             Container(
@@ -336,7 +348,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   Expanded(
                     child: Text(
                       _controller.text.isEmpty
-                          ? widget.l10n.categoryPreview 
+                          ? widget.l10n.categoryPreview
                           : _controller.text,
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
@@ -353,11 +365,11 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: Text(widget.l10n.cancel), 
+          child: Text(widget.l10n.cancel),
         ),
         FilledButton(
           onPressed: _handleAddCategory,
-          child: Text(widget.l10n.add), 
+          child: Text(widget.l10n.add),
         ),
       ],
     );
@@ -365,21 +377,21 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
   void _handleAddCategory() {
     final name = _controller.text.trim();
-    
+
     if (!AppConstants.isValidCategoryName(name)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.l10n.invalidCategoryName), 
+          content: Text(widget.l10n.invalidCategoryName),
           backgroundColor: AppConstants.errorColor,
         ),
       );
       return;
     }
-    
+
     if (widget.categories.contains(name)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.l10n.categoryExists), 
+          content: Text(widget.l10n.categoryExists),
           backgroundColor: AppConstants.errorColor,
         ),
       );
@@ -388,5 +400,103 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
     Navigator.pop(context);
     widget.onAddCategory(name, _selectedColor);
+  }
+
+  Widget _buildColorOption(Color color) {
+    final isSelected = _selectedColor.value == color.value;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedColor = color),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected ? Colors.black : Colors.grey.shade300,
+            width: isSelected ? 3 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withOpacity(0.5),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
+        child: isSelected
+            ? const Icon(Icons.check, color: Colors.white, size: 24)
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildCustomColorButton() {
+    // Check if current selected color is NOT in the predefined palette
+    // But be careful: predefined palette contains Colors.blue which might be same value as default.
+    // We compare value.
+    // If selected color matches one of the palette colors, this button is NOT selected (unless it's the exact same custom value, but UI-wise we treat it as standard).
+    // Actually, simply: if _selectedColor is NOT in _colorPalette, then it's custom.
+    final isCustomSelected = !_colorPalette.any(
+      (c) => c.value == _selectedColor.value,
+    );
+
+    return GestureDetector(
+      onTap: _showColorPicker,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: isCustomSelected ? _selectedColor : Colors.grey[200],
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isCustomSelected ? Colors.black : Colors.grey.shade300,
+            width: isCustomSelected ? 3 : 1,
+          ),
+          boxShadow: isCustomSelected
+              ? [
+                  BoxShadow(
+                    color: _selectedColor.withOpacity(0.5),
+                    blurRadius: 8,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
+        ),
+        child: isCustomSelected
+            ? const Icon(Icons.check, color: Colors.white, size: 24)
+            : Icon(Icons.add, color: Colors.grey[600], size: 24),
+      ),
+    );
+  }
+
+  void _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Color Personalizado'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: _selectedColor,
+            onColorChanged: (color) {
+              setState(() => _selectedColor = color);
+            },
+            showLabel: false,
+            pickerAreaHeightPercent: 0.7,
+            enableAlpha: false,
+            displayThumbColor: true,
+            paletteType: PaletteType.hsvWithHue,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Listo'),
+          ),
+        ],
+      ),
+    );
   }
 }

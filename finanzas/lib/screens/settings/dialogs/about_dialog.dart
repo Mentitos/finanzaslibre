@@ -11,7 +11,11 @@ class AboutDialogWidget {
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.savings, color: Theme.of(context).primaryColor, size: 28),
+            Icon(
+              Icons.savings,
+              color: Theme.of(context).primaryColor,
+              size: 28,
+            ),
             const SizedBox(width: 12),
             Text(l10n.appName),
           ],
@@ -39,6 +43,8 @@ class AboutDialogWidget {
               _buildFeaturesSection(l10n),
               const SizedBox(height: 16),
               _buildDataStorageInfo(context, l10n),
+              const SizedBox(height: 16),
+              _buildWhatsNewSection(context),
             ],
           ),
         ),
@@ -52,7 +58,10 @@ class AboutDialogWidget {
     );
   }
 
-  static Widget _buildOpenSourceSection(BuildContext context, AppLocalizations l10n) {
+  static Widget _buildOpenSourceSection(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -61,10 +70,7 @@ class AboutDialogWidget {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        Text(
-          l10n.openSourceDescription,
-          style: const TextStyle(fontSize: 13),
-        ),
+        Text(l10n.openSourceDescription, style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 4),
         InkWell(
           onTap: () {
@@ -83,7 +89,10 @@ class AboutDialogWidget {
     );
   }
 
-  static Widget _buildSuggestionsSection(BuildContext context, AppLocalizations l10n) {
+  static Widget _buildSuggestionsSection(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -97,7 +106,8 @@ class AboutDialogWidget {
             final Uri emailLaunchUri = Uri(
               scheme: 'mailto',
               path: 'sugerenciasfinanzaslibre@gmail.com',
-              query: 'subject=Feedback FinanzasLibre&body=Hola, quisiera sugerir...',
+              query:
+                  'subject=Feedback FinanzasLibre&body=Hola, quisiera sugerir...',
             );
             await launchUrl(emailLaunchUri);
           },
@@ -118,17 +128,17 @@ class AboutDialogWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.creator,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        Text(l10n.creator, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         const Text('Matias Gabriel Tello'),
       ],
     );
   }
 
-  static Widget _buildSupportSection(BuildContext context, AppLocalizations l10n) {
+  static Widget _buildSupportSection(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -193,8 +203,11 @@ class AboutDialogWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.account_balance_wallet,
-                color: Colors.purple[700], size: 18),
+            Icon(
+              Icons.account_balance_wallet,
+              color: Colors.purple[700],
+              size: 18,
+            ),
             const SizedBox(width: 8),
             const Text(
               'MATIASTELLO54.UALA',
@@ -216,7 +229,9 @@ class AboutDialogWidget {
     return InkWell(
       onTap: () async {
         try {
-          final url = Uri.parse('https://www.paypal.com/paypalme/matiasgabrieltello');
+          final url = Uri.parse(
+            'https://www.paypal.com/paypalme/matiasgabrieltello',
+          );
           await launchUrl(url, mode: LaunchMode.externalApplication);
         } catch (e) {
           if (context.mounted) {
@@ -269,7 +284,10 @@ class AboutDialogWidget {
     );
   }
 
-  static Widget _buildDataStorageInfo(BuildContext context, AppLocalizations l10n) {
+  static Widget _buildDataStorageInfo(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -289,6 +307,33 @@ class AboutDialogWidget {
           ),
         ],
       ),
+    );
+  }
+
+  static Widget _buildWhatsNewSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Novedades v1.2.4',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 8),
+        _buildFeatureItem('Nuevas paletas de colores personalizables'),
+        _buildFeatureItem('Mejoras de calidad de vida'),
+        _buildFeatureItem('Corrección de errores menores'),
+        const SizedBox(height: 12),
+        Center(
+          child: Text(
+            'Gracias Morena por esta actualización ❤️',
+            style: TextStyle(
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+              color: Theme.of(context).primaryColor,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
