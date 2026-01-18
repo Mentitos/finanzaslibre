@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
-import '../l10n/app_localizations.dart';
 
 class UpdateService {
   static final UpdateService _instance = UpdateService._internal();
@@ -206,7 +205,6 @@ class UpdateService {
   }
 
   void showUpdateDialog(BuildContext context, UpdateInfo info) {
-    final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).languageCode;
     final releaseNotes = locale == 'es'
         ? info.releaseNotesEs
@@ -215,8 +213,8 @@ class UpdateService {
     showDialog(
       context: context,
       barrierDismissible: !info.isMandatory,
-      builder: (context) => WillPopScope(
-        onWillPop: () async => !info.isMandatory,
+      builder: (context) => PopScope(
+        canPop: !info.isMandatory,
         child: AlertDialog(
           title: Row(
             children: [

@@ -154,8 +154,6 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
   }
 
   Future<void> _selectBackupTime() async {
-    final l10n = AppLocalizations.of(context)!;
-
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _autoBackupTime,

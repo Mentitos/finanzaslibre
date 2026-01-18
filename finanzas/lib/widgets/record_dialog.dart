@@ -19,11 +19,11 @@ class SignedThousandsSeparatorInputFormatter extends TextInputFormatter {
     }
 
     String text = newValue.text.replaceAll('.', '');
-    
+
     if (!RegExp(r'^-?\d*$').hasMatch(text)) {
       return oldValue;
     }
-    
+
     bool isNegative = text.startsWith('-');
     String numericText = isNegative ? text.substring(1) : text;
 
@@ -35,7 +35,7 @@ class SignedThousandsSeparatorInputFormatter extends TextInputFormatter {
     if (isNegative) {
       formatted = '-$formatted';
     }
-    
+
     return newValue.copyWith(
       text: formatted,
       selection: TextSelection.collapsed(offset: formatted.length),
@@ -44,17 +44,17 @@ class SignedThousandsSeparatorInputFormatter extends TextInputFormatter {
 
   String _formatWithThousands(String text) {
     if (text.isEmpty) return text;
-    
+
     String reversed = text.split('').reversed.join();
     String formatted = '';
-    
+
     for (int i = 0; i < reversed.length; i++) {
       if (i > 0 && i % 3 == 0) {
         formatted += '.';
       }
       formatted += reversed[i];
     }
-    
+
     return formatted.split('').reversed.join();
   }
 }
@@ -69,22 +69,28 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    
     String text = newValue.text.replaceAll('.', '');
-    
-    
+
     if (!RegExp(r'^\d+$').hasMatch(text)) {
       return oldValue;
     }
 
-    
     String formatted = _formatWithThousands(text);
-    
-    
+
     int selectionIndex = newValue.selection.end;
-    int oldDots = oldValue.text.substring(0, oldValue.selection.end).split('.').length - 1;
-    int newDots = formatted.substring(0, selectionIndex + (formatted.split('.').length - 1 - oldDots)).split('.').length - 1;
-    
+    int oldDots =
+        oldValue.text.substring(0, oldValue.selection.end).split('.').length -
+        1;
+    int newDots =
+        formatted
+            .substring(
+              0,
+              selectionIndex + (formatted.split('.').length - 1 - oldDots),
+            )
+            .split('.')
+            .length -
+        1;
+
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(
@@ -95,19 +101,17 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
 
   String _formatWithThousands(String text) {
     if (text.isEmpty) return text;
-    
-    
+
     String reversed = text.split('').reversed.join();
     String formatted = '';
-    
+
     for (int i = 0; i < reversed.length; i++) {
       if (i > 0 && i % 3 == 0) {
         formatted += '.';
       }
       formatted += reversed[i];
     }
-    
-    
+
     return formatted.split('').reversed.join();
   }
 }
@@ -171,11 +175,30 @@ class _RecordDialogState extends State<RecordDialog> {
 
       if (_selectedType == RecordType.adjustment) {
         // If editing an adjustment, show the stored deltas
-        _physicalController.text = record.physicalAmount != 0 ? SignedThousandsSeparatorInputFormatter().formatEditUpdate(TextEditingValue.empty, TextEditingValue(text: record.physicalAmount.toStringAsFixed(0))).text : '';
-        _digitalController.text = record.digitalAmount != 0 ? SignedThousandsSeparatorInputFormatter().formatEditUpdate(TextEditingValue.empty, TextEditingValue(text: record.digitalAmount.toStringAsFixed(0))).text : '';
+        _physicalController.text = record.physicalAmount != 0
+            ? SignedThousandsSeparatorInputFormatter()
+                  .formatEditUpdate(
+                    TextEditingValue.empty,
+                    TextEditingValue(
+                      text: record.physicalAmount.toStringAsFixed(0),
+                    ),
+                  )
+                  .text
+            : '';
+        _digitalController.text = record.digitalAmount != 0
+            ? SignedThousandsSeparatorInputFormatter()
+                  .formatEditUpdate(
+                    TextEditingValue.empty,
+                    TextEditingValue(
+                      text: record.digitalAmount.toStringAsFixed(0),
+                    ),
+                  )
+                  .text
+            : '';
       }
     } else {
-      _selectedCategory = widget.initialCategory ??
+      _selectedCategory =
+          widget.initialCategory ??
           (widget.categories.isNotEmpty ? widget.categories.first : 'General');
     }
   }
@@ -186,16 +209,20 @@ class _RecordDialogState extends State<RecordDialog> {
       _selectedType = newType;
       if (newType == RecordType.adjustment && !_isEditing) {
         _physicalController.text = widget.currentPhysicalBalance != null
-            ? _formatNumberWithDots(widget.currentPhysicalBalance!.toStringAsFixed(0))
+            ? _formatNumberWithDots(
+                widget.currentPhysicalBalance!.toStringAsFixed(0),
+              )
             : '';
         _digitalController.text = widget.currentDigitalBalance != null
-            ? _formatNumberWithDots(widget.currentDigitalBalance!.toStringAsFixed(0))
+            ? _formatNumberWithDots(
+                widget.currentDigitalBalance!.toStringAsFixed(0),
+              )
             : '';
         _descriptionController.text = l10n.adjustment;
       } else if (newType != RecordType.adjustment) {
         _physicalController.clear();
         _digitalController.clear();
-        if(_descriptionController.text == l10n.adjustment) {
+        if (_descriptionController.text == l10n.adjustment) {
           _descriptionController.clear();
         }
       }
@@ -206,14 +233,14 @@ class _RecordDialogState extends State<RecordDialog> {
     if (number.isEmpty) return number;
     String reversed = number.split('').reversed.join();
     String formatted = '';
-    
+
     for (int i = 0; i < reversed.length; i++) {
       if (i > 0 && i % 3 == 0) {
         formatted += '.';
       }
       formatted += reversed[i];
     }
-    
+
     return formatted.split('').reversed.join();
   }
 
@@ -229,7 +256,7 @@ class _RecordDialogState extends State<RecordDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
@@ -267,484 +294,477 @@ class _RecordDialogState extends State<RecordDialog> {
       ),
     );
   }
-//wawa
-    Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-  
-      Color headerColor;
-      IconData headerIcon;
-      Color iconColor;
-  
-      switch (_selectedType) {
-        case RecordType.deposit:
-          headerColor = Colors.green;
-          headerIcon = _isEditing ? Icons.edit : Icons.add_circle;
-          break;
-        case RecordType.withdrawal:
-          headerColor = Colors.red;
-          headerIcon = _isEditing ? Icons.edit : Icons.remove_circle;
-          break;
-        case RecordType.adjustment:
-          headerColor = Colors.blue;
-          headerIcon = _isEditing ? Icons.edit : Icons.sync_alt;
-          break;
-      }
-      iconColor = headerColor;
-  
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: headerColor.withOpacity(0.1),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+
+  //wawa
+  Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
+    Color headerColor;
+    IconData headerIcon;
+    Color iconColor;
+
+    switch (_selectedType) {
+      case RecordType.deposit:
+        headerColor = Colors.green;
+        headerIcon = _isEditing ? Icons.edit : Icons.add_circle;
+        break;
+      case RecordType.withdrawal:
+        headerColor = Colors.red;
+        headerIcon = _isEditing ? Icons.edit : Icons.remove_circle;
+        break;
+      case RecordType.adjustment:
+        headerColor = Colors.blue;
+        headerIcon = _isEditing ? Icons.edit : Icons.sync_alt;
+        break;
+    }
+    iconColor = headerColor;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: headerColor.withOpacity(0.1),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
-        child: Row(
-          children: [
-            Icon(
-              headerIcon,
-              color: iconColor,
-              size: 28,
+      ),
+      child: Row(
+        children: [
+          Icon(headerIcon, color: iconColor, size: 28),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              _isEditing ? l10n.editRecord : l10n.newRecord,
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(width: 12),
+          ),
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.close),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypeSelector(BuildContext context, AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.operationType,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
             Expanded(
-              child: Text(
-                _isEditing ? l10n.editRecord : l10n.newRecord,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+              child: _buildTypeOption(
+                context,
+                RecordType.deposit,
+                l10n.depositUpper,
+                Icons.add_circle_outline,
+                Colors.green,
               ),
             ),
-            IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.close),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildTypeOption(
+                context,
+                RecordType.withdrawal,
+                l10n.withdrawalUpper,
+                Icons.remove_circle_outline,
+                Colors.red,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildTypeOption(
+                context,
+                RecordType.adjustment,
+                l10n.adjustmentUpper,
+                Icons.sync_alt,
+                Colors.blue,
+              ),
             ),
           ],
         ),
-      );
-    }
-  
-    Widget _buildTypeSelector(BuildContext context, AppLocalizations l10n) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.operationType,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildTypeOption(
-                  context,
-                  RecordType.deposit,
-                  l10n.depositUpper,
-                  Icons.add_circle_outline,
-                  Colors.green,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildTypeOption(
-                  context,
-                  RecordType.withdrawal,
-                  l10n.withdrawalUpper,
-                  Icons.remove_circle_outline,
-                  Colors.red,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildTypeOption(
-                  context,
-                  RecordType.adjustment,
-                  l10n.adjustmentUpper,
-                  Icons.sync_alt,
-                  Colors.blue,
-                ),
-              ),
-            ],
-          ),
-        ],
-      );
-    }
-  
-    Widget _buildTypeOption(
-      BuildContext context,
-      RecordType type,
-      String label,
-      IconData icon,
-      Color color,
-    ) {
-      final isSelected = _selectedType == type;
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      final unselectedBg = isDark ? Colors.grey[800] : Colors.grey[100];
-      final unselectedBorder = isDark ? Colors.grey[700] : Colors.grey[300];
-      final unselectedColor = isDark ? Colors.grey[400] : Colors.grey[600];
-  
-      return GestureDetector(
-        onTap: () => _onTypeChanged(type),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? color : unselectedBg,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? color : unselectedBorder!,
-              width: isSelected ? 2 : 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? Colors.white : unselectedColor,
-                size: 28,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isSelected ? Colors.white : unselectedColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-  
-    Widget _buildAmountSection(BuildContext context, AppLocalizations l10n) {
-      final textColor = Theme.of(context).textTheme.bodyLarge?.color;
-      final isAdjustment = _selectedType == RecordType.adjustment;
-  
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            isAdjustment ? l10n.newBalance : l10n.amounts,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-          ),
-          const SizedBox(height: 12),
-          _buildAmountField(
-            context,
-            l10n,
-            controller: _physicalController,
-            label: l10n.physicalMoney,
-            icon: Icons.account_balance_wallet,
-            color: Colors.blue,
-          ),
-          const SizedBox(height: 16),
-          _buildAmountField(
-            context,
-            l10n,
-            controller: _digitalController,
-            label: l10n.digitalMoney,
-            icon: Icons.credit_card,
-            color: Colors.purple,
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.blue.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    isAdjustment
-                        ? l10n.adjustmentInfo
-                        : l10n.enterAtLeastOneAmount,
-                    style: TextStyle(fontSize: 12, color: textColor),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      );
-    }
-  
-    Widget _buildAmountField(
-      BuildContext context,
-      AppLocalizations l10n, {
-      required TextEditingController controller,
-      required String label,
-      required IconData icon,
-      required Color color,
-    }) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      final borderColor = isDark ? Colors.grey[700] : Colors.grey[300];
-      final isAdjustment = _selectedType == RecordType.adjustment;
+      ],
+    );
+  }
 
-      return Container(
+  Widget _buildTypeOption(
+    BuildContext context,
+    RecordType type,
+    String label,
+    IconData icon,
+    Color color,
+  ) {
+    final isSelected = _selectedType == type;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedBg = isDark ? Colors.grey[800] : Colors.grey[100];
+    final unselectedBorder = isDark ? Colors.grey[700] : Colors.grey[300];
+    final unselectedColor = isDark ? Colors.grey[400] : Colors.grey[600];
+
+    return GestureDetector(
+      onTap: () => _onTypeChanged(type),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
+          color: isSelected ? color : unselectedBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: controller.text.isNotEmpty ? color : borderColor!,
-            width: controller.text.isNotEmpty ? 2 : 1,
+            color: isSelected ? color : unselectedBorder!,
+            width: isSelected ? 2 : 1,
           ),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Row(
-                children: [
-                  Icon(icon, color: color, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: color,
-                    ),
-                  ),
-                ],
-              ),
+            Icon(
+              icon,
+              color: isSelected ? Colors.white : unselectedColor,
+              size: 28,
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    '\$',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: controller.text.isEmpty
-                          ? (isDark ? Colors.grey[600] : Colors.grey[400])
-                          : color,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      controller: controller,
-                      decoration: InputDecoration(
-                        hintText: '0',
-                        hintStyle: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.grey[700] : Colors.grey[300],
-                        ),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: EdgeInsets.zero,
-                      ),
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                      keyboardType: isAdjustment 
-                          ? const TextInputType.numberWithOptions(signed: true) 
-                          : TextInputType.number,
-                      inputFormatters: [
-                        isAdjustment
-                          ? SignedThousandsSeparatorInputFormatter()
-                          : ThousandsSeparatorInputFormatter(),
-                        LengthLimitingTextInputFormatter(16),
-                      ],
-                      validator: (value) {
-                        if (_selectedType != RecordType.adjustment) {
-                          final physicalClean = _physicalController.text.replaceAll('.', '');
-                          final digitalClean = _digitalController.text.replaceAll('.', '');
-                          final physical = double.tryParse(physicalClean) ?? 0;
-                          final digital = double.tryParse(digitalClean) ?? 0;
-                          if (physical == 0 && digital == 0) return '';
-                        }
-                        return null;
-                      },
-                      onChanged: (value) => setState(() {}),
-                    ),
-                  ),
-                  if (controller.text.isNotEmpty)
-                    IconButton(
-                      icon: Icon(Icons.clear, color: color, size: 20),
-                      onPressed: () => setState(() => controller.clear()),
-                    ),
-                ],
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : unselectedColor,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
-      );
-    }
-  
-    Widget _buildCategorySelector(BuildContext context, AppLocalizations l10n) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      
-      return DropdownButtonFormField<String>(
-        value: _selectedCategory,
-        decoration: InputDecoration(
-          labelText: l10n.category,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          prefixIcon: const Icon(Icons.category),
-          filled: true,
-          fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
+      ),
+    );
+  }
+
+  Widget _buildAmountSection(BuildContext context, AppLocalizations l10n) {
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final isAdjustment = _selectedType == RecordType.adjustment;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          isAdjustment ? l10n.newBalance : l10n.amounts,
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
-        items: widget.categories.map((category) {
-          return DropdownMenuItem(
-            value: category,
+        const SizedBox(height: 12),
+        _buildAmountField(
+          context,
+          l10n,
+          controller: _physicalController,
+          label: l10n.physicalMoney,
+          icon: Icons.account_balance_wallet,
+          color: Colors.blue,
+        ),
+        const SizedBox(height: 16),
+        _buildAmountField(
+          context,
+          l10n,
+          controller: _digitalController,
+          label: l10n.digitalMoney,
+          icon: Icons.credit_card,
+          color: Colors.purple,
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isAdjustment
+                      ? l10n.adjustmentInfo
+                      : l10n.enterAtLeastOneAmount,
+                  style: TextStyle(fontSize: 12, color: textColor),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAmountField(
+    BuildContext context,
+    AppLocalizations l10n, {
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required Color color,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark ? Colors.grey[700] : Colors.grey[300];
+    final isAdjustment = _selectedType == RecordType.adjustment;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: controller.text.isNotEmpty ? color : borderColor!,
+          width: controller.text.isNotEmpty ? 2 : 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Row(
               children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: _getCategoryColor(category),
-                    shape: BoxShape.circle,
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '\$',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: controller.text.isEmpty
+                        ? (isDark ? Colors.grey[600] : Colors.grey[400])
+                        : color,
                   ),
                 ),
                 const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.translateCategory(category))
-  
+                Expanded(
+                  child: TextFormField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      hintText: '0',
+                      hintStyle: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.grey[700] : Colors.grey[300],
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                    keyboardType: isAdjustment
+                        ? const TextInputType.numberWithOptions(signed: true)
+                        : TextInputType.number,
+                    inputFormatters: [
+                      isAdjustment
+                          ? SignedThousandsSeparatorInputFormatter()
+                          : ThousandsSeparatorInputFormatter(),
+                      LengthLimitingTextInputFormatter(16),
+                    ],
+                    validator: (value) {
+                      if (_selectedType != RecordType.adjustment) {
+                        final physicalClean = _physicalController.text
+                            .replaceAll('.', '');
+                        final digitalClean = _digitalController.text.replaceAll(
+                          '.',
+                          '',
+                        );
+                        final physical = double.tryParse(physicalClean) ?? 0;
+                        final digital = double.tryParse(digitalClean) ?? 0;
+                        if (physical == 0 && digital == 0) return '';
+                      }
+                      return null;
+                    },
+                    onChanged: (value) => setState(() {}),
+                  ),
+                ),
+                if (controller.text.isNotEmpty)
+                  IconButton(
+                    icon: Icon(Icons.clear, color: color, size: 20),
+                    onPressed: () => setState(() => controller.clear()),
+                  ),
               ],
             ),
-          );
-        }).toList(),
-        onChanged: (value) => setState(() => _selectedCategory = value!),
-        validator: (value) => value == null ? l10n.selectCategory : null,
-      );
-    }
-  
-    Widget _buildDescriptionInput(BuildContext context, AppLocalizations l10n) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      
-      return TextFormField(
-        controller: _descriptionController,
-        decoration: InputDecoration(
-          labelText: l10n.description,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
           ),
-          prefixIcon: const Icon(Icons.description),
-          hintText: l10n.descriptionHintRecord,
-          filled: true,
-          fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
-        ),
-        maxLines: 2,
-        maxLength: 100,
-        textCapitalization: TextCapitalization.sentences,
-      );
-    }
-  
-    Widget _buildNotesInput(BuildContext context, AppLocalizations l10n) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      
-      return TextFormField(
-        controller: _notesController,
-        decoration: InputDecoration(
-          labelText: l10n.additionalNotes,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          prefixIcon: const Icon(Icons.note_add),
-          hintText: l10n.additionalNotesHint,
-          filled: true,
-          fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
-        ),
-        maxLines: 3,
-        maxLength: 200,
-        textCapitalization: TextCapitalization.sentences,
-      );
-    }
-  
-    Widget _buildActionButtons(BuildContext context, AppLocalizations l10n) {
-      final isDark = Theme.of(context).brightness == Brightness.dark;
-      Color buttonColor;
-      switch (_selectedType) {
-        case RecordType.deposit:
-          buttonColor = Colors.green;
-          break;
-        case RecordType.withdrawal:
-          buttonColor = Colors.red;
-          break;
-        case RecordType.adjustment:
-          buttonColor = Colors.blue;
-          break;
-      }
-  
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.grey[900] : Colors.grey[50],
-          borderRadius: const BorderRadius.only(
-            bottomLeft: Radius.circular(20),
-            bottomRight: Radius.circular(20),
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _isLoading ? null : () => Navigator.pop(context),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategorySelector(BuildContext context, AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return DropdownButtonFormField<String>(
+      value: _selectedCategory,
+      decoration: InputDecoration(
+        labelText: l10n.category,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: const Icon(Icons.category),
+        filled: true,
+        fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
+      ),
+      items: widget.categories.map((category) {
+        return DropdownMenuItem(
+          value: category,
+          child: Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: _getCategoryColor(category),
+                  shape: BoxShape.circle,
                 ),
-                child: Text(l10n.cancel),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 2,
-              child: FilledButton(
-                onPressed: _isLoading ? null : () => _saveRecord(l10n),
-                style: FilledButton.styleFrom(
-                  backgroundColor: buttonColor,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              const SizedBox(width: 8),
+              Text(AppLocalizations.of(context)!.translateCategory(category)),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (value) => setState(() => _selectedCategory = value!),
+      validator: (value) => value == null ? l10n.selectCategory : null,
+    );
+  }
+
+  Widget _buildDescriptionInput(BuildContext context, AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return TextFormField(
+      controller: _descriptionController,
+      decoration: InputDecoration(
+        labelText: l10n.description,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: const Icon(Icons.description),
+        hintText: l10n.descriptionHintRecord,
+        filled: true,
+        fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
+      ),
+      maxLines: 2,
+      maxLength: 100,
+      textCapitalization: TextCapitalization.sentences,
+    );
+  }
+
+  Widget _buildNotesInput(BuildContext context, AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return TextFormField(
+      controller: _notesController,
+      decoration: InputDecoration(
+        labelText: l10n.additionalNotes,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: const Icon(Icons.note_add),
+        hintText: l10n.additionalNotesHint,
+        filled: true,
+        fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
+      ),
+      maxLines: 3,
+      maxLength: 200,
+      textCapitalization: TextCapitalization.sentences,
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context, AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    Color buttonColor;
+    switch (_selectedType) {
+      case RecordType.deposit:
+        buttonColor = Colors.green;
+        break;
+      case RecordType.withdrawal:
+        buttonColor = Colors.red;
+        break;
+      case RecordType.adjustment:
+        buttonColor = Colors.blue;
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[900] : Colors.grey[50],
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+              onPressed: _isLoading ? null : () => Navigator.pop(context),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Text(
-                        _isEditing ? l10n.update : l10n.save,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
+              ),
+              child: Text(l10n.cancel),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 2,
+            child: FilledButton(
+              onPressed: _isLoading ? null : () => _saveRecord(l10n),
+              style: FilledButton.styleFrom(
+                backgroundColor: buttonColor,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
                       ),
-              ),
+                    )
+                  : Text(
+                      _isEditing ? l10n.update : l10n.save,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
-          ],
-        ),
-      );
-    }
+          ),
+        ],
+      ),
+    );
+  }
+
   void _saveRecord(AppLocalizations l10n) async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(

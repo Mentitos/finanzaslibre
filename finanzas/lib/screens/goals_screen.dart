@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import '../../models/savings_goal_model.dart';
 import '../../services/savings_data_manager.dart';
 import '../../utils/formatters.dart';
-import '../../constants/app_constants.dart';
+
 import '../../l10n/app_localizations.dart';
 import 'dialogs/goal_dialog.dart';
 import '../../widgets/goal_card.dart';
@@ -629,8 +629,6 @@ class _GoalsScreenState extends State<GoalsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Column(
       children: [
         Container(
