@@ -53,7 +53,6 @@ class RecordItem extends StatelessWidget {
             '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
         break;
       case RecordType.adjustment:
-        // This case will not be reached due to the logic above, but kept for safety.
         transactionColor = Colors.blue;
         icon = Icons.sync_alt;
         amountText = Formatters.formatCurrencyWithSign(record.totalAmount);
@@ -173,7 +172,7 @@ class RecordItem extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   SizedBox(
-                    width: 100, // Fixed width to force marquee if needed
+                    width: 100,
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: MarqueeWidget(
@@ -293,7 +292,6 @@ class RecentRecordItem extends StatelessWidget {
             '-\$${Formatters.formatCurrency(record.totalAmount.abs())}';
         break;
       case RecordType.adjustment:
-        // This case will not be reached
         transactionColor = Colors.blue;
         icon = Icons.sync_alt;
         amountText = Formatters.formatCurrencyWithSign(record.totalAmount);
@@ -353,7 +351,7 @@ class RecentRecordItem extends StatelessWidget {
         ],
       ),
       trailing: SizedBox(
-        width: 100, // Constrain width for marquee
+        width: 100,
         child: Align(
           alignment: Alignment.centerRight,
           child: MarqueeWidget(

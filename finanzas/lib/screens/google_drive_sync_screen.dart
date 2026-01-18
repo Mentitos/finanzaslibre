@@ -466,7 +466,6 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
             const SizedBox(height: 24),
           ],
 
-          // Sección de backups manuales
           Row(
             children: [
               Icon(Icons.touch_app, color: Colors.green[700], size: 20),

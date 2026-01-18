@@ -295,7 +295,6 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  //wawa
   Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     Color headerColor;
     IconData headerIcon;

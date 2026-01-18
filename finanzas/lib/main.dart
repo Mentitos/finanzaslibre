@@ -172,8 +172,6 @@ class _MyAppState extends State<MyApp> {
         brightness: Brightness.light,
       ).copyWith(primary: palette.seedColor),
       appBarTheme: AppBarTheme(
-        // Green is the exception: it uses inversePrimary (Pastel).
-        // All others (Custom/Pink) use seedColor (Solid).
         backgroundColor: palette.id == 'green'
             ? ColorScheme.fromSeed(seedColor: palette.seedColor).inversePrimary
             : palette.seedColor,

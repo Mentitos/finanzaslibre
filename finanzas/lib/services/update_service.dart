@@ -379,7 +379,6 @@ class UpdateService {
                 Navigator.pop(context);
                 await _downloadUpdate(info.downloadUrl);
 
-                // Guardar que se conoce la actualización
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setString(
                   _lastUpdateDateKey,

@@ -18,26 +18,21 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    // Smart delete: If the user deleted a dot, we should delete the number before it
-    // Check if a character was deleted but the digits remain the same (meaning a separator was deleted)
     if (oldValue.text.length > newValue.text.length) {
       final String cleanOld = oldValue.text.replaceAll('.', '');
       final String cleanNew = newValue.text.replaceAll('.', '');
 
       if (cleanOld == cleanNew) {
-        // A separator was deleted. We should manually delete the digit before the selection.
         if (newValue.selection.baseOffset > 0) {
           final int deleteIndex = newValue.selection.baseOffset - 1;
           final String newTextRaw = newValue.text;
-          // Build new string removing the digit before the cursor
+
           final String newTextProcessed =
               newTextRaw.substring(0, deleteIndex) +
               newTextRaw.substring(deleteIndex + 1);
 
-          // Manually format and map cursor
           String formatted = _formatWithThousands(newTextProcessed);
 
-          // Map the raw cursor (deleteIndex) to the formatted string
           int formattedCursor = 0;
           int digitCount = 0;
           for (int i = 0; i < formatted.length; i++) {
@@ -68,7 +63,6 @@ class ThousandsSeparatorInputFormatter extends TextInputFormatter {
 
     int selectionIndex = newValue.selection.end;
 
-    // Iteratively calculate new cursor position based on digit count
     int newOffset = 0;
     int currentDigits = 0;
     for (int i = 0; i < formatted.length; i++) {
@@ -190,37 +184,16 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
         ? _depositLastSelection
         : _withdrawalLastSelection;
 
-    // Update last selection immediately to prevent infinite loops if we change it
     if (isDeposit) {
       _depositLastSelection = currentOffset;
     } else {
       _withdrawalLastSelection = currentOffset;
     }
 
-    // Check if cursor is after a dot
     if (currentOffset > 0 &&
         currentOffset <= text.length &&
         text[currentOffset - 1] == '.') {
-      // Determine direction or click
       if (currentOffset > lastOffset) {
-        // Moving Right: Skip dot to the right (move to next digit)
-        // Check if there is a next digit? Usually yes if not at end.
-        // If at end: 123. -> impossible for currency, usually 1.234
-        // If 1.234, cursor at 2 (after .). Move to 2.
-        // Actually, we are AT 2. We want to be at 2?
-        // Wait, if I am at 1.|234 (index 2).
-        // I want to be at 1.2|34 (index 3)? No, that skips the 2.
-        // I want to be validly placed.
-        // If dot is untouchable, I cannot be adjacent to it?
-        // Let's force cursor to "Left of Dot" if landing on "Right of Dot" by click?
-        // And "Skip over" if navigating.
-
-        // Simpler heuristic: "Never stop immediately after a dot".
-        // If we landed after a dot, keep moving right?
-        // 1.|234 -> Move to 1.2|34 ? No.
-        // The user wants dot to be "aesthetic".
-        // It effectively binds to the left digit. 1.
-        // If I move right from 1, I should see 2.
         // 1 -> 1.2 (visual skip).
 
         // If I am at 2 (1.|2), I am technically at "Start of 2".

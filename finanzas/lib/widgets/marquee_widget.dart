@@ -39,7 +39,6 @@ class _MarqueeWidgetState extends State<MarqueeWidget> {
   void _startScrolling() async {
     if (!mounted) return;
 
-    // Check if scrolling is needed
     if (_scrollController.hasClients &&
         _scrollController.position.maxScrollExtent > 0) {
       await Future.delayed(widget.pauseDuration);
@@ -52,7 +51,6 @@ class _MarqueeWidgetState extends State<MarqueeWidget> {
           curve: Curves.linear,
         );
       } catch (e) {
-        // Ignore animation errors (e.g. widget disposed)
         return;
       }
 
@@ -61,18 +59,6 @@ class _MarqueeWidgetState extends State<MarqueeWidget> {
       if (!mounted) return;
 
       try {
-        // Snap back or scroll back? User said "carousel", usually means wrapping.
-        // But implementing seamless wrapping manually is hard.
-        // A simple "scroll to end, pause, jump/scroll to start" is robust.
-        // "start spinning ... right to left"
-
-        // Let's just jump back instantly and loop, usually cleaner for stock-ticker style?
-        // Or scroll back?
-        // User said "girar tipo carrusel" (rotate like carousel). Use infinite loop logic?
-        // Infinite loop requires duplicating the widget.
-
-        // Let's stick to simple "AutoScroll" first: Start -> End -> Start.
-        // Re-starting:
         _scrollController.jumpTo(0);
         _startScrolling();
       } catch (e) {
@@ -86,7 +72,7 @@ class _MarqueeWidgetState extends State<MarqueeWidget> {
     return SingleChildScrollView(
       controller: _scrollController,
       scrollDirection: widget.direction,
-      physics: const NeverScrollableScrollPhysics(), // User shouldn't touch it
+      physics: const NeverScrollableScrollPhysics(),
       child: widget.child,
     );
   }

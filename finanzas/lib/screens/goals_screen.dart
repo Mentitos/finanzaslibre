@@ -657,8 +657,7 @@ class _GoalsScreenState extends State<GoalsScreen>
                     final hsl = HSLColor.fromColor(widget.palette.seedColor);
                     final isLight =
                         Theme.of(context).brightness == Brightness.light;
-                    // Light Mode: Darken slightly (0.05)
-                    // Dark Mode: Lighten slightly (0.05)
+
                     final lightness = isLight
                         ? (hsl.lightness - 0.05).clamp(0.0, 1.0)
                         : (hsl.lightness + 0.05).clamp(0.0, 1.0);
