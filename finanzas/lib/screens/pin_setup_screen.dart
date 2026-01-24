@@ -5,12 +5,8 @@ import '../../l10n/app_localizations.dart';
 class PinSetupScreen extends StatefulWidget {
   final bool isChanging;
   final String? currentPin;
-  
-  const PinSetupScreen({
-    super.key,
-    this.isChanging = false,
-    this.currentPin,
-  });
+
+  const PinSetupScreen({super.key, this.isChanging = false, this.currentPin});
 
   @override
   State<PinSetupScreen> createState() => _PinSetupScreenState();
@@ -22,7 +18,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   bool _isConfirming = false;
   bool _isVerifyingCurrent = false;
   bool _biometricEnabled = false;
-  
+
   final LocalAuthentication _localAuth = LocalAuthentication();
   bool _canCheckBiometrics = false;
 
@@ -63,7 +59,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    
+
     return Scaffold(
       backgroundColor: Theme.of(context).cardColor,
       appBar: AppBar(
@@ -109,16 +105,13 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: bgColor,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
       child: Icon(
         _isVerifyingCurrent
             ? Icons.lock_outline
             : _isConfirming
-                ? Icons.lock_reset
-                : Icons.lock_open,
+            ? Icons.lock_reset
+            : Icons.lock_open,
         size: 64,
         color: primaryColor,
       ),
@@ -137,10 +130,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
 
     return Text(
       text,
-      style: const TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w500,
-      ),
+      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
       textAlign: TextAlign.center,
     );
   }
@@ -189,7 +179,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
           Switch(
             value: _biometricEnabled,
             onChanged: (value) => setState(() => _biometricEnabled = value),
-            activeColor: primaryColor,
+            activeThumbColor: primaryColor,
           ),
         ],
       ),
@@ -199,7 +189,9 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   Widget _buildPinDots() {
     final currentPin = _isConfirming ? _confirmPin : _pin;
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final inactiveColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.3);
+    final inactiveColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withOpacity(0.3);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -238,11 +230,11 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
         if (number.isEmpty) {
           return const SizedBox(width: 72, height: 72);
         }
-        
+
         if (number == 'delete') {
           return _buildDeleteButton();
         }
-        
+
         return _buildNumButton(number);
       }).toList(),
     );
@@ -261,10 +253,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: bgColor,
-          border: Border.all(
-            color: textColor,
-            width: 2,
-          ),
+          border: Border.all(color: textColor, width: 2),
         ),
         child: Center(
           child: Text(
@@ -292,11 +281,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
           color: Colors.red[50],
         ),
         child: const Center(
-          child: Icon(
-            Icons.backspace_outlined,
-            color: Colors.red,
-            size: 24,
-          ),
+          child: Icon(Icons.backspace_outlined, color: Colors.red, size: 24),
         ),
       ),
     );
@@ -330,7 +315,9 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   void _onDeletePressed() {
     if (_isConfirming) {
       if (_confirmPin.isNotEmpty) {
-        setState(() => _confirmPin = _confirmPin.substring(0, _confirmPin.length - 1));
+        setState(
+          () => _confirmPin = _confirmPin.substring(0, _confirmPin.length - 1),
+        );
       }
     } else {
       if (_pin.isNotEmpty) {

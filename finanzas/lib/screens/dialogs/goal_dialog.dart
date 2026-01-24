@@ -258,7 +258,7 @@ class _GoalDialogState extends State<GoalDialog> {
                   ),
                 ),
               );
-            }).toList(),
+            }),
             // Botón de + para emoji personalizado
             InkWell(
               onTap: _showCustomEmojiInput,

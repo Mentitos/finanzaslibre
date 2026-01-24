@@ -620,7 +620,7 @@ class _RecordDialogState extends State<RecordDialog> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DropdownButtonFormField<String>(
-      value: _selectedCategory,
+      initialValue: _selectedCategory,
       decoration: InputDecoration(
         labelText: l10n.category,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

@@ -5,13 +5,12 @@ import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
 
 class NotificationService {
-  
   static final NotificationService _instance = NotificationService._internal();
-  
+
   factory NotificationService() {
     return _instance;
   }
-  
+
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _notifications =
@@ -23,11 +22,13 @@ class NotificationService {
     if (_initialized) return;
 
     tz.initializeTimeZones();
-    
+
     final String timeZoneName = await _getDeviceTimeZone();
     tz.setLocalLocation(tz.getLocation(timeZoneName));
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const androidSettings = AndroidInitializationSettings(
+      '@mipmap/ic_launcher',
+    );
 
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -38,6 +39,15 @@ class NotificationService {
     const initSettings = InitializationSettings(
       android: androidSettings,
       iOS: iosSettings,
+      macOS: iosSettings,
+      linux: LinuxInitializationSettings(
+        defaultActionName: 'Open notification',
+      ),
+      windows: WindowsInitializationSettings(
+        appName: 'Mis Ahorros',
+        guid: '2c332145-6804-4537-b353-84c47b0a7401',
+        appUserModelId: 'com.tello.finanzas',
+      ),
     );
 
     await _notifications.initialize(
@@ -51,7 +61,7 @@ class NotificationService {
   Future<String> _getDeviceTimeZone() async {
     try {
       final String timeZoneName = DateTime.now().timeZoneName;
-      
+
       final Map<String, String> timeZoneMap = {
         'ART': 'America/Argentina/Buenos_Aires',
         'EST': 'America/New_York',
@@ -77,41 +87,53 @@ class NotificationService {
 
       return 'UTC';
     } catch (e) {
-      
       return 'America/Argentina/Buenos_Aires';
     }
   }
 
-  
   String getCurrentTimeZone() {
     return tz.local.name;
   }
 
-  
   void setTimeZone(String timeZoneName) {
     try {
       tz.setLocalLocation(tz.getLocation(timeZoneName));
-    } catch (e) {
-      
-    }
+    } catch (e) {}
   }
-
 
   List<Map<String, String>> getAvailableTimeZones() {
     return [
-      {'name': 'America/Argentina/Buenos_Aires', 'display': '🇦🇷 Argentina (GMT-3)'},
-      {'name': 'America/Mexico_City', 'display': '🇲🇽 México - CDMX (GMT-6/-5)'},
+      {
+        'name': 'America/Argentina/Buenos_Aires',
+        'display': '🇦🇷 Argentina (GMT-3)',
+      },
+      {
+        'name': 'America/Mexico_City',
+        'display': '🇲🇽 México - CDMX (GMT-6/-5)',
+      },
       {'name': 'America/Cancun', 'display': '🇲🇽 México - Cancún (GMT-5)'},
-      {'name': 'America/Tijuana', 'display': '🇲🇽 México - Tijuana (GMT-8/-7)'},
-      {'name': 'America/Sao_Paulo', 'display': '🇧🇷 Brasil - São Paulo (GMT-3/-2)'},
+      {
+        'name': 'America/Tijuana',
+        'display': '🇲🇽 México - Tijuana (GMT-8/-7)',
+      },
+      {
+        'name': 'America/Sao_Paulo',
+        'display': '🇧🇷 Brasil - São Paulo (GMT-3/-2)',
+      },
       {'name': 'America/Manaus', 'display': '🇧🇷 Brasil - Manaus (GMT-4)'},
       {'name': 'America/Bogota', 'display': '🇨🇴 Colombia (GMT-5)'},
       {'name': 'America/Lima', 'display': '🇵🇪 Perú (GMT-5)'},
       {'name': 'America/Santiago', 'display': '🇨🇱 Chile (GMT-4/-3)'},
       {'name': 'America/Caracas', 'display': '🇻🇪 Venezuela (GMT-4)'},
       {'name': 'America/Montevideo', 'display': '🇺🇾 Uruguay (GMT-3)'},
-      {'name': 'America/New_York', 'display': '🇺🇸 USA - Nueva York (GMT-5/-4)'},
-      {'name': 'America/Los_Angeles', 'display': '🇺🇸 USA - Los Ángeles (GMT-8/-7)'},
+      {
+        'name': 'America/New_York',
+        'display': '🇺🇸 USA - Nueva York (GMT-5/-4)',
+      },
+      {
+        'name': 'America/Los_Angeles',
+        'display': '🇺🇸 USA - Los Ángeles (GMT-8/-7)',
+      },
       {'name': 'America/Chicago', 'display': '🇺🇸 USA - Chicago (GMT-6/-5)'},
       {'name': 'America/Denver', 'display': '🇺🇸 USA - Denver (GMT-7/-6)'},
       {'name': 'Europe/London', 'display': '🇬🇧 Reino Unido (GMT+0/+1)'},
@@ -123,19 +145,20 @@ class NotificationService {
       {'name': 'Asia/Shanghai', 'display': '🇨🇳 China (GMT+8)'},
       {'name': 'Asia/Dubai', 'display': '🇦🇪 Emiratos Árabes (GMT+4)'},
       {'name': 'Asia/Kolkata', 'display': '🇮🇳 India (GMT+5:30)'},
-      {'name': 'Australia/Sydney', 'display': '🇦🇺 Australia - Sídney (GMT+10/+11)'},
-      {'name': 'Pacific/Auckland', 'display': '🇳🇿 Nueva Zelanda (GMT+12/+13)'},
+      {
+        'name': 'Australia/Sydney',
+        'display': '🇦🇺 Australia - Sídney (GMT+10/+11)',
+      },
+      {
+        'name': 'Pacific/Auckland',
+        'display': '🇳🇿 Nueva Zelanda (GMT+12/+13)',
+      },
     ];
   }
 
- 
-  void _onNotificationTapped(NotificationResponse response) {
-    
-  }
+  void _onNotificationTapped(NotificationResponse response) {}
 
-  
   Future<bool> requestPermissions() async {
-    
     if (!await Permission.notification.isGranted) {
       final status = await Permission.notification.request();
       if (!status.isGranted) {
@@ -143,7 +166,6 @@ class NotificationService {
       }
     }
 
-   
     if (Platform.isAndroid) {
       if (!await Permission.scheduleExactAlarm.isGranted) {
         await Permission.scheduleExactAlarm.request();
@@ -153,7 +175,6 @@ class NotificationService {
     return true;
   }
 
-  
   Future<void> scheduleDailyReminder({
     required int hour,
     required int minute,
@@ -161,7 +182,7 @@ class NotificationService {
     required String body,
   }) async {
     final scheduledDate = _nextInstanceOfTime(hour, minute);
-    
+
     await _notifications.zonedSchedule(
       0,
       title,
@@ -190,7 +211,6 @@ class NotificationService {
     );
   }
 
-  
   tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     var scheduledDate = tz.TZDateTime(
@@ -202,7 +222,6 @@ class NotificationService {
       minute,
     );
 
-    
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
@@ -210,18 +229,16 @@ class NotificationService {
     return scheduledDate;
   }
 
-  
   Duration getTimeUntilNextNotification(int hour, int minute) {
     final now = tz.TZDateTime.now(tz.local);
     final nextNotification = _nextInstanceOfTime(hour, minute);
     return nextNotification.difference(now);
   }
 
- 
   String formatTimeRemaining(Duration duration) {
     final hours = duration.inHours;
     final minutes = duration.inMinutes.remainder(60);
-    
+
     if (hours > 24) {
       final days = hours ~/ 24;
       final remainingHours = hours % 24;
@@ -241,11 +258,9 @@ class NotificationService {
     }
   }
 
-  
   Future<void> cancelDailyReminder() async {
     await _notifications.cancel(0);
   }
-
 
   Future<bool> hasScheduledNotifications() async {
     final pending = await _notifications.pendingNotificationRequests();

@@ -300,10 +300,11 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
         final newSelection = TextSelection.collapsed(offset: currentOffset - 1);
         controller.selection = newSelection;
         // Update last selection
-        if (isDeposit)
+        if (isDeposit) {
           _depositLastSelection = currentOffset - 1;
-        else
+        } else {
           _withdrawalLastSelection = currentOffset - 1;
+        }
       }
     }
   }
@@ -418,7 +419,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     return Container(
       margin: const EdgeInsets.all(AppConstants.defaultPadding),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
       ),
       child: TabBar(
@@ -648,7 +649,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     final l10n = AppLocalizations.of(context)!;
 
     return DropdownButtonFormField<String>(
-      value: selectedCategory,
+      initialValue: selectedCategory,
       decoration: InputDecoration(
         labelText: l10n.category,
         border: const OutlineInputBorder(),

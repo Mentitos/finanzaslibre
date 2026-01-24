@@ -1158,7 +1158,7 @@ class _YearMonthPickerState extends State<YearMonthPicker> {
     return Column(
       children: [
         DropdownButtonFormField<int>(
-          value: _selectedYear,
+          initialValue: _selectedYear,
           decoration: InputDecoration(
             labelText: l10n.year,
             border: const OutlineInputBorder(),

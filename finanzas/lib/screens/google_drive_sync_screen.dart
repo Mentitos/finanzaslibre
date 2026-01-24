@@ -590,7 +590,7 @@ class _GoogleDriveSyncScreenState extends State<GoogleDriveSyncScreen> {
                 Switch(
                   value: _autoBackupEnabled,
                   onChanged: _toggleAutoBackup,
-                  activeColor: Colors.blue[700],
+                  activeThumbColor: Colors.blue[700],
                 ),
               ],
             ),

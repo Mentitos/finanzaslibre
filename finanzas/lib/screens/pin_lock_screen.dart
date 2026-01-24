@@ -89,8 +89,8 @@ class _PinLockScreenState extends State<PinLockScreen>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final bgColor = Theme.of(context).colorScheme.background;
-    
+    final bgColor = Theme.of(context).colorScheme.surface;
+
     return Scaffold(
       backgroundColor: bgColor,
       body: SafeArea(
@@ -137,11 +137,7 @@ class _PinLockScreenState extends State<PinLockScreen>
         color: primary.withOpacity(0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.savings,
-        size: 72,
-        color: primary,
-      ),
+      child: Icon(Icons.savings, size: 72, color: primary),
     );
   }
 
@@ -151,7 +147,7 @@ class _PinLockScreenState extends State<PinLockScreen>
       style: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.onBackground,
+        color: Theme.of(context).colorScheme.onSurface,
       ),
     );
   }
@@ -161,14 +157,14 @@ class _PinLockScreenState extends State<PinLockScreen>
       l10n.enterPinToContinue,
       style: TextStyle(
         fontSize: 16,
-        color: Theme.of(context).colorScheme.onBackground.withOpacity(0.6),
+        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
       ),
     );
   }
 
   Widget _buildPinDots() {
     final primary = Theme.of(context).colorScheme.primary;
-    final inactive = Theme.of(context).colorScheme.onBackground.withOpacity(0.3);
+    final inactive = Theme.of(context).colorScheme.onSurface.withOpacity(0.3);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(4, (index) {
@@ -272,7 +268,11 @@ class _PinLockScreenState extends State<PinLockScreen>
         child: Center(
           child: Text(
             number,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: textColor),
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+              color: textColor,
+            ),
           ),
         ),
       ),
@@ -287,10 +287,7 @@ class _PinLockScreenState extends State<PinLockScreen>
       child: Container(
         width: 72,
         height: 72,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: red[50],
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: red[50]),
         child: Icon(Icons.backspace_outlined, color: red, size: 24),
       ),
     );
@@ -304,12 +301,13 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   void _onDeletePressed() {
-    if (_pin.isNotEmpty) setState(() => _pin = _pin.substring(0, _pin.length - 1));
+    if (_pin.isNotEmpty)
+      setState(() => _pin = _pin.substring(0, _pin.length - 1));
   }
 
   void _verifyPin() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (_pin == widget.correctPin) {
       Navigator.of(context).pop(true);
     } else {
@@ -333,16 +331,18 @@ class _PinLockScreenState extends State<PinLockScreen>
 
   void _showTooManyAttemptsDialog() {
     final l10n = AppLocalizations.of(context)!;
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: Row(children: [
-          const Icon(Icons.warning, color: Colors.red),
-          const SizedBox(width: 8),
-          Text(l10n.tooManyAttempts),
-        ]),
+        title: Row(
+          children: [
+            const Icon(Icons.warning, color: Colors.red),
+            const SizedBox(width: 8),
+            Text(l10n.tooManyAttempts),
+          ],
+        ),
         content: Text(l10n.tooManyAttemptsMessage),
         actions: [
           FilledButton(

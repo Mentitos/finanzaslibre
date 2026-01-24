@@ -47,7 +47,7 @@ class ExportImportDialogs {
       // Fallback final (iOS/Windows)
       exportDir ??= await getApplicationDocumentsDirectory();
 
-      exportDir = Directory('${exportDir!.path}/SavingsExport');
+      exportDir = Directory('${exportDir.path}/SavingsExport');
     }
 
     if (!await exportDir.exists()) {

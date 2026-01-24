@@ -649,7 +649,7 @@ class _CustomPaletteCreatorDialogState
                   title: const Text('Usar Texto Blanco'),
                   value: _useWhiteText,
                   onChanged: (value) => setState(() => _useWhiteText = value),
-                  activeColor: _previewColor,
+                  activeThumbColor: _previewColor,
                 ),
 
                 // Switch Colorear Total Principal
@@ -662,7 +662,7 @@ class _CustomPaletteCreatorDialogState
                   value: _affectTotalCard,
                   onChanged: (value) =>
                       setState(() => _affectTotalCard = value),
-                  activeColor: _previewColor,
+                  activeThumbColor: _previewColor,
                 ),
                 const SizedBox(height: 16),
 

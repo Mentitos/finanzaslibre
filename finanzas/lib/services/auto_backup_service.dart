@@ -33,6 +33,14 @@ class AutoBackupService {
       const initSettings = InitializationSettings(
         android: androidSettings,
         iOS: iosSettings,
+        linux: LinuxInitializationSettings(
+          defaultActionName: 'Open notification',
+        ),
+        windows: WindowsInitializationSettings(
+          appName: 'Mis Ahorros',
+          guid: '2c332145-6804-4537-b353-84c47b0a7401',
+          appUserModelId: 'com.tello.finanzas',
+        ),
       );
 
       await _notifications.initialize(initSettings);

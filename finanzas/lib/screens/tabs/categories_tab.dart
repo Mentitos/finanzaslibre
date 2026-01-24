@@ -25,6 +25,17 @@ class CategoriesTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > 900) {
+          return _buildDesktopLayout(context, l10n);
+        }
+        return _buildMobileLayout(context, l10n);
+      },
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context, AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       child: Column(
@@ -32,6 +43,235 @@ class CategoriesTab extends StatelessWidget {
           _buildCategoryTotalsCard(context, l10n),
           const SizedBox(height: AppConstants.defaultPadding),
           _buildCategoryManagementCard(context, l10n),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context, AppLocalizations l10n) {
+    // Sort categories by total value for the grid
+    final categoryTotals =
+        statistics['categoryTotals'] as Map<String, double>? ?? {};
+
+    // Ensure all categories are in the list, even if 0
+    final allCategoryEntries = categories.map((cat) {
+      final amount = categoryTotals[cat] ?? 0.0;
+      return MapEntry(cat, amount);
+    }).toList();
+
+    // Sort: Non-zero first (descending), then alphabetical
+    allCategoryEntries.sort((a, b) {
+      if (a.value != 0 || b.value != 0) {
+        return b.value.compareTo(a.value);
+      }
+      return a.key.compareTo(b.key);
+    });
+
+    return Padding(
+      padding: const EdgeInsets.all(AppConstants.largePadding),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // LEFT COLUMN: Visual Stats (Grid)
+          Expanded(
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Balance por Categoría',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithMaxCrossAxisExtent(
+                          maxCrossAxisExtent: 220,
+                          childAspectRatio: 1.4,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                        ),
+                    itemCount: allCategoryEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = allCategoryEntries[index];
+                      return _buildDesktopCategoryCard(
+                        context,
+                        entry.key,
+                        entry.value,
+                        l10n,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 32),
+          VerticalDivider(width: 1, color: Colors.grey.withOpacity(0.2)),
+          const SizedBox(width: 32),
+          // RIGHT COLUMN: Management (List)
+          Expanded(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.manageCategories,
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      FilledButton.icon(
+                        onPressed: () => _showAddCategoryDialog(context, l10n),
+                        icon: const Icon(Icons.add),
+                        label: Text(l10n.add),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: categories.length,
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: CircleAvatar(
+                            backgroundColor: AppConstants.getCategoryColor(
+                              category,
+                              categoryColors,
+                            ).withOpacity(0.2),
+                            child: Icon(
+                              Icons.category,
+                              color: AppConstants.getCategoryColor(
+                                category,
+                                categoryColors,
+                              ),
+                              size: 20,
+                            ),
+                          ),
+                          title: Text(
+                            l10n.translateCategory(category),
+                            style: const TextStyle(fontWeight: FontWeight.w500),
+                          ),
+                          trailing: category != 'General'
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.grey,
+                                  ),
+                                  onPressed: () =>
+                                      _showDeleteCategoryConfirmation(
+                                        context,
+                                        category,
+                                        l10n,
+                                      ),
+                                  tooltip: l10n.deleteCategory,
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopCategoryCard(
+    BuildContext context,
+    String category,
+    double amount,
+    AppLocalizations l10n,
+  ) {
+    final color = AppConstants.getCategoryColor(category, categoryColors);
+    final isPositive = amount >= 0;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  l10n.translateCategory(category),
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                amount >= 0 ? Icons.trending_up : Icons.trending_down,
+                color: amount >= 0 ? Colors.green : Colors.red,
+                size: 20,
+              ),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Total',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  '${AppConstants.currencySymbol}${Formatters.formatCurrency(amount.abs())}',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: isPositive
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Colors.red,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

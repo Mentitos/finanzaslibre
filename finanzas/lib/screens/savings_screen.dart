@@ -14,6 +14,7 @@ import 'settings/settings_screen.dart';
 import '../l10n/app_localizations.dart';
 import 'goals_screen.dart';
 import 'package:finanzas/services/data_change_notifier.dart';
+import 'package:finanzas/services/update_service.dart';
 
 class SavingsScreen extends StatefulWidget {
   final UserManager userManager;
@@ -58,8 +59,12 @@ class _SavingsScreenState extends State<SavingsScreen>
     _userManager = widget.userManager;
     _dataManager.setUserManager(_userManager);
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(() => setState(() {}));
     _dataNotifier.addListener(_onDataChanged);
     _loadData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      UpdateService().checkForUpdatesOnStartup(context);
+    });
   }
 
   @override
@@ -315,6 +320,113 @@ class _SavingsScreenState extends State<SavingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 700) {
+          return _buildDesktopLayout(context);
+        }
+        return _buildMobileLayout(context);
+      },
+    );
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(l10n.appName),
+            UserSelectorMenu(
+              key: ValueKey(_userRefreshKey),
+              userManager: _userManager,
+              refreshKey: ValueKey(_userRefreshKey),
+              onUserChanged: () async {
+                _dataManager.setUserManager(_userManager);
+                await _loadData();
+                setState(() {
+                  _userRefreshKey++;
+                });
+              },
+              onShowSnackBar: (message, isError) {
+                if (isError) {
+                  _showErrorSnackBar(message);
+                } else {
+                  _showSuccessSnackBar(message);
+                }
+              },
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(_privacyMode ? Icons.visibility_off : Icons.visibility),
+            onPressed: _togglePrivacyMode,
+            tooltip: _privacyMode ? l10n.showAmounts : l10n.hideAmounts,
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: _showSettingsMenu,
+            tooltip: l10n.settings,
+          ),
+        ],
+      ),
+      body: Row(
+        children: [
+          NavigationRail(
+            selectedIndex: _tabController.index,
+            onDestinationSelected: (int index) {
+              setState(() {
+                _tabController.animateTo(index);
+              });
+            },
+            labelType: NavigationRailLabelType.all,
+            destinations: [
+              NavigationRailDestination(
+                icon: const Icon(Icons.dashboard_outlined),
+                selectedIcon: const Icon(Icons.dashboard),
+                label: Text(l10n.summary),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.history_outlined),
+                selectedIcon: const Icon(Icons.history),
+                label: Text(l10n.history),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.category_outlined),
+                selectedIcon: const Icon(Icons.category),
+                label: Text(l10n.categories),
+              ),
+              NavigationRailDestination(
+                icon: const Icon(Icons.flag_outlined),
+                selectedIcon: const Icon(Icons.flag),
+                label: Text('Metas'),
+              ),
+            ],
+          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: _buildTabViews(),
+                  ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddRecordDialog,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -374,73 +486,7 @@ class _SavingsScreenState extends State<SavingsScreen>
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: [
-                SummaryTab(
-                  statistics: _statistics,
-                  allRecords: _allRecords,
-                  categoryColors: _categoryColors,
-                  privacyMode: _privacyMode,
-                  onRefresh: _loadData,
-                  onEditRecord: _showEditRecordDialog,
-                  onQuickMoneyTap: _showQuickMoneyDialog,
-                  onViewAllTap: () => _tabController.animateTo(1),
-                  palette: widget.palette,
-                ),
-                HistoryTab(
-                  allRecords: _allRecords,
-                  filteredRecords: _filteredRecords,
-                  categories: _categories,
-                  categoryColors: _categoryColors,
-                  currentFilter: _currentFilter,
-                  selectedCategory: _selectedCategory,
-                  searchQuery: _searchQuery,
-                  searchController: _searchController,
-                  onRefresh: _loadData,
-                  onEditRecord: _showEditRecordDialog,
-                  onDeleteRecord: _deleteRecord,
-                  onFilterChanged: (filter) {
-                    setState(() {
-                      _currentFilter = filter;
-                      _applyFilters();
-                    });
-                  },
-                  onCategoryChanged: (category) {
-                    setState(() {
-                      _selectedCategory = category;
-                      _applyFilters();
-                    });
-                  },
-                  onSearchChanged: (List<SavingsRecord> results) {
-                    setState(() {
-                      _filteredRecords = results;
-                    });
-                  },
-                  onSearchCleared: () {
-                    _searchController.clear();
-                    setState(() {
-                      _searchQuery = '';
-                      _applyFilters();
-                    });
-                  },
-                  onAddRecordTap: _showAddRecordDialog,
-                ),
-                CategoriesTab(
-                  statistics: _statistics,
-                  categories: _categories,
-                  categoryColors: _categoryColors,
-                  onAddCategory: _addCategory,
-                  onDeleteCategory: _deleteCategory,
-                ),
-                GoalsScreen(
-                  dataManager: _dataManager,
-                  palette: widget.palette,
-                  onGoalUpdated:
-                      _loadData, // Esto recarga el Summary automáticamente
-                ),
-              ],
-            ),
+          : TabBarView(controller: _tabController, children: _buildTabViews()),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddRecordDialog,
         backgroundColor: Theme.of(context).colorScheme.primary,
@@ -448,5 +494,71 @@ class _SavingsScreenState extends State<SavingsScreen>
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  List<Widget> _buildTabViews() {
+    return [
+      SummaryTab(
+        statistics: _statistics,
+        allRecords: _allRecords,
+        categoryColors: _categoryColors,
+        privacyMode: _privacyMode,
+        onRefresh: _loadData,
+        onEditRecord: _showEditRecordDialog,
+        onQuickMoneyTap: _showQuickMoneyDialog,
+        onViewAllTap: () => _tabController.animateTo(1),
+        palette: widget.palette,
+      ),
+      HistoryTab(
+        allRecords: _allRecords,
+        filteredRecords: _filteredRecords,
+        categories: _categories,
+        categoryColors: _categoryColors,
+        currentFilter: _currentFilter,
+        selectedCategory: _selectedCategory,
+        searchQuery: _searchQuery,
+        searchController: _searchController,
+        onRefresh: _loadData,
+        onEditRecord: _showEditRecordDialog,
+        onDeleteRecord: _deleteRecord,
+        onFilterChanged: (filter) {
+          setState(() {
+            _currentFilter = filter;
+            _applyFilters();
+          });
+        },
+        onCategoryChanged: (category) {
+          setState(() {
+            _selectedCategory = category;
+            _applyFilters();
+          });
+        },
+        onSearchChanged: (List<SavingsRecord> results) {
+          setState(() {
+            _filteredRecords = results;
+          });
+        },
+        onSearchCleared: () {
+          _searchController.clear();
+          setState(() {
+            _searchQuery = '';
+            _applyFilters();
+          });
+        },
+        onAddRecordTap: _showAddRecordDialog,
+      ),
+      CategoriesTab(
+        statistics: _statistics,
+        categories: _categories,
+        categoryColors: _categoryColors,
+        onAddCategory: _addCategory,
+        onDeleteCategory: _deleteCategory,
+      ),
+      GoalsScreen(
+        dataManager: _dataManager,
+        palette: widget.palette,
+        onGoalUpdated: _loadData,
+      ),
+    ];
   }
 }

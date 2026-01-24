@@ -90,118 +90,50 @@ class UpdateService {
   }
 
   void _showUpdateBanner(BuildContext context, UpdateInfo info) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry overlayEntry;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).padding.top + 8,
-        left: 8,
-        right: 8,
-        child: Material(
-          color: Colors.transparent,
-          child: TweenAnimationBuilder<double>(
-            duration: const Duration(milliseconds: 400),
-            tween: Tween(begin: 0.0, end: 1.0),
-            curve: Curves.easeOutBack,
-            builder: (context, value, child) {
-              return Transform.translate(
-                offset: Offset(0, -50 * (1 - value)),
-                child: Opacity(opacity: value, child: child),
-              );
-            },
-            child: GestureDetector(
-              onTap: () {
-                overlayEntry.remove();
-                showUpdateDialog(context, info);
-              },
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: info.isMandatory
-                        ? [Colors.orange.shade600, Colors.orange.shade800]
-                        : [
-                            Theme.of(context).colorScheme.primary,
-                            Theme.of(context).colorScheme.tertiary,
-                          ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color:
-                          (info.isMandatory
-                                  ? Colors.orange
-                                  : Theme.of(context).colorScheme.primary)
-                              .withOpacity(0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        info.isMandatory ? Icons.warning : Icons.system_update,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            info.isMandatory
-                                ? 'Actualización Requerida'
-                                : 'Nueva Actualización Disponible',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Versión ${info.appVersion} • ${info.formattedDate}',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      Icons.touch_app,
-                      color: Colors.white.withOpacity(0.9),
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+    ScaffoldMessenger.of(context).showMaterialBanner(
+      MaterialBanner(
+        content: Text(
+          info.isMandatory
+              ? '⚠️ Actualización Obligatoria\nNueva versión ${info.appVersion} disponible.'
+              : '🚀 Nueva Actualización\nVersión ${info.appVersion} disponible.',
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
+        leading: Icon(
+          info.isMandatory ? Icons.warning_amber : Icons.system_update,
+          color: info.isMandatory ? Colors.red : colorScheme.primary,
+        ),
+        backgroundColor: info.isMandatory
+            ? colorScheme.errorContainer
+            : colorScheme.surfaceVariant,
+        actions: [
+          if (!info.isMandatory)
+            TextButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+                _dismissUpdate(info);
+              },
+              child: const Text('Después'),
+            ),
+          TextButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+              showUpdateDialog(context, info);
+            },
+            child: const Text('Ver Detalles'),
+          ),
+        ],
       ),
     );
+  }
 
-    overlay.insert(overlayEntry);
-
-    if (!info.isMandatory) {
-      Future.delayed(const Duration(seconds: 6), () {
-        if (overlayEntry.mounted) {
-          overlayEntry.remove();
-        }
-      });
-    }
+  Future<void> _dismissUpdate(UpdateInfo info) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      _dismissedUpdateKey,
+      info.lastUpdateDate.toIso8601String(),
+    );
   }
 
   void showUpdateDialog(BuildContext context, UpdateInfo info) {

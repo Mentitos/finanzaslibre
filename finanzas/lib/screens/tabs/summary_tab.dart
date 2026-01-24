@@ -6,8 +6,11 @@ import '../../utils/formatters.dart';
 import '../../constants/app_constants.dart';
 import '../statistics_screen.dart';
 import '../../l10n/app_localizations.dart';
+import '../../widgets/charts/category_pie_chart.dart';
+import '../../widgets/charts/portfolio_bar_chart.dart';
+import '../../widgets/charts/category_list.dart';
 
-class SummaryTab extends StatelessWidget {
+class SummaryTab extends StatefulWidget {
   final Map<String, dynamic> statistics;
   final List<SavingsRecord> allRecords;
   final Map<String, Color> categoryColors;
@@ -16,6 +19,7 @@ class SummaryTab extends StatelessWidget {
   final Function(SavingsRecord) onEditRecord;
   final Function(MoneyType, double) onQuickMoneyTap;
   final VoidCallback onViewAllTap;
+  final ColorPalette palette;
 
   const SummaryTab({
     super.key,
@@ -30,13 +34,34 @@ class SummaryTab extends StatelessWidget {
     required this.palette,
   });
 
-  final ColorPalette palette;
+  @override
+  State<SummaryTab> createState() => _SummaryTabState();
+}
+
+class _SummaryTabState extends State<SummaryTab> {
+  bool _showPieChart = true;
 
   String _formatPrivateAmount(double amount) {
-    if (privacyMode) {
+    if (widget.privacyMode) {
       return '••••••';
     }
     return Formatters.formatCurrency(amount);
+  }
+
+  Map<String, double> _calculateCategoryData() {
+    final Map<String, double> data = {};
+    for (var record in widget.allRecords) {
+      double amount;
+      if (record.type == RecordType.adjustment) {
+        amount = record.totalAmount;
+      } else if (record.type == RecordType.deposit) {
+        amount = record.totalAmount;
+      } else {
+        amount = -record.totalAmount;
+      }
+      data[record.category] = (data[record.category] ?? 0) + amount;
+    }
+    return data;
   }
 
   @override
@@ -44,55 +69,142 @@ class SummaryTab extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return RefreshIndicator(
-      onRefresh: onRefresh,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildTotalCard(context, l10n),
-            const SizedBox(height: AppConstants.defaultPadding),
-            _buildMoneyTypesRow(l10n),
-            const SizedBox(height: AppConstants.defaultPadding),
-            _buildStatsRow(context, l10n),
-            const SizedBox(height: AppConstants.largePadding),
-            if (allRecords.isNotEmpty) _buildRecentMovements(context, l10n),
-          ],
-        ),
+      onRefresh: widget.onRefresh,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth > 900) {
+            return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(AppConstants.defaultPadding),
+              child: _buildDesktopLayout(context, l10n),
+            );
+          }
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(AppConstants.defaultPadding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTotalCard(context, l10n),
+                const SizedBox(height: AppConstants.defaultPadding),
+                _buildMoneyTypesRow(l10n),
+                const SizedBox(height: AppConstants.defaultPadding),
+                _buildStatsRow(context, l10n),
+                const SizedBox(height: AppConstants.largePadding),
+                if (widget.allRecords.isNotEmpty)
+                  _buildRecentMovements(context, l10n),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
+  Widget _buildDesktopLayout(BuildContext context, AppLocalizations l10n) {
+    final categoryData = _calculateCategoryData();
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Columna Principal (Izquierda) - Resumen Original
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildTotalCard(context, l10n),
+              const SizedBox(height: AppConstants.defaultPadding),
+              _buildMoneyTypesRow(l10n),
+              const SizedBox(height: AppConstants.defaultPadding),
+              _buildStatsRow(context, l10n),
+              const SizedBox(height: AppConstants.largePadding),
+              if (widget.allRecords.isNotEmpty)
+                _buildRecentMovements(context, l10n),
+            ],
+          ),
+        ),
+        const SizedBox(width: AppConstants.defaultPadding),
+        // Columna Lateral (Derecha) - Gráficos y Lista
+        Expanded(
+          flex: 2,
+          child: Column(
+            children: [
+              // Toggle Switch
+              SegmentedButton<bool>(
+                segments: const [
+                  ButtonSegment<bool>(
+                    value: true,
+                    label: Text('Torta'),
+                    icon: Icon(Icons.pie_chart),
+                  ),
+                  ButtonSegment<bool>(
+                    value: false,
+                    label: Text('Portafolio'),
+                    icon: Icon(Icons.bar_chart),
+                  ),
+                ],
+                selected: {_showPieChart},
+                onSelectionChanged: (Set<bool> newSelection) {
+                  setState(() {
+                    _showPieChart = newSelection.first;
+                  });
+                },
+                style: ButtonStyle(visualDensity: VisualDensity.compact),
+              ),
+              const SizedBox(height: AppConstants.defaultPadding),
+
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _showPieChart
+                    ? CategoryPieChart(
+                        key: const ValueKey('pie'),
+                        categoryData: categoryData,
+                        categoryColors: widget.categoryColors,
+                        palette: widget.palette,
+                      )
+                    : PortfolioBarChart(
+                        key: const ValueKey('bar'),
+                        categoryData: categoryData,
+                      ),
+              ),
+              const SizedBox(height: AppConstants.defaultPadding),
+              CategoryList(
+                categoryData: categoryData,
+                categoryColors: widget.categoryColors,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTotalCard(BuildContext context, AppLocalizations l10n) {
-    final totalAmount = statistics['totalAmount']?.toDouble() ?? 0.0;
+    final totalAmount = widget.statistics['totalAmount']?.toDouble() ?? 0.0;
     final isPositive = totalAmount >= 0;
 
-    List<Color>? gradientColors; // Nullable
-    Color? solidColor; // For custom palette
+    List<Color>? gradientColors;
+    Color? solidColor;
     Color shadowColor;
 
-    if (palette.affectTotalCard && isPositive) {
-      // Logic: Darker for Light Theme, Lighter for Dark Theme based on Seed
+    if (widget.palette.affectTotalCard && isPositive) {
       final brightness = Theme.of(context).brightness;
-      final hsl = HSLColor.fromColor(palette.seedColor);
+      final hsl = HSLColor.fromColor(widget.palette.seedColor);
 
       if (brightness == Brightness.light) {
-        // Light Theme: Use Solid Subtle Darker Tone (Changed from 0.15 to 0.05)
         solidColor = hsl
             .withLightness((hsl.lightness - 0.05).clamp(0.0, 1.0))
             .toColor();
         shadowColor = solidColor;
       } else {
-        // Dark Theme: Use Solid Subtle Lighter Tone (Changed from 0.15 to 0.05)
         solidColor = hsl
             .withLightness((hsl.lightness + 0.05).clamp(0.0, 1.0))
             .toColor();
         shadowColor = solidColor;
       }
-      gradientColors = null; // No gradient
+      gradientColors = null;
     } else {
-      // Default Green/Red Gradient
       gradientColors = isPositive
           ? [Colors.green.shade400, Colors.green.shade600]
           : [Colors.red.shade400, Colors.red.shade600];
@@ -103,7 +215,7 @@ class SummaryTab extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.largePadding),
       decoration: BoxDecoration(
-        color: solidColor, // Apply solid color if present
+        color: solidColor,
         gradient: gradientColors != null
             ? LinearGradient(
                 colors: gradientColors,
@@ -143,10 +255,10 @@ class SummaryTab extends StatelessWidget {
               ),
             ),
           ),
-          if (allRecords.isNotEmpty) ...[
+          if (widget.allRecords.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              '${l10n.lastMovement}: ${Formatters.formatRelativeDate(allRecords.first.createdAt, l10n)}',
+              '${l10n.lastMovement}: ${Formatters.formatRelativeDate(widget.allRecords.first.createdAt, l10n)}',
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: AppConstants.defaultFontSize,
@@ -159,8 +271,9 @@ class SummaryTab extends StatelessWidget {
   }
 
   Widget _buildMoneyTypesRow(AppLocalizations l10n) {
-    final physicalAmount = statistics['totalPhysical']?.toDouble() ?? 0.0;
-    final digitalAmount = statistics['totalDigital']?.toDouble() ?? 0.0;
+    final physicalAmount =
+        widget.statistics['totalPhysical']?.toDouble() ?? 0.0;
+    final digitalAmount = widget.statistics['totalDigital']?.toDouble() ?? 0.0;
 
     return Row(
       children: [
@@ -170,7 +283,8 @@ class SummaryTab extends StatelessWidget {
             amount: physicalAmount,
             icon: Icons.account_balance_wallet,
             color: AppConstants.physicalMoneyColor,
-            onTap: () => onQuickMoneyTap(MoneyType.physical, physicalAmount),
+            onTap: () =>
+                widget.onQuickMoneyTap(MoneyType.physical, physicalAmount),
           ),
         ),
         const SizedBox(width: AppConstants.defaultPadding),
@@ -180,7 +294,8 @@ class SummaryTab extends StatelessWidget {
             amount: digitalAmount,
             icon: Icons.credit_card,
             color: AppConstants.digitalMoneyColor,
-            onTap: () => onQuickMoneyTap(MoneyType.digital, digitalAmount),
+            onTap: () =>
+                widget.onQuickMoneyTap(MoneyType.digital, digitalAmount),
           ),
         ),
       ],
@@ -243,9 +358,9 @@ class SummaryTab extends StatelessWidget {
   }
 
   Widget _buildStatsRow(BuildContext context, AppLocalizations l10n) {
-    final totalRecords = statistics['totalRecords'] ?? 0;
-    final totalDeposits = statistics['totalDeposits'] ?? 0;
-    final totalWithdrawals = statistics['totalWithdrawals'] ?? 0;
+    final totalRecords = widget.statistics['totalRecords'] ?? 0;
+    final totalDeposits = widget.statistics['totalDeposits'] ?? 0;
+    final totalWithdrawals = widget.statistics['totalWithdrawals'] ?? 0;
 
     return InkWell(
       onTap: () {
@@ -253,8 +368,8 @@ class SummaryTab extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => StatisticsScreen(
-              allRecords: allRecords,
-              categoryColors: categoryColors,
+              allRecords: widget.allRecords,
+              categoryColors: widget.categoryColors,
             ),
           ),
         );
@@ -337,7 +452,7 @@ class SummaryTab extends StatelessWidget {
   }
 
   Widget _buildRecentMovements(BuildContext context, AppLocalizations l10n) {
-    final recentRecords = allRecords
+    final recentRecords = widget.allRecords
         .take(AppConstants.recentRecordsCount)
         .toList();
 
@@ -354,15 +469,18 @@ class SummaryTab extends StatelessWidget {
                   l10n.recentMovements,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
-                TextButton(onPressed: onViewAllTap, child: Text(l10n.viewAll)),
+                TextButton(
+                  onPressed: widget.onViewAllTap,
+                  child: Text(l10n.viewAll),
+                ),
               ],
             ),
             const SizedBox(height: AppConstants.defaultPadding),
             ...recentRecords.map(
               (record) => RecentRecordItem(
                 record: record,
-                onTap: () => onEditRecord(record),
-                categoryColors: categoryColors,
+                onTap: () => widget.onEditRecord(record),
+                categoryColors: widget.categoryColors,
                 l10n: l10n,
               ),
             ),
