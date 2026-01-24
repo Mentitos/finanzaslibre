@@ -15,8 +15,7 @@ class CategoriesManager {
     'Inversión',
     'Regalo',
     'Emergencia',
-    'Freelance',
-    'Bonificación'
+    'Bonificación',
   ];
 
   CategoriesManager(this._prefs);
@@ -49,6 +48,21 @@ class CategoriesManager {
       final categories = _prefs.getStringList(key);
 
       _cachedCategories = categories ?? List.from(_defaultCategories);
+
+      // Migration: Remove 'Freelance' and other extras if present
+      final categoriesToRemove = ['Freelance', 'Venta', 'Ahorro', 'Extra'];
+      bool changed = false;
+      for (final cat in categoriesToRemove) {
+        if (_cachedCategories!.contains(cat)) {
+          _cachedCategories!.remove(cat);
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        await _prefs.setStringList(key, _cachedCategories!);
+      }
+
       return List.from(_cachedCategories!);
     } catch (e) {
       debugPrint('❌ Error cargando categorías: $e');

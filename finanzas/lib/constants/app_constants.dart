@@ -90,11 +90,7 @@ class AppConstants {
     'Inversión',
     'Regalo',
     'Emergencia',
-    'Freelance',
     'Bonificación',
-    'Venta',
-    'Ahorro',
-    'Extra',
   ];
 
   // Montos rápidos sugeridos
@@ -137,11 +133,24 @@ class AppConstants {
       'Inversión': Colors.orange,
       'Regalo': Colors.pink,
       'Emergencia': Colors.red,
-      'Freelance': Colors.purple,
       'Bonificación': Colors.amber,
     };
 
     return defaultColors[category] ?? Colors.grey;
+  }
+
+  static IconData getCategoryIcon(String category) {
+    final defaultIcons = {
+      'General': Icons.category,
+      'Trabajo': Icons.work,
+      'Inversión': Icons.trending_up,
+      'Regalo': Icons.card_giftcard,
+      'Emergencia': Icons.warning_amber,
+      'Bonificación': Icons.star,
+      // Legacy or other mappings if needed
+    };
+
+    return defaultIcons[category] ?? Icons.label_outline;
   }
 
   static Color getTypeColor(bool isDeposit) {

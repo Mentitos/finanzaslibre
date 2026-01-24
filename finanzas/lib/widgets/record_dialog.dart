@@ -633,13 +633,10 @@ class _RecordDialogState extends State<RecordDialog> {
           value: category,
           child: Row(
             children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  color: _getCategoryColor(category),
-                  shape: BoxShape.circle,
-                ),
+              Icon(
+                AppConstants.getCategoryIcon(category),
+                color: _getCategoryColor(category),
+                size: 20,
               ),
               const SizedBox(width: 8),
               Text(AppLocalizations.of(context)!.translateCategory(category)),
