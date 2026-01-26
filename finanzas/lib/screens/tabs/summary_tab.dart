@@ -226,7 +226,7 @@ class _SummaryTabState extends State<SummaryTab> {
         borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: shadowColor.withOpacity(0.3),
+            color: shadowColor.withValues(alpha: 0.3),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 4),
@@ -311,7 +311,7 @@ class _SummaryTabState extends State<SummaryTab> {
   }) {
     return Card(
       elevation: 2,
-      shadowColor: color.withOpacity(0.2),
+      shadowColor: color.withValues(alpha: 0.2),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -323,7 +323,7 @@ class _SummaryTabState extends State<SummaryTab> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: color, size: 28),
@@ -439,7 +439,10 @@ class _SummaryTabState extends State<SummaryTab> {
           const SizedBox(height: 4),
           Text(
             title,
-            style: TextStyle(fontSize: 13, color: textColor.withOpacity(0.7)),
+            style: TextStyle(
+              fontSize: 13,
+              color: textColor.withValues(alpha: 0.7),
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -448,7 +451,11 @@ class _SummaryTabState extends State<SummaryTab> {
   }
 
   Widget _buildDivider() {
-    return Container(width: 1, height: 50, color: Colors.grey.withOpacity(0.3));
+    return Container(
+      width: 1,
+      height: 50,
+      color: Colors.grey.withValues(alpha: 0.3),
+    );
   }
 
   Widget _buildRecentMovements(BuildContext context, AppLocalizations l10n) {
@@ -465,9 +472,12 @@ class _SummaryTabState extends State<SummaryTab> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  l10n.recentMovements,
-                  style: Theme.of(context).textTheme.headlineSmall,
+                Expanded(
+                  child: Text(
+                    l10n.recentMovements,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 TextButton(
                   onPressed: widget.onViewAllTap,

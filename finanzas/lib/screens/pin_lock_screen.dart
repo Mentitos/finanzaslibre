@@ -134,7 +134,7 @@ class _PinLockScreenState extends State<PinLockScreen>
     return Container(
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: primary.withOpacity(0.1),
+        color: primary.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(Icons.savings, size: 72, color: primary),
@@ -157,14 +157,16 @@ class _PinLockScreenState extends State<PinLockScreen>
       l10n.enterPinToContinue,
       style: TextStyle(
         fontSize: 16,
-        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
       ),
     );
   }
 
   Widget _buildPinDots() {
     final primary = Theme.of(context).colorScheme.primary;
-    final inactive = Theme.of(context).colorScheme.onSurface.withOpacity(0.3);
+    final inactive = Theme.of(
+      context,
+    ).colorScheme.onSurface.withValues(alpha: 0.3);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(4, (index) {
@@ -244,7 +246,7 @@ class _PinLockScreenState extends State<PinLockScreen>
         height: 72,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: primary.withOpacity(0.1),
+          color: primary.withValues(alpha: 0.1),
         ),
         child: Icon(Icons.fingerprint, size: 32, color: primary),
       ),
@@ -301,8 +303,9 @@ class _PinLockScreenState extends State<PinLockScreen>
   }
 
   void _onDeletePressed() {
-    if (_pin.isNotEmpty)
+    if (_pin.isNotEmpty) {
       setState(() => _pin = _pin.substring(0, _pin.length - 1));
+    }
   }
 
   void _verifyPin() {

@@ -100,8 +100,12 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
   }
 
   Widget _buildIcon() {
-    final primaryColor = Theme.of(context).colorScheme.primary.withOpacity(0.8);
-    final bgColor = Theme.of(context).colorScheme.primary.withOpacity(0.1);
+    final primaryColor = Theme.of(
+      context,
+    ).colorScheme.primary.withValues(alpha: 0.8);
+    final bgColor = Theme.of(
+      context,
+    ).colorScheme.primary.withValues(alpha: 0.1);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -139,13 +143,13 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     if (!_canCheckBiometrics) return const SizedBox.shrink();
 
     final primaryColor = Theme.of(context).colorScheme.primary;
-    final borderColor = primaryColor.withOpacity(0.3);
+    final borderColor = primaryColor.withValues(alpha: 0.3);
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.05),
+        color: primaryColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: borderColor),
       ),
@@ -170,7 +174,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
                   l10n.useFingerprintOrFace,
                   style: TextStyle(
                     fontSize: 12,
-                    color: textColor?.withOpacity(0.7),
+                    color: textColor?.withValues(alpha: 0.7),
                   ),
                 ),
               ],
@@ -191,7 +195,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final inactiveColor = Theme.of(
       context,
-    ).colorScheme.onSurface.withOpacity(0.3);
+    ).colorScheme.onSurface.withValues(alpha: 0.3);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -349,6 +353,7 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
     final l10n = AppLocalizations.of(context)!;
     if (_pin == _confirmPin) {
       Future.delayed(const Duration(milliseconds: 200), () {
+        if (!mounted) return;
         Navigator.pop(context, {
           'pin': _pin,
           'biometricEnabled': _biometricEnabled,

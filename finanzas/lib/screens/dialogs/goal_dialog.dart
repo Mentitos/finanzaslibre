@@ -185,7 +185,7 @@ class _GoalDialogState extends State<GoalDialog> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: widget.palette.seedColor.withOpacity(0.1),
+        color: widget.palette.seedColor.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -196,7 +196,7 @@ class _GoalDialogState extends State<GoalDialog> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: widget.palette.seedColor.withOpacity(0.2),
+              color: widget.palette.seedColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(Icons.flag, color: widget.palette.seedColor, size: 28),

@@ -22,9 +22,13 @@ class UserManager {
   static Future<void> initialize() async {
     if (_initialized) return;
 
-    _prefs = await SharedPreferences.getInstance();
-    await _instance._ensureDefaultUserExists();
-    _initialized = true;
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      await _instance._ensureDefaultUserExists();
+      _initialized = true;
+    } catch (e) {
+      debugPrint('❌ Error initializing UserManager: $e');
+    }
   }
 
   Future<void> _ensureDefaultUserExists() async {
@@ -68,7 +72,6 @@ class UserManager {
     try {
       return users.firstWhere((u) => u.id == currentUserId);
     } catch (e) {
-      
       try {
         return users.firstWhere((u) => u.id == _defaultUserId);
       } catch (e) {
@@ -80,12 +83,10 @@ class UserManager {
   User? getCurrentUserSync() {
     try {
       final jsonList = _prefs.getStringList(_usersKey) ?? [];
-      final users = jsonList
-          .map((json) {
-            final map = jsonDecode(json) as Map<String, dynamic>;
-            return User.fromMap(map);
-          })
-          .toList();
+      final users = jsonList.map((json) {
+        final map = jsonDecode(json) as Map<String, dynamic>;
+        return User.fromMap(map);
+      }).toList();
 
       final currentUserId = _prefs.getString(_currentUserKey) ?? _defaultUserId;
 
@@ -93,12 +94,10 @@ class UserManager {
     } catch (e) {
       try {
         final jsonList = _prefs.getStringList(_usersKey) ?? [];
-        final users = jsonList
-            .map((json) {
-              final map = jsonDecode(json) as Map<String, dynamic>;
-              return User.fromMap(map);
-            })
-            .toList();
+        final users = jsonList.map((json) {
+          final map = jsonDecode(json) as Map<String, dynamic>;
+          return User.fromMap(map);
+        }).toList();
         return users.firstWhere((u) => u.id == _defaultUserId);
       } catch (e) {
         return null;
@@ -110,24 +109,21 @@ class UserManager {
     await _prefs.setString(_currentUserKey, user.id);
   }
 
-  
+  Future<String> createUser(String name) async {
+    final users = await getAllUsers();
 
-Future<String> createUser(String name) async {
-  final users = await getAllUsers();
+    final newUserId = DateTime.now().millisecondsSinceEpoch.toString();
+    final newUser = User(
+      id: newUserId,
+      name: name,
+      createdAt: DateTime.now(),
+      profileImagePath: null,
+    );
 
-  final newUserId = DateTime.now().millisecondsSinceEpoch.toString();
-  final newUser = User(
-    id: newUserId,
-    name: name,
-    createdAt: DateTime.now(),
-    profileImagePath: null,
-  );
+    await _saveUsers([...users, newUser]);
 
-  await _saveUsers([...users, newUser]);
-  
-  
-  return newUserId;
-}
+    return newUserId;
+  }
 
   Future<void> deleteUser(String userId) async {
     if (userId == _defaultUserId) {
@@ -148,37 +144,36 @@ Future<String> createUser(String name) async {
       }
     }
 
-    
     users.removeWhere((u) => u.id == userId);
     await _saveUsers(users);
 
-    
     final currentUser = await getCurrentUser();
     if (currentUser?.id == userId) {
-      final defaultUser = users.firstWhere((u) => u.id == _defaultUserId,
-          orElse: () => users.isNotEmpty ? users.first : User(
-            id: _defaultUserId,
-            name: 'Mi Billetera',
-            createdAt: DateTime.now(),
-          ));
+      final defaultUser = users.firstWhere(
+        (u) => u.id == _defaultUserId,
+        orElse: () => users.isNotEmpty
+            ? users.first
+            : User(
+                id: _defaultUserId,
+                name: 'Mi Billetera',
+                createdAt: DateTime.now(),
+              ),
+      );
       await setCurrentUser(defaultUser);
     }
   }
 
-  
   Future<void> updateProfileImage(String userId, String imagePath) async {
     final users = await getAllUsers();
     final userIndex = users.indexWhere((u) => u.id == userId);
 
     if (userIndex != -1) {
-      users[userIndex] =
-          users[userIndex].copyWith(profileImagePath: imagePath);
+      users[userIndex] = users[userIndex].copyWith(profileImagePath: imagePath);
       await _saveUsers(users);
       debugPrint('✅ Imagen de perfil actualizada para usuario: $userId');
     }
   }
 
-  
   Future<void> deleteProfileImage(String userId) async {
     final users = await getAllUsers();
     final userIndex = users.indexWhere((u) => u.id == userId);
@@ -204,7 +199,6 @@ Future<String> createUser(String name) async {
     }
   }
 
-  
   Future<void> updateUserName(String userId, String newName) async {
     if (newName.trim().isEmpty) {
       throw Exception('El nombre no puede estar vacío');
@@ -226,14 +220,11 @@ Future<String> createUser(String name) async {
   // MÉTODOS DE LIMPIEZA DE DATOS
   // ============================================
 
- 
   Future<void> resetAppKeepingDefaultUser() async {
     final users = await getAllUsers();
 
-
     for (final user in users) {
       if (user.id != _defaultUserId) {
-        
         if (user.profileImagePath != null) {
           try {
             final file = File(user.profileImagePath!);
@@ -247,8 +238,7 @@ Future<String> createUser(String name) async {
       }
     }
 
-    final defaultUser =
-        users.firstWhere((u) => u.id == _defaultUserId);
+    final defaultUser = users.firstWhere((u) => u.id == _defaultUserId);
     await _saveUsers([defaultUser]);
 
     await setCurrentUser(defaultUser);

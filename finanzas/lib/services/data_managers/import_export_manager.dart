@@ -45,7 +45,7 @@ class ImportExportManager {
         'records': records.map((r) => r.toJson()).toList(),
         'categories': categories,
         'categoryColors': categoryColors.map(
-          (key, value) => MapEntry(key, value.value),
+          (key, value) => MapEntry(key, value.toARGB32()),
         ),
         'goals': goals.map((g) => g.toJson()).toList(),
       });

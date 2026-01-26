@@ -63,7 +63,7 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: widget.currentPalette.seedColor.withOpacity(0.1),
+                color: widget.currentPalette.seedColor.withValues(alpha: 0.1),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -240,8 +240,8 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
           ),
           gradient: LinearGradient(
             colors: [
-              palette.seedColor.withOpacity(0.3),
-              palette.seedColor.withOpacity(0.1),
+              palette.seedColor.withValues(alpha: 0.3),
+              palette.seedColor.withValues(alpha: 0.1),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -263,7 +263,7 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: palette.seedColor.withOpacity(0.3),
+                          color: palette.seedColor.withValues(alpha: 0.3),
                           blurRadius: 8,
                           spreadRadius: 2,
                         ),
@@ -362,19 +362,21 @@ class _PaletteSelectorDialogState extends State<PaletteSelectorDialog>
   void _showDeletePaletteDialog(ColorPalette palette) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Eliminar Paleta'),
         content: Text('¿Eliminar "${palette.name}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancelar'),
           ),
           TextButton(
             onPressed: () async {
               await PaletteManager.deleteCustomPalette(palette.id);
+              if (dialogContext.mounted) {
+                Navigator.of(dialogContext).pop();
+              }
               if (mounted) {
-                Navigator.pop(context);
                 _loadCustomPalettes();
               }
             },
@@ -438,7 +440,7 @@ class _CustomPaletteCreatorDialogState
 
   // Helper to format Color to Hex string
   String _toHex(Color color) =>
-      '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+      '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
 
   @override
   Widget build(BuildContext context) {
@@ -564,10 +566,10 @@ class _CustomPaletteCreatorDialogState
                     setState(() {
                       _previewColor = color;
                       _hexController.text =
-                          '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+                          '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
                     });
                   },
-                  showLabel: false,
+                  labelTypes: const [],
                   pickerAreaHeightPercent: 0.7,
                   enableAlpha: false,
                   displayThumbColor: true,
@@ -580,7 +582,10 @@ class _CustomPaletteCreatorDialogState
                   height: 120,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [_previewColor, _previewColor.withOpacity(0.6)],
+                      colors: [
+                        _previewColor,
+                        _previewColor.withValues(alpha: 0.6),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -605,7 +610,7 @@ class _CustomPaletteCreatorDialogState
                           borderRadius: BorderRadius.circular(8),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 4,
                             ),
                           ],
@@ -779,7 +784,7 @@ class _CustomPaletteCreatorDialogState
   }
 
   Widget _buildQuickColor(Color color, String hex) {
-    final isSelected = _previewColor.value == color.value;
+    final isSelected = _previewColor.toARGB32() == color.toARGB32();
 
     return InkWell(
       onTap: () {
@@ -802,7 +807,7 @@ class _CustomPaletteCreatorDialogState
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: color.withOpacity(0.5),
+                    color: color.withValues(alpha: 0.5),
                     blurRadius: 8,
                     spreadRadius: 2,
                   ),

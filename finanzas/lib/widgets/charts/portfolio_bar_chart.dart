@@ -56,11 +56,11 @@ class PortfolioBarChart extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               "Portafolio por Categoría",
               style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             SizedBox(
@@ -122,7 +122,7 @@ class PortfolioBarChart extends StatelessWidget {
                     horizontalInterval: _calculateHorizontalInterval(validData),
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 0.3),
                         strokeWidth: 1,
                       );
                     },
@@ -160,8 +160,8 @@ class PortfolioBarChart extends StatelessWidget {
                     ),
                   ),
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 600),
-                swapAnimationCurve: Curves.easeInOutCubic,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOutCubic,
               ),
             ),
           ],

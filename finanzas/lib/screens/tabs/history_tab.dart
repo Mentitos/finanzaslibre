@@ -71,6 +71,7 @@ class _HistoryTabState extends State<HistoryTab> {
       children: [
         _buildSearchBar(l10n),
         _buildFilters(context, l10n),
+        const SizedBox(height: AppConstants.defaultPadding),
         Expanded(
           child: widget.filteredRecords.isEmpty
               ? _buildEmptyState(context, l10n)
@@ -133,25 +134,24 @@ class _HistoryTabState extends State<HistoryTab> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      _buildFilterChip(context, l10n.deposits, 'deposits'),
-                      _buildFilterChip(
-                        context,
-                        l10n.withdrawals,
-                        'withdrawals',
-                      ),
-                      SizedBox(
-                        height: 36, // Match standard chip height
-                        child: Builder(
+                  Center(
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        _buildFilterChip(context, l10n.deposits, 'deposits'),
+                        _buildFilterChip(
+                          context,
+                          l10n.withdrawals,
+                          'withdrawals',
+                        ),
+                        Builder(
                           builder: (context) =>
                               _buildCategoryDropdown(context, l10n),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 32),
                   _buildFilteredTotalCard(context, l10n),
@@ -159,7 +159,7 @@ class _HistoryTabState extends State<HistoryTab> {
               ),
             ),
           ),
-          VerticalDivider(width: 1, color: Colors.grey.withOpacity(0.2)),
+          VerticalDivider(width: 1, color: Colors.grey.withValues(alpha: 0.2)),
           // Content List
           Expanded(
             flex: 2,
@@ -217,7 +217,7 @@ class _HistoryTabState extends State<HistoryTab> {
     // Use theme colors: errorContainer (soft red) for background
     final backgroundColor = colorScheme.errorContainer;
     final onBackgroundColor = colorScheme.onErrorContainer;
-    final borderColor = colorScheme.error.withOpacity(0.5);
+    final borderColor = colorScheme.error.withValues(alpha: 0.5);
 
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 4, bottom: 16),
@@ -325,7 +325,7 @@ class _HistoryTabState extends State<HistoryTab> {
         borderRadius: BorderRadius.circular(AppConstants.largeBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: shadowColor.withOpacity(0.3),
+            color: shadowColor.withValues(alpha: 0.3),
             spreadRadius: 1,
             blurRadius: 8,
             offset: const Offset(0, 4),
@@ -438,7 +438,7 @@ class _HistoryTabState extends State<HistoryTab> {
         ? primaryColor
         : (isDark ? Colors.white : Colors.black87);
     final backgroundColor = isSelected
-        ? Theme.of(context).primaryColor.withOpacity(0.1)
+        ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
         : Colors.transparent;
 
     return Material(
@@ -498,7 +498,7 @@ class _HistoryTabState extends State<HistoryTab> {
           borderRadius: BorderRadius.circular(8),
           color: widget.selectedCategory == 'all'
               ? Colors.transparent
-              : Theme.of(context).primaryColor.withOpacity(0.1),
+              : Theme.of(context).primaryColor.withValues(alpha: 0.1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

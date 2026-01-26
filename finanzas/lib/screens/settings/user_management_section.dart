@@ -123,8 +123,8 @@ class _UserManagementSectionState extends State<UserManagementSection> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(
-                        theme.brightness == Brightness.dark ? 0.4 : 0.2,
+                      color: Colors.green.withValues(
+                        alpha: theme.brightness == Brightness.dark ? 0.4 : 0.2,
                       ),
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -244,8 +244,8 @@ class _UserManagementSectionState extends State<UserManagementSection> {
               child: Container(
                 width: 4,
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(
-                    theme.brightness == Brightness.dark ? 0.7 : 0.5,
+                  color: Colors.red.withValues(
+                    alpha: theme.brightness == Brightness.dark ? 0.7 : 0.5,
                   ),
                   borderRadius: const BorderRadius.only(
                     topRight: Radius.circular(12),
@@ -277,7 +277,7 @@ class _UserManagementSectionState extends State<UserManagementSection> {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: Colors.primaries[user.name.hashCode % Colors.primaries.length]
-            .withOpacity(0.3),
+            .withValues(alpha: 0.3),
       ),
       child: Icon(
         Icons.person,

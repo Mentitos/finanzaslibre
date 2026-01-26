@@ -76,7 +76,7 @@ class RecordItem extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: transactionColor.withOpacity(0.1),
+                  color: transactionColor.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: transactionColor, size: 20),
@@ -108,10 +108,10 @@ class RecordItem extends StatelessWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: categoryColor.withOpacity(0.15),
+                                color: categoryColor.withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: categoryColor.withOpacity(0.3),
+                                  color: categoryColor.withValues(alpha: 0.3),
                                   width: 1,
                                 ),
                               ),
@@ -306,7 +306,7 @@ class RecentRecordItem extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       leading: CircleAvatar(
-        backgroundColor: transactionColor.withOpacity(0.1),
+        backgroundColor: transactionColor.withValues(alpha: 0.1),
         child: Icon(icon, color: transactionColor, size: 20),
       ),
       title: Text(
@@ -320,10 +320,10 @@ class RecentRecordItem extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: categoryColor.withOpacity(0.15),
+                color: categoryColor.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(4),
                 border: Border.all(
-                  color: categoryColor.withOpacity(0.3),
+                  color: categoryColor.withValues(alpha: 0.3),
                   width: 1,
                 ),
               ),

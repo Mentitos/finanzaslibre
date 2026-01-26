@@ -29,15 +29,19 @@ class SavingsDataManager {
   late DataCleanupManager _dataCleanupManager;
 
   Future<void> initialize() async {
-    _prefs = await SharedPreferences.getInstance();
+    try {
+      _prefs = await SharedPreferences.getInstance();
 
-    _recordsManager = RecordsManager(_prefs);
-    _categoriesManager = CategoriesManager(_prefs);
-    _securityManager = SecurityManager(_prefs);
-    _privacyManager = PrivacyManager(_prefs);
-    _importExportManager = ImportExportManager();
-    _dataCleanupManager = DataCleanupManager(_prefs);
-    _goalsManager = GoalsManager(_prefs);
+      _recordsManager = RecordsManager(_prefs);
+      _categoriesManager = CategoriesManager(_prefs);
+      _securityManager = SecurityManager(_prefs);
+      _privacyManager = PrivacyManager(_prefs);
+      _importExportManager = ImportExportManager();
+      _dataCleanupManager = DataCleanupManager(_prefs);
+      _goalsManager = GoalsManager(_prefs);
+    } catch (e) {
+      debugPrint('❌ Error initializing SavingsDataManager: $e');
+    }
   }
 
   // --- DELEGACIÓN A RECORDS MANAGER ---
@@ -85,6 +89,12 @@ class SavingsDataManager {
   Future<bool> addCategoryWithColor(String category, Color color) =>
       _categoriesManager.addCategoryWithColor(category, color);
 
+  Future<bool> addCategoryWithColorAndIcon(
+    String category,
+    Color color,
+    IconData icon,
+  ) => _categoriesManager.addCategoryWithColorAndIcon(category, color, icon);
+
   Future<bool> deleteCategory(String category) =>
       _categoriesManager.deleteCategory(category);
 
@@ -96,6 +106,15 @@ class SavingsDataManager {
 
   Future<Map<String, Color>> loadAllCategoryColors() =>
       _categoriesManager.loadAllCategoryColors();
+
+  Future<bool> saveCategoryIcon(String category, IconData icon) =>
+      _categoriesManager.saveCategoryIcon(category, icon);
+
+  Future<IconData> loadCategoryIcon(String category) =>
+      _categoriesManager.loadCategoryIcon(category);
+
+  Future<Map<String, IconData>> loadAllCategoryIcons() =>
+      _categoriesManager.loadAllCategoryIcons();
 
   // --- DELEGACIÓN A SECURITY MANAGER ---
   Future<bool> savePinData(String pin, bool biometricEnabled) =>

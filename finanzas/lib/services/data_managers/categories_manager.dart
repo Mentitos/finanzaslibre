@@ -9,6 +9,7 @@ class CategoriesManager {
 
   static const String _categoriesKey = 'savings_categories';
   static const String _categoryColorsKey = 'category_colors';
+  static const String _categoryIconsKey = 'category_icons';
   static const List<String> _defaultCategories = [
     'General',
     'Trabajo',
@@ -17,6 +18,15 @@ class CategoriesManager {
     'Emergencia',
     'Bonificación',
   ];
+
+  static const Map<String, IconData> _defaultCategoryIcons = {
+    'General': Icons.category,
+    'Trabajo': Icons.work,
+    'Inversión': Icons.trending_up,
+    'Regalo': Icons.card_giftcard,
+    'Emergencia': Icons.warning_amber,
+    'Bonificación': Icons.star,
+  };
 
   CategoriesManager(this._prefs);
 
@@ -102,7 +112,11 @@ class CategoriesManager {
     return false;
   }
 
-  Future<bool> addCategoryWithColor(String category, Color color) async {
+  Future<bool> addCategoryWithColorAndIcon(
+    String category,
+    Color color,
+    IconData icon,
+  ) async {
     if (category.trim().isEmpty) return false;
 
     final categories = await loadCategories();
@@ -112,6 +126,7 @@ class CategoriesManager {
       categories.add(trimmedCategory);
       await saveCategories(categories);
       await saveCategoryColor(trimmedCategory, color);
+      await saveCategoryIcon(trimmedCategory, icon);
       return true;
     }
 
@@ -145,7 +160,7 @@ class CategoriesManager {
         colorMap = Map<String, int>.from(decoded);
       }
 
-      colorMap[category] = color.value;
+      colorMap[category] = color.toARGB32();
       await _prefs.setString(key, json.encode(colorMap));
       return true;
     } catch (e) {
@@ -184,5 +199,66 @@ class CategoriesManager {
       debugPrint('❌ Error cargando colores: $e');
     }
     return {};
+  }
+
+  Future<bool> addCategoryWithColor(String category, Color color) async {
+    return addCategoryWithColorAndIcon(category, color, Icons.category);
+  }
+
+  Future<bool> saveCategoryIcon(String category, IconData icon) async {
+    try {
+      final key = _getUserDataKey(_categoryIconsKey);
+      final iconsJson = _prefs.getString(key);
+      Map<String, int> iconMap = {};
+
+      if (iconsJson != null) {
+        final decoded = json.decode(iconsJson);
+        iconMap = Map<String, int>.from(decoded);
+      }
+
+      iconMap[category] = icon.codePoint;
+      await _prefs.setString(key, json.encode(iconMap));
+      return true;
+    } catch (e) {
+      debugPrint('❌ Error guardando ícono: $e');
+      return false;
+    }
+  }
+
+  Future<IconData> loadCategoryIcon(String category) async {
+    try {
+      final key = _getUserDataKey(_categoryIconsKey);
+      final iconsJson = _prefs.getString(key);
+
+      if (iconsJson != null) {
+        final iconMap = Map<String, int>.from(json.decode(iconsJson));
+        if (iconMap.containsKey(category)) {
+          return IconData(iconMap[category]!, fontFamily: 'MaterialIcons');
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error cargando ícono: $e');
+    }
+    return _defaultCategoryIcons[category] ?? Icons.category;
+  }
+
+  Future<Map<String, IconData>> loadAllCategoryIcons() async {
+    try {
+      final key = _getUserDataKey(_categoryIconsKey);
+      final iconsJson = _prefs.getString(key);
+
+      Map<String, IconData> icons = Map.from(_defaultCategoryIcons);
+
+      if (iconsJson != null) {
+        final iconMap = Map<String, int>.from(json.decode(iconsJson));
+        iconMap.forEach((key, codePoint) {
+          icons[key] = IconData(codePoint, fontFamily: 'MaterialIcons');
+        });
+      }
+      return icons;
+    } catch (e) {
+      debugPrint('❌ Error cargando íconos: $e');
+      return _defaultCategoryIcons;
+    }
   }
 }

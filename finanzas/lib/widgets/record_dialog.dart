@@ -120,6 +120,7 @@ class RecordDialog extends StatefulWidget {
   final Function(SavingsRecord) onSave;
   final List<String> categories;
   final Map<String, Color>? categoryColors;
+  final Map<String, IconData>? categoryIcons;
   final SavingsRecord? record;
   final String? initialCategory;
   final double? currentPhysicalBalance;
@@ -130,6 +131,7 @@ class RecordDialog extends StatefulWidget {
     required this.onSave,
     required this.categories,
     this.categoryColors,
+    this.categoryIcons,
     this.record,
     this.initialCategory,
     this.currentPhysicalBalance,
@@ -319,7 +321,7 @@ class _RecordDialogState extends State<RecordDialog> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: headerColor.withOpacity(0.1),
+        color: headerColor.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(20),
           topRight: Radius.circular(20),
@@ -478,9 +480,9 @@ class _RecordDialogState extends State<RecordDialog> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
+            color: Colors.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
           ),
           child: Row(
             children: [
@@ -515,7 +517,7 @@ class _RecordDialogState extends State<RecordDialog> {
 
     return Container(
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: controller.text.isNotEmpty ? color : borderColor!,
@@ -634,7 +636,7 @@ class _RecordDialogState extends State<RecordDialog> {
           child: Row(
             children: [
               Icon(
-                AppConstants.getCategoryIcon(category),
+                AppConstants.getCategoryIcon(category, widget.categoryIcons),
                 color: _getCategoryColor(category),
                 size: 20,
               ),

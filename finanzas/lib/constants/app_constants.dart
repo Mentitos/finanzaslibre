@@ -139,7 +139,14 @@ class AppConstants {
     return defaultColors[category] ?? Colors.grey;
   }
 
-  static IconData getCategoryIcon(String category) {
+  static IconData getCategoryIcon(
+    String category, [
+    Map<String, IconData>? customIcons,
+  ]) {
+    if (customIcons != null && customIcons.containsKey(category)) {
+      return customIcons[category]!;
+    }
+
     final defaultIcons = {
       'General': Icons.category,
       'Trabajo': Icons.work,
@@ -147,7 +154,6 @@ class AppConstants {
       'Regalo': Icons.card_giftcard,
       'Emergencia': Icons.warning_amber,
       'Bonificación': Icons.star,
-      // Legacy or other mappings if needed
     };
 
     return defaultIcons[category] ?? Icons.label_outline;

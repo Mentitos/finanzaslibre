@@ -3,6 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -21,41 +22,53 @@ class NotificationService {
   Future<void> initialize() async {
     if (_initialized) return;
 
-    tz.initializeTimeZones();
+    try {
+      tz.initializeTimeZones();
 
-    final String timeZoneName = await _getDeviceTimeZone();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
+      final String timeZoneName = await _getDeviceTimeZone();
+      try {
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+      } catch (e) {
+        debugPrint('⚠️ Error setting location, using default: $e');
+        // Fallback to UTC if location invalid
+        try {
+          tz.setLocalLocation(tz.getLocation('UTC'));
+        } catch (_) {}
+      }
 
-    const androidSettings = AndroidInitializationSettings(
-      '@mipmap/ic_launcher',
-    );
+      const androidSettings = AndroidInitializationSettings(
+        '@mipmap/ic_launcher',
+      );
 
-    const iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+      const iosSettings = DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
 
-    const initSettings = InitializationSettings(
-      android: androidSettings,
-      iOS: iosSettings,
-      macOS: iosSettings,
-      linux: LinuxInitializationSettings(
-        defaultActionName: 'Open notification',
-      ),
-      windows: WindowsInitializationSettings(
-        appName: 'Mis Ahorros',
-        guid: '2c332145-6804-4537-b353-84c47b0a7401',
-        appUserModelId: 'com.tello.finanzas',
-      ),
-    );
+      const initSettings = InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+        macOS: iosSettings,
+        linux: LinuxInitializationSettings(
+          defaultActionName: 'Open notification',
+        ),
+        windows: WindowsInitializationSettings(
+          appName: 'Mis Ahorros',
+          guid: '2c332145-6804-4537-b353-84c47b0a7401',
+          appUserModelId: 'com.tello.finanzas',
+        ),
+      );
 
-    await _notifications.initialize(
-      initSettings,
-      onDidReceiveNotificationResponse: _onNotificationTapped,
-    );
+      await _notifications.initialize(
+        initSettings,
+        onDidReceiveNotificationResponse: _onNotificationTapped,
+      );
 
-    _initialized = true;
+      _initialized = true;
+    } catch (e) {
+      debugPrint('❌ Error initializing NotificationService: $e');
+    }
   }
 
   Future<String> _getDeviceTimeZone() async {
@@ -98,7 +111,9 @@ class NotificationService {
   void setTimeZone(String timeZoneName) {
     try {
       tz.setLocalLocation(tz.getLocation(timeZoneName));
-    } catch (e) {}
+    } catch (e) {
+      // Ignore invalid timezones
+    }
   }
 
   List<Map<String, String>> getAvailableTimeZones() {

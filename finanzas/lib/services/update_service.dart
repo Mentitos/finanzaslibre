@@ -68,25 +68,38 @@ class UpdateService {
     }
   }
 
-  Future<void> checkForUpdatesOnStartup(BuildContext context) async {
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _checkForUpdatesOnStartupInternal(BuildContext context) async {
+    try {
+      await Future.delayed(const Duration(seconds: 2));
 
-    final updateInfo = await checkForUpdates();
+      if (!context.mounted) return;
 
-    if (updateInfo != null && context.mounted) {
-      final prefs = await SharedPreferences.getInstance();
-      final dismissedUpdate = prefs.getString(_dismissedUpdateKey);
+      final updateInfo = await checkForUpdates();
 
-      if (!updateInfo.isMandatory &&
-          dismissedUpdate == updateInfo.lastUpdateDate.toIso8601String()) {
-        debugPrint(
-          '⏭️ Usuario descartó actualización del ${updateInfo.formattedDate}',
-        );
-        return;
+      if (updateInfo != null && context.mounted) {
+        final prefs = await SharedPreferences.getInstance();
+        final dismissedUpdate = prefs.getString(_dismissedUpdateKey);
+
+        if (!updateInfo.isMandatory &&
+            dismissedUpdate == updateInfo.lastUpdateDate.toIso8601String()) {
+          debugPrint(
+            '⏭️ Usuario descartó actualización del ${updateInfo.formattedDate}',
+          );
+          return;
+        }
+
+        if (context.mounted) {
+          _showUpdateBanner(context, updateInfo);
+        }
       }
-
-      _showUpdateBanner(context, updateInfo);
+    } catch (e) {
+      debugPrint('❌ Error verificando actualizaciones en inicio: $e');
     }
+  }
+
+  Future<void> checkForUpdatesOnStartup(BuildContext context) async {
+    // Fire and forget, but handle errors internally
+    _checkForUpdatesOnStartupInternal(context);
   }
 
   void _showUpdateBanner(BuildContext context, UpdateInfo info) {
@@ -106,7 +119,7 @@ class UpdateService {
         ),
         backgroundColor: info.isMandatory
             ? colorScheme.errorContainer
-            : colorScheme.surfaceVariant,
+            : colorScheme.surfaceContainerHighest,
         actions: [
           if (!info.isMandatory)
             TextButton(
@@ -179,14 +192,14 @@ class UpdateService {
                         (info.isMandatory
                                 ? Colors.orange
                                 : Theme.of(context).colorScheme.primary)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color:
                           (info.isMandatory
                                   ? Colors.orange
                                   : Theme.of(context).colorScheme.primary)
-                              .withOpacity(0.3),
+                              .withValues(alpha: 0.3),
                     ),
                   ),
                   child: Column(
@@ -242,9 +255,11 @@ class UpdateService {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
+                      color: Colors.orange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                      border: Border.all(
+                        color: Colors.orange.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: Row(
                       children: [

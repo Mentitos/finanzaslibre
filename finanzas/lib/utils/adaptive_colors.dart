@@ -9,27 +9,27 @@ class AdaptiveColors {
     AdaptiveColorType type,
   ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     switch (type) {
       // Colores que siempre siguen la paleta
       case AdaptiveColorType.primary:
         return palette.seedColor;
-      
+
       case AdaptiveColorType.success:
         return palette.seedColor;
-      
+
       case AdaptiveColorType.primaryContainer:
-        return isDark 
-          ? palette.seedColor.withOpacity(0.3)
-          : palette.seedColor.withOpacity(0.1);
-      
+        return isDark
+            ? palette.seedColor.withValues(alpha: 0.3)
+            : palette.seedColor.withValues(alpha: 0.1);
+
       // Colores que mantienen su identidad
       case AdaptiveColorType.error:
         return Colors.red;
-      
+
       case AdaptiveColorType.warning:
         return Colors.orange;
-      
+
       case AdaptiveColorType.info:
         return Colors.blue;
     }
@@ -46,7 +46,10 @@ class AdaptiveColors {
   }
 
   // Método para obtener color de dinero físico (adaptable)
-  static Color getPhysicalMoneyColor(BuildContext context, ColorPalette palette) {
+  static Color getPhysicalMoneyColor(
+    BuildContext context,
+    ColorPalette palette,
+  ) {
     // Si la paleta es azul, mantener azul
     if (palette.type == PaletteType.blue) {
       return Colors.blue;

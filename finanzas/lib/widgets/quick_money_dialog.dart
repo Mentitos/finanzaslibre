@@ -103,6 +103,7 @@ class QuickMoneyDialog extends StatefulWidget {
   final Function(SavingsRecord) onSave;
   final List<String> categories;
   final Map<String, Color>? categoryColors;
+  final Map<String, IconData>? categoryIcons;
   final double currentAmount;
   final UserManager? userManager;
 
@@ -112,6 +113,7 @@ class QuickMoneyDialog extends StatefulWidget {
     required this.onSave,
     required this.categories,
     this.categoryColors,
+    this.categoryIcons,
     required this.currentAmount,
     this.userManager,
   });
@@ -355,7 +357,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
     return Container(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       decoration: BoxDecoration(
-        color: _moneyTypeColor.withOpacity(0.1),
+        color: _moneyTypeColor.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(AppConstants.largeBorderRadius),
           topRight: Radius.circular(AppConstants.largeBorderRadius),
@@ -366,7 +368,7 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: _moneyTypeColor.withOpacity(0.2),
+              color: _moneyTypeColor.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(_moneyTypeIcon, color: _moneyTypeColor, size: 24),
@@ -518,9 +520,9 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       decoration: BoxDecoration(
-        color: _moneyTypeColor.withOpacity(0.05),
+        color: _moneyTypeColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(AppConstants.defaultBorderRadius),
-        border: Border.all(color: _moneyTypeColor.withOpacity(0.2)),
+        border: Border.all(color: _moneyTypeColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -587,8 +589,8 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
           controller.text = _formatNumberWithDots(amountStr);
         });
       },
-      backgroundColor: _moneyTypeColor.withOpacity(0.1),
-      side: BorderSide(color: _moneyTypeColor.withOpacity(0.3)),
+      backgroundColor: _moneyTypeColor.withValues(alpha: 0.1),
+      side: BorderSide(color: _moneyTypeColor.withValues(alpha: 0.3)),
     );
   }
 
@@ -662,14 +664,18 @@ class _QuickMoneyDialogState extends State<QuickMoneyDialog>
               child: Row(
                 children: [
                   Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
+                    width: 24, // Slight adjustment for icon
+                    alignment: Alignment.center,
+                    child: Icon(
+                      AppConstants.getCategoryIcon(
+                        category,
+                        widget.categoryIcons,
+                      ),
                       color: AppConstants.getCategoryColor(
                         category,
                         widget.categoryColors,
                       ),
-                      shape: BoxShape.circle,
+                      size: 20,
                     ),
                   ),
                   const SizedBox(width: 8),

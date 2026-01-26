@@ -4,14 +4,14 @@ import '../../../services/notification_service.dart';
 import '../../../l10n/app_localizations.dart';
 
 class NotificationsSection extends StatefulWidget {
-  const NotificationsSection({super.key}); 
+  const NotificationsSection({super.key});
 
   @override
   State<NotificationsSection> createState() => _NotificationsSectionState();
 }
 
 class _NotificationsSectionState extends State<NotificationsSection> {
-  bool _notificationsEnabled = true; 
+  bool _notificationsEnabled = true;
   TimeOfDay _selectedTime = const TimeOfDay(hour: 21, minute: 0);
   final NotificationService _notificationService = NotificationService();
   bool _isLoading = true;
@@ -26,16 +26,16 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     final isFirstTime = prefs.getBool('notifications_first_time') ?? true;
-    
+
     if (isFirstTime) {
       await prefs.setBool('notifications_first_time', false);
       await prefs.setBool('notifications_enabled', true);
       await prefs.setInt('notification_hour', 21);
       await prefs.setInt('notification_minute', 0);
       await prefs.setBool('use_system_timezone', true);
-      
+
       final granted = await _notificationService.requestPermissions();
       if (granted && mounted) {
         final l10n = AppLocalizations.of(context)!;
@@ -48,7 +48,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
         _showTimeRemainingBanner(21, 0);
       }
-      
+
       setState(() {
         _notificationsEnabled = granted;
         _selectedTime = const TimeOfDay(hour: 21, minute: 0);
@@ -91,12 +91,15 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   void _showTimeRemainingBanner(int hour, int minute) {
     if (!mounted) return;
 
-    final duration = _notificationService.getTimeUntilNextNotification(hour, minute);
+    final duration = _notificationService.getTimeUntilNextNotification(
+      hour,
+      minute,
+    );
     final timeText = _notificationService.formatTimeRemaining(duration);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     OverlayEntry? overlayEntry;
-    
+
     overlayEntry = OverlayEntry(
       builder: (context) => Positioned(
         top: MediaQuery.of(context).padding.top + 16,
@@ -110,24 +113,21 @@ class _NotificationsSectionState extends State<NotificationsSection> {
             builder: (context, value, child) {
               return Transform.translate(
                 offset: Offset(0, -20 * (1 - value)),
-                child: Opacity(
-                  opacity: value,
-                  child: child,
-                ),
+                child: Opacity(opacity: value, child: child),
               );
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: isDark 
-                    ? [Colors.orange.shade700, Colors.orange.shade900]
-                    : [Colors.orange.shade400, Colors.orange.shade600],
+                  colors: isDark
+                      ? [Colors.orange.shade700, Colors.orange.shade900]
+                      : [Colors.orange.shade400, Colors.orange.shade600],
                 ),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.orange.withOpacity(0.3),
+                    color: Colors.orange.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -139,7 +139,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -166,18 +166,14 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                         Text(
                           'Próximo aviso en $timeText',
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.95),
+                            color: Colors.white.withValues(alpha: 0.95),
                             fontSize: 12,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.check_circle,
-                    color: Colors.white,
-                    size: 18,
-                  ),
+                  const Icon(Icons.check_circle, color: Colors.white, size: 18),
                 ],
               ),
             ),
@@ -195,7 +191,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
   Future<void> _toggleNotifications(bool value) async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     if (value) {
       final granted = await _notificationService.requestPermissions();
       if (!granted) {
@@ -243,7 +239,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
 
   Future<void> _selectTime() async {
     final l10n = AppLocalizations.of(context)!;
-    
+
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: _selectedTime,
@@ -278,7 +274,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   Future<void> _selectTimeZone() async {
     final availableZones = _notificationService.getAvailableTimeZones();
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final selected = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
@@ -289,9 +285,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
             const SizedBox(width: 12),
             Text(
               'Zona horaria',
-              style: TextStyle(
-                color: isDark ? Colors.white : null,
-              ),
+              style: TextStyle(color: isDark ? Colors.white : null),
             ),
           ],
         ),
@@ -308,26 +302,43 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                 return InkWell(
                   onTap: () => Navigator.pop(context, 'SYSTEM'),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
-                      color: isSelected 
-                        ? (isDark ? Colors.blue.shade900.withOpacity(0.3) : Colors.blue.shade50)
-                        : (isDark ? Colors.grey[850] : Colors.grey.shade50),
+                      color: isSelected
+                          ? (isDark
+                                ? Colors.blue.shade900.withValues(alpha: 0.3)
+                                : Colors.blue.shade50)
+                          : (isDark ? Colors.grey[850] : Colors.grey.shade50),
                       border: Border(
                         left: BorderSide(
-                          color: isSelected ? Colors.blue : (isDark ? Colors.grey[700]! : Colors.grey.shade300),
+                          color: isSelected
+                              ? Colors.blue
+                              : (isDark
+                                    ? Colors.grey[700]!
+                                    : Colors.grey.shade300),
                           width: 4,
                         ),
-                        bottom: BorderSide(color: isDark ? Colors.grey[700]! : Colors.grey.shade300),
+                        bottom: BorderSide(
+                          color: isDark
+                              ? Colors.grey[700]!
+                              : Colors.grey.shade300,
+                        ),
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(
-                          isSelected ? Icons.check_circle : Icons.settings_suggest,
-                          color: isSelected 
-                            ? Colors.blue 
-                            : (isDark ? Colors.grey[400] : Colors.grey.shade600),
+                          isSelected
+                              ? Icons.check_circle
+                              : Icons.settings_suggest,
+                          color: isSelected
+                              ? Colors.blue
+                              : (isDark
+                                    ? Colors.grey[400]
+                                    : Colors.grey.shade600),
                           size: 22,
                         ),
                         const SizedBox(width: 16),
@@ -339,10 +350,16 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                                 '⚙️ Automática (del sistema)',
                                 style: TextStyle(
                                   fontSize: 15,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                  color: isSelected 
-                                    ? (isDark ? Colors.blue.shade300 : Colors.blue.shade900)
-                                    : (isDark ? Colors.white : Colors.black87),
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? (isDark
+                                            ? Colors.blue.shade300
+                                            : Colors.blue.shade900)
+                                      : (isDark
+                                            ? Colors.white
+                                            : Colors.black87),
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -350,7 +367,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                                 'Detectar zona horaria del dispositivo',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: isDark ? Colors.grey[400] : Colors.grey.shade600,
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey.shade600,
                                 ),
                               ),
                             ],
@@ -361,18 +380,24 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                   ),
                 );
               }
-              
+
               final zone = availableZones[index - 1];
-              final isSelected = !_useSystemTimeZone && zone['name'] == _selectedTimeZone;
-              
+              final isSelected =
+                  !_useSystemTimeZone && zone['name'] == _selectedTimeZone;
+
               return InkWell(
                 onTap: () => Navigator.pop(context, zone['name']),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                      ? (isDark ? Colors.orange.shade900.withOpacity(0.3) : Colors.orange.shade50)
-                      : null,
+                    color: isSelected
+                        ? (isDark
+                              ? Colors.orange.shade900.withValues(alpha: 0.3)
+                              : Colors.orange.shade50)
+                        : null,
                     border: Border(
                       left: BorderSide(
                         color: isSelected ? Colors.orange : Colors.transparent,
@@ -384,9 +409,11 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                     children: [
                       Icon(
                         isSelected ? Icons.check_circle : Icons.circle_outlined,
-                        color: isSelected 
-                          ? Colors.orange 
-                          : (isDark ? Colors.grey[600] : Colors.grey.shade400),
+                        color: isSelected
+                            ? Colors.orange
+                            : (isDark
+                                  ? Colors.grey[600]
+                                  : Colors.grey.shade400),
                         size: 20,
                       ),
                       const SizedBox(width: 16),
@@ -395,10 +422,14 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                           zone['display']!,
                           style: TextStyle(
                             fontSize: 15,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            color: isSelected 
-                              ? (isDark ? Colors.orange.shade300 : Colors.orange.shade900)
-                              : (isDark ? Colors.white : Colors.black87),
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.normal,
+                            color: isSelected
+                                ? (isDark
+                                      ? Colors.orange.shade300
+                                      : Colors.orange.shade900)
+                                : (isDark ? Colors.white : Colors.black87),
                           ),
                         ),
                       ),
@@ -434,6 +465,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       }
 
       if (_notificationsEnabled) {
+        if (!mounted) return;
         final l10n = AppLocalizations.of(context)!;
         await _notificationService.scheduleDailyReminder(
           hour: _selectedTime.hour,
@@ -441,7 +473,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
           title: l10n.savingsReminderTitle,
           body: l10n.savingsReminderBody,
         );
-        
+
         _showTimeRemainingBanner(_selectedTime.hour, _selectedTime.minute);
       }
 
@@ -453,7 +485,7 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     if (_isLoading) {
       return const Center(
         child: Padding(
@@ -477,78 +509,84 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       children: [
         SwitchListTile(
           secondary: Icon(
-            _notificationsEnabled 
-              ? Icons.notifications_active 
-              : Icons.notifications_off_outlined,
-            color: _notificationsEnabled 
-              ? Colors.orange 
-              : (isDark ? Colors.grey[600] : Colors.grey),
+            _notificationsEnabled
+                ? Icons.notifications_active
+                : Icons.notifications_off_outlined,
+            color: _notificationsEnabled
+                ? Colors.orange
+                : (isDark ? Colors.grey[600] : Colors.grey),
           ),
           title: Text(l10n.dailyReminder),
           subtitle: Text(
-            _notificationsEnabled 
-              ? l10n.reminderEnabled
-              : l10n.reminderDisabled
+            _notificationsEnabled
+                ? l10n.reminderEnabled
+                : l10n.reminderDisabled,
           ),
           value: _notificationsEnabled,
           onChanged: _toggleNotifications,
         ),
-        
+
         if (_notificationsEnabled) ...[
           ListTile(
             leading: const Icon(Icons.access_time, color: Colors.orange),
             title: Text(l10n.reminderTime),
             subtitle: Text(
               '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: _selectTime,
           ),
-          
+
           ListTile(
             leading: const Icon(Icons.public, color: Colors.orange),
             title: const Text('Zona horaria'),
             subtitle: Text(
-              _useSystemTimeZone 
-                ? '⚙️ Automática: ${getTimeZoneDisplay()}' 
-                : getTimeZoneDisplay(),
+              _useSystemTimeZone
+                  ? '⚙️ Automática: ${getTimeZoneDisplay()}'
+                  : getTimeZoneDisplay(),
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: _useSystemTimeZone 
-                  ? (isDark ? Colors.blue.shade300 : Colors.blue.shade700)
-                  : (isDark ? Colors.orange.shade300 : Colors.orange.shade700),
+                color: _useSystemTimeZone
+                    ? (isDark ? Colors.blue.shade300 : Colors.blue.shade700)
+                    : (isDark
+                          ? Colors.orange.shade300
+                          : Colors.orange.shade700),
               ),
             ),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: _selectTimeZone,
           ),
-          
+
           if (!_useSystemTimeZone)
             Container(
-              margin: const EdgeInsets.only(left: 72, right: 16, top: 4, bottom: 8),
+              margin: const EdgeInsets.only(
+                left: 72,
+                right: 16,
+                top: 4,
+                bottom: 8,
+              ),
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isDark 
-                  ? Colors.orange.shade900.withOpacity(0.2)
-                  : Colors.orange.shade50,
+                color: isDark
+                    ? Colors.orange.shade900.withValues(alpha: 0.2)
+                    : Colors.orange.shade50,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: isDark 
-                    ? Colors.orange.shade700.withOpacity(0.5)
-                    : Colors.orange.shade200,
+                  color: isDark
+                      ? Colors.orange.shade700.withValues(alpha: 0.5)
+                      : Colors.orange.shade200,
                 ),
               ),
               child: Row(
                 children: [
                   Icon(
-                    Icons.info_outline, 
-                    size: 16, 
-                    color: isDark ? Colors.orange.shade300 : Colors.orange.shade700,
+                    Icons.info_outline,
+                    size: 16,
+                    color: isDark
+                        ? Colors.orange.shade300
+                        : Colors.orange.shade700,
                   ),
                   const SizedBox(width: 8),
                   Expanded(
@@ -556,7 +594,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                       _selectedTimeZone,
                       style: TextStyle(
                         fontSize: 11,
-                        color: isDark ? Colors.orange.shade200 : Colors.orange.shade800,
+                        color: isDark
+                            ? Colors.orange.shade200
+                            : Colors.orange.shade800,
                       ),
                     ),
                   ),

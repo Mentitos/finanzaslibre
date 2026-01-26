@@ -9,7 +9,8 @@ class CategoriesTab extends StatelessWidget {
   final Map<String, dynamic> statistics;
   final List<String> categories;
   final Map<String, Color> categoryColors;
-  final Function(String, Color) onAddCategory;
+  final Map<String, IconData> categoryIcons;
+  final Function(String, Color, IconData) onAddCategory;
   final Function(String) onDeleteCategory;
 
   const CategoriesTab({
@@ -18,6 +19,7 @@ class CategoriesTab extends StatelessWidget {
     required this.categories,
     required this.onAddCategory,
     required this.categoryColors,
+    required this.categoryIcons,
     required this.onDeleteCategory,
   });
 
@@ -138,7 +140,10 @@ class CategoriesTab extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${AppConstants.currencySymbol}${Formatters.formatCurrency(entry.value)}',
+                    Formatters.formatCurrencyWithSign(
+                      entry.value,
+                      showPositiveSign: false,
+                    ),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: entry.value >= 0 ? Colors.green : Colors.red,
@@ -174,7 +179,7 @@ class CategoriesTab extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+            border: Border.all(color: color.withValues(alpha: 0.5)),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(
@@ -184,10 +189,14 @@ class CategoriesTab extends StatelessWidget {
             leading: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.category, color: color, size: 20),
+              child: Icon(
+                categoryIcons[category] ?? Icons.category,
+                color: color,
+                size: 20,
+              ),
             ),
             title: Text(
               l10n.translateCategory(category),
@@ -269,7 +278,7 @@ class CategoriesTab extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 32),
-          VerticalDivider(width: 1, color: Colors.grey.withOpacity(0.2)),
+          VerticalDivider(width: 1, color: Colors.grey.withValues(alpha: 0.2)),
           const SizedBox(width: 32),
           // RIGHT COLUMN: Management (List)
           Expanded(
@@ -279,7 +288,7 @@ class CategoriesTab extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.withOpacity(0.1)),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,9 +323,9 @@ class CategoriesTab extends StatelessWidget {
                             backgroundColor: AppConstants.getCategoryColor(
                               category,
                               categoryColors,
-                            ).withOpacity(0.2),
+                            ).withValues(alpha: 0.2),
                             child: Icon(
-                              Icons.category,
+                              categoryIcons[category] ?? Icons.category,
                               color: AppConstants.getCategoryColor(
                                 category,
                                 categoryColors,
@@ -367,6 +376,7 @@ class CategoriesTab extends StatelessWidget {
       category: category,
       amount: amount,
       color: color,
+      icon: categoryIcons[category] ?? Icons.category,
       l10n: l10n,
     );
   }
@@ -418,9 +428,11 @@ class CategoriesTab extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -476,7 +488,7 @@ class CategoriesTab extends StatelessWidget {
 
 class _CategoryDialog extends StatefulWidget {
   final List<String> categories;
-  final Function(String, Color) onAddCategory;
+  final Function(String, Color, IconData) onAddCategory;
   final AppLocalizations l10n;
 
   const _CategoryDialog({
@@ -492,7 +504,9 @@ class _CategoryDialog extends StatefulWidget {
 class _CategoryDialogState extends State<_CategoryDialog> {
   final _controller = TextEditingController();
   Color _selectedColor = Colors.blue;
+  IconData _selectedIcon = Icons.category;
   bool _showCustomColorPicker = false;
+  bool _showIconPicker = false;
 
   final List<Color> _colorPalette = [
     Colors.blue,
@@ -548,24 +562,37 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 const SizedBox(height: 24),
-                if (isDesktop)
-                  IntrinsicHeight(
-                    child: Row(
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(flex: 3, child: _buildFormContent()),
-                        const SizedBox(width: 32),
-                        const VerticalDivider(width: 1),
-                        const SizedBox(width: 32),
-                        Expanded(flex: 2, child: _buildPreviewSection()),
+                        if (isDesktop)
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 3, child: _buildFormContent()),
+                                const SizedBox(width: 32),
+                                const VerticalDivider(width: 1),
+                                const SizedBox(width: 32),
+                                Expanded(
+                                  flex: 2,
+                                  child: _buildPreviewSection(),
+                                ),
+                              ],
+                            ),
+                          )
+                        else ...[
+                          _buildFormContent(),
+                          const SizedBox(height: 24),
+                          _buildPreviewSection(),
+                        ],
                       ],
                     ),
-                  )
-                else ...[
-                  _buildFormContent(),
-                  const SizedBox(height: 24),
-                  _buildPreviewSection(),
-                ],
+                  ),
+                ),
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -646,7 +673,165 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 300),
         ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Elige un Ícono',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            if (_showIconPicker)
+              TextButton.icon(
+                onPressed: () => setState(() => _showIconPicker = false),
+                icon: const Icon(Icons.grid_view, size: 16),
+                label: const Text('Ocultar'),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
+              )
+            else
+              TextButton.icon(
+                onPressed: () => setState(() => _showIconPicker = true),
+                icon: const Icon(Icons.grid_view, size: 16),
+                label: const Text('Ver todos'),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        AnimatedCrossFade(
+          firstChild: _buildQuickIconPicker(),
+          secondChild: _buildFullIconPicker(),
+          crossFadeState: _showIconPicker
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 300),
+        ),
       ],
+    );
+  }
+
+  Widget _buildQuickIconPicker() {
+    final quickIcons = [
+      Icons.category,
+      Icons.work,
+      Icons.home,
+      Icons.favorite,
+      Icons.pets,
+      Icons.shopping_cart,
+      Icons.restaurant,
+      Icons.directions_car,
+      Icons.medical_services,
+      Icons.school,
+    ];
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [...quickIcons.map((icon) => _buildIconOption(icon))],
+    );
+  }
+
+  Widget _buildFullIconPicker() {
+    final allIcons = [
+      Icons.category,
+      Icons.work,
+      Icons.home,
+      Icons.shopping_cart,
+      Icons.restaurant,
+      Icons.directions_car,
+      Icons.flight,
+      Icons.medical_services,
+      Icons.school,
+      Icons.pets,
+      Icons.sports_soccer,
+      Icons.videogame_asset,
+      Icons.music_note,
+      Icons.local_cafe,
+      Icons.local_bar,
+      Icons.build,
+      Icons.savings,
+      Icons.attach_money,
+      Icons.laptop,
+      Icons.phone_android,
+      Icons.favorite,
+      Icons.beach_access,
+      Icons.fitness_center,
+      Icons.local_pizza,
+      Icons.movie,
+      Icons.local_mall,
+      Icons.child_care,
+      Icons.bolt,
+      Icons.water_drop,
+      Icons.local_gas_station,
+      Icons.favorite_border,
+      Icons.kitchen,
+      Icons.bed,
+      Icons.chair,
+      Icons.light,
+      Icons.shower,
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(12),
+      height: 200,
+      child: GridView.builder(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 6,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+        ),
+        itemCount: allIcons.length,
+        itemBuilder: (context, index) {
+          return _buildIconOption(allIcons[index]);
+        },
+      ),
+    );
+  }
+
+  Widget _buildIconOption(IconData icon) {
+    final isSelected = _selectedIcon.codePoint == icon.codePoint;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedIcon = icon),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? _selectedColor
+              : Theme.of(context).colorScheme.surface,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : Colors.grey.withValues(alpha: 0.3),
+            width: 1,
+          ),
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: _selectedColor.withValues(alpha: 0.4),
+                blurRadius: 8,
+                spreadRadius: 1,
+              ),
+          ],
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? Colors.white : Theme.of(context).iconTheme.color,
+          size: 24,
+        ),
+      ),
     );
   }
 
@@ -655,7 +840,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       decoration: BoxDecoration(
         color: Theme.of(
           context,
-        ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.all(16),
@@ -664,7 +849,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
         onColorChanged: (color) {
           setState(() => _selectedColor = color);
         },
-        showLabel: false,
+        labelTypes: const [],
         pickerAreaHeightPercent: 0.7,
         enableAlpha: false,
         displayThumbColor: true,
@@ -695,6 +880,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                 : _controller.text,
             amount: 0,
             color: _selectedColor,
+            icon: _selectedIcon,
             l10n: widget.l10n,
             isPreview: true,
           ),
@@ -727,11 +913,11 @@ class _CategoryDialogState extends State<_CategoryDialog> {
     }
 
     Navigator.pop(context);
-    widget.onAddCategory(name, _selectedColor);
+    widget.onAddCategory(name, _selectedColor, _selectedIcon);
   }
 
   Widget _buildColorOption(Color color) {
-    final isSelected = _selectedColor.value == color.value;
+    final isSelected = _selectedColor.toARGB32() == color.toARGB32();
     return GestureDetector(
       onTap: () => setState(() => _selectedColor = color),
       child: AnimatedContainer(
@@ -748,12 +934,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: color.withOpacity(0.6),
+                color: color.withValues(alpha: 0.6),
                 blurRadius: 12,
                 spreadRadius: 2,
               )
             else
-              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+              ),
           ],
         ),
         child: isSelected
@@ -765,11 +954,17 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
   Widget _buildCustomColorButton() {
     final isCustomSelected = !_colorPalette.any(
-      (c) => c.value == _selectedColor.value,
+      (c) => c.toARGB32() == _selectedColor.toARGB32(),
     );
 
     return GestureDetector(
-      onTap: _showColorPicker,
+      onTap: () {
+        if (MediaQuery.of(context).size.width > 600) {
+          setState(() => _showCustomColorPicker = true);
+        } else {
+          _showColorPicker();
+        }
+      },
       child: Container(
         width: 48,
         height: 48,
@@ -782,12 +977,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           boxShadow: [
             if (isCustomSelected)
               BoxShadow(
-                color: _selectedColor.withOpacity(0.6),
+                color: _selectedColor.withValues(alpha: 0.6),
                 blurRadius: 12,
                 spreadRadius: 2,
               )
             else
-              BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 4,
+              ),
           ],
           border: isCustomSelected
               ? Border.all(color: Colors.white, width: 3)
@@ -811,7 +1009,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             onColorChanged: (color) {
               setState(() => _selectedColor = color);
             },
-            showLabel: false,
+            labelTypes: const [],
             pickerAreaHeightPercent: 0.7,
             enableAlpha: false,
             displayThumbColor: true,
@@ -833,6 +1031,7 @@ class _CategorySummaryCard extends StatelessWidget {
   final String category;
   final double amount;
   final Color color;
+  final IconData icon;
   final AppLocalizations l10n;
   final bool isPreview;
 
@@ -840,6 +1039,7 @@ class _CategorySummaryCard extends StatelessWidget {
     required this.category,
     required this.amount,
     required this.color,
+    required this.icon,
     required this.l10n,
     this.isPreview = false,
   });
@@ -853,10 +1053,10 @@ class _CategorySummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -872,7 +1072,7 @@ class _CategorySummaryCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -886,36 +1086,45 @@ class _CategorySummaryCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              Icon(icon, color: color, size: 24),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Icon(
                 amount >= 0 ? Icons.trending_up : Icons.trending_down,
                 color: amount >= 0 ? Colors.green : Colors.red,
                 size: 20,
               ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Total',
-                style: TextStyle(
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                  fontSize: 12,
-                ),
-              ),
-              const SizedBox(height: 4),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  '${AppConstants.currencySymbol}${Formatters.formatCurrency(amount.abs())}',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isPositive
-                        ? Theme.of(context).colorScheme.onSurface
-                        : Colors.red,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Total',
+                    style: TextStyle(
+                      color: Theme.of(context).textTheme.bodySmall?.color,
+                      fontSize: 12,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      Formatters.formatCurrencyWithSign(
+                        amount.abs(),
+                        showPositiveSign: false,
+                      ),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: isPositive
+                            ? Theme.of(context).colorScheme.onSurface
+                            : Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

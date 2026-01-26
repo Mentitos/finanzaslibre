@@ -24,7 +24,7 @@ class StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      shadowColor: color.withOpacity(0.2),
+      shadowColor: color.withValues(alpha: 0.2),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -35,8 +35,8 @@ class StatCard extends StatelessWidget {
             gradient: onTap != null
                 ? LinearGradient(
                     colors: [
-                      color.withOpacity(0.1),
-                      color.withOpacity(0.05),
+                      color.withValues(alpha: 0.1),
+                      color.withValues(alpha: 0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -46,23 +46,17 @@ class StatCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 28,
-                ),
+                child: Icon(icon, color: color, size: 28),
               ),
-              
+
               const SizedBox(height: 12),
-              
-              
+
               if (isLoading)
                 SizedBox(
                   width: 20,
@@ -82,21 +76,19 @@ class StatCard extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-              
+
               const SizedBox(height: 8),
-              
-              
+
               Text(
                 title,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w500),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              
-              
+
               if (subtitle != null) ...[
                 const SizedBox(height: 4),
                 Text(
@@ -117,7 +109,6 @@ class StatCard extends StatelessWidget {
     );
   }
 }
-
 
 class MoneyStatCard extends StatelessWidget {
   final String title;
@@ -154,10 +145,12 @@ class MoneyStatCard extends StatelessWidget {
   }
 
   String _formatCurrency(double number) {
-    return number.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
+    return number
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
   }
 }
 
@@ -181,12 +174,14 @@ class ProgressStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progress = targetValue > 0 ? (currentValue / targetValue).clamp(0.0, 1.0) : 0.0;
+    final progress = targetValue > 0
+        ? (currentValue / targetValue).clamp(0.0, 1.0)
+        : 0.0;
     final percentage = (progress * 100).toInt();
 
     return Card(
       elevation: 2,
-      shadowColor: color.withOpacity(0.2),
+      shadowColor: color.withValues(alpha: 0.2),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -195,7 +190,6 @@ class ProgressStatCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
               Row(
                 children: [
                   Icon(icon, color: color, size: 24),
@@ -211,45 +205,34 @@ class ProgressStatCard extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 12),
-              
-              
+
               LinearProgressIndicator(
                 value: progress,
-                backgroundColor: color.withOpacity(0.1),
+                backgroundColor: color.withValues(alpha: 0.1),
                 valueColor: AlwaysStoppedAnimation<Color>(color),
               ),
-              
+
               const SizedBox(height: 8),
-              
-              
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     '\$${_formatCurrency(currentValue)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: color,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, color: color),
                   ),
                   Text(
                     '$percentage%',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ],
               ),
-              
+
               Text(
                 'Meta: \$${_formatCurrency(targetValue)}',
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.grey[500], fontSize: 12),
               ),
             ],
           ),
@@ -259,9 +242,11 @@ class ProgressStatCard extends StatelessWidget {
   }
 
   String _formatCurrency(double number) {
-    return number.toStringAsFixed(0).replaceAllMapped(
-      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-      (Match m) => '${m[1]},',
-    );
+    return number
+        .toStringAsFixed(0)
+        .replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+        );
   }
 }

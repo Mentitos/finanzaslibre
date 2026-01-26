@@ -60,19 +60,19 @@ class CategoryPieChart extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               l10n.distributionByCategory,
               style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             SizedBox(
               height: 300,
               child: PieChart(
                 PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 60,
+                  sectionsSpace: 4,
+                  centerSpaceRadius: 0, // Full circle
                   pieTouchData: PieTouchData(enabled: true),
                   sections: sortedEntries.map((entry) {
                     final percentage = (entry.value.abs() / total) * 100;
@@ -86,17 +86,19 @@ class CategoryPieChart extends StatelessWidget {
                       title: percentage >= 5
                           ? '${percentage.toStringAsFixed(0)}%'
                           : '',
-                      radius: 80,
+                      radius: 120, // Larger radius for full circle
                       titleStyle: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        shadows: [Shadow(color: Colors.black45, blurRadius: 2)],
                       ),
+                      titlePositionPercentageOffset: 0.6,
                     );
                   }).toList(),
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 800),
-                swapAnimationCurve: Curves.easeInOutCubic,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOutCubic,
               ),
             ),
           ],

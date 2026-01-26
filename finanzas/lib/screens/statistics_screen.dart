@@ -487,8 +487,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     );
                   }).toList(),
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 800),
-                swapAnimationCurve: Curves.easeInOutCubic,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOutCubic,
               ),
             ),
           ],
@@ -556,7 +556,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ),
                         ),
                         Text(
-                          '${AppConstants.currencySymbol}${Formatters.formatCurrencyWithSign(entry.value.abs(), showPositiveSign: false, useScientificNotation: true)}',
+                          Formatters.formatCurrencyWithSign(
+                            entry.value.abs(),
+                            showPositiveSign: false,
+                            useScientificNotation: true,
+                          ),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: entry.value >= 0 ? Colors.green : Colors.red,
@@ -718,7 +722,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     horizontalInterval: _calculateHorizontalInterval(validData),
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
-                        color: Colors.grey.withOpacity(0.3),
+                        color: Colors.grey.withValues(alpha: 0.3),
                         strokeWidth: 1,
                       );
                     },
@@ -758,8 +762,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     ),
                   ),
                 ),
-                swapAnimationDuration: const Duration(milliseconds: 600),
-                swapAnimationCurve: Curves.easeInOutCubic,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOutCubic,
               ),
             ),
           ],

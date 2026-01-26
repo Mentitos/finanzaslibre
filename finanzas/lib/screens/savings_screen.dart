@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../models/savings_record.dart';
 import '../models/color_palette.dart';
 import '../services/savings_data_manager.dart';
@@ -36,6 +37,7 @@ class _SavingsScreenState extends State<SavingsScreen>
     with TickerProviderStateMixin {
   int _userRefreshKey = 0;
   late TabController _tabController;
+  late PageController _pageController; // Added PageController
   late UserManager _userManager;
   final SavingsDataManager _dataManager = SavingsDataManager();
   final TextEditingController _searchController = TextEditingController();
@@ -45,6 +47,7 @@ class _SavingsScreenState extends State<SavingsScreen>
   List<String> _categories = [];
   Map<String, dynamic> _statistics = {};
   Map<String, Color> _categoryColors = {};
+  Map<String, IconData> _categoryIcons = {};
 
   String _currentFilter = 'all';
   String _selectedCategory = 'all';
@@ -52,6 +55,8 @@ class _SavingsScreenState extends State<SavingsScreen>
   bool _isLoading = true;
   bool _privacyMode = false;
   final DataChangeNotifier _dataNotifier = DataChangeNotifier();
+  bool _isQuickMoneyDialogOpen = false;
+  MoneyType? _activeQuickMoneyType;
 
   @override
   void initState() {
@@ -60,6 +65,7 @@ class _SavingsScreenState extends State<SavingsScreen>
     _dataManager.setUserManager(_userManager);
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(() => setState(() {}));
+    _pageController = PageController(); // Initialize PageController
     _dataNotifier.addListener(_onDataChanged);
     _loadData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -71,14 +77,16 @@ class _SavingsScreenState extends State<SavingsScreen>
   void dispose() {
     _dataNotifier.removeListener(_onDataChanged);
     _tabController.dispose();
+    _pageController.dispose(); // Dispose PageController
     _searchController.dispose();
     super.dispose();
   }
 
   Future<void> _loadData() async {
-    setState(() => _isLoading = true);
+    if (!mounted) return;
 
     try {
+      setState(() => _isLoading = true);
       final records = await _dataManager.loadRecords();
       final categories = await _dataManager.loadCategories();
       final stats = await _dataManager.getStatistics();
@@ -88,8 +96,8 @@ class _SavingsScreenState extends State<SavingsScreen>
       // Si la opción de ocultar al inicio está activa, forzamos privacyMode a true.
       // Si no, respetamos el último estado guardado.
       final privacyMode = hideOnStartup ? true : privacyModeSaved;
-
       final categoryColors = await _dataManager.loadAllCategoryColors();
+      final categoryIcons = await _dataManager.loadAllCategoryIcons();
 
       setState(() {
         _allRecords = records;
@@ -97,6 +105,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         _statistics = stats;
         _privacyMode = privacyMode;
         _categoryColors = categoryColors;
+        _categoryIcons = categoryIcons;
         _applyFilters();
         _isLoading = false;
       });
@@ -112,6 +121,19 @@ class _SavingsScreenState extends State<SavingsScreen>
   void _onDataChanged() {
     debugPrint('📢 Cambio en datos detectado, recargando Summary...');
     _loadData();
+  }
+
+  void _changeTab(int index) {
+    if (_tabController.index != index) {
+      _tabController.animateTo(index);
+    }
+    if (_pageController.hasClients && _pageController.page?.round() != index) {
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void _applyFilters() {
@@ -187,12 +209,13 @@ class _SavingsScreenState extends State<SavingsScreen>
     }
   }
 
-  Future<void> _addCategory(String category, Color color) async {
+  Future<void> _addCategory(String category, Color color, IconData icon) async {
     final l10n = AppLocalizations.of(context)!;
     try {
       final success = await _dataManager.addCategory(category);
       if (success) {
         await _dataManager.saveCategoryColor(category, color);
+        await _dataManager.saveCategoryIcon(category, icon);
         await _loadData();
         _showSuccessSnackBar(l10n.categorySaved);
       } else {
@@ -230,6 +253,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         onSave: _addRecord,
         categories: _categories,
         categoryColors: _categoryColors,
+        categoryIcons: _categoryIcons,
         initialCategory: _selectedCategory != 'all' ? _selectedCategory : null,
         currentPhysicalBalance: _statistics['totalPhysical'] ?? 0.0,
         currentDigitalBalance: _statistics['totalDigital'] ?? 0.0,
@@ -244,6 +268,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         onSave: _updateRecord,
         categories: _categories,
         categoryColors: _categoryColors,
+        categoryIcons: _categoryIcons,
         record: record,
         currentPhysicalBalance: _statistics['totalPhysical'] ?? 0.0,
         currentDigitalBalance: _statistics['totalDigital'] ?? 0.0,
@@ -251,18 +276,34 @@ class _SavingsScreenState extends State<SavingsScreen>
     );
   }
 
-  void _showQuickMoneyDialog(MoneyType moneyType, double currentAmount) {
-    showDialog(
+  Future<void> _showQuickMoneyDialog(
+    MoneyType moneyType,
+    double currentAmount,
+  ) async {
+    setState(() {
+      _isQuickMoneyDialogOpen = true;
+      _activeQuickMoneyType = moneyType;
+    });
+
+    await showDialog(
       context: context,
       builder: (context) => QuickMoneyDialog(
         moneyType: moneyType,
         onSave: _addRecord,
         categories: _categories,
         categoryColors: _categoryColors,
+        categoryIcons: _categoryIcons,
         currentAmount: currentAmount,
         userManager: _userManager,
       ),
     );
+
+    if (mounted) {
+      setState(() {
+        _isQuickMoneyDialogOpen = false;
+        _activeQuickMoneyType = null;
+      });
+    }
   }
 
   void _showSettingsMenu() async {
@@ -320,13 +361,130 @@ class _SavingsScreenState extends State<SavingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= 700) {
-          return _buildDesktopLayout(context);
-        }
-        return _buildMobileLayout(context);
+    // Define shortcuts for Desktop (Vertical Navigation)
+    // Up/W -> Previous
+    // Down/S -> Next
+    final desktopShortcuts = <ShortcutActivator, Intent>{
+      const SingleActivator(LogicalKeyboardKey.arrowRight):
+          const NextTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyD): const NextTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          const NextTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyS): const NextTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.arrowLeft):
+          const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyA): const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.arrowUp):
+          const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyW): const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyQ):
+          const QuickPhysicalIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyE):
+          const QuickDigitalIntent(),
+    };
+
+    // Define shortcuts for Mobile (Horizontal Navigation at Top)
+    // User requested swap:
+    // W / Up -> Next (was Previous)
+    // S / Down -> Previous (was Next)
+    final mobileShortcuts = <ShortcutActivator, Intent>{
+      const SingleActivator(LogicalKeyboardKey.arrowRight):
+          const NextTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyD): const NextTabIntent(),
+      // Swapped logic for Mobile:
+      const SingleActivator(LogicalKeyboardKey.arrowDown):
+          const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyS): const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.arrowLeft):
+          const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyA): const PreviousTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.arrowUp): const NextTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyW): const NextTabIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyQ):
+          const QuickPhysicalIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyE):
+          const QuickDigitalIntent(),
+    };
+
+    return Actions(
+      actions: <Type, Action<Intent>>{
+        NextTabIntent: CallbackAction<NextTabIntent>(
+          onInvoke: (NextTabIntent intent) {
+            final nextIndex =
+                (_tabController.index + 1) % _tabController.length;
+            _changeTab(nextIndex);
+            return null;
+          },
+        ),
+        PreviousTabIntent: CallbackAction<PreviousTabIntent>(
+          onInvoke: (PreviousTabIntent intent) {
+            final prevIndex =
+                (_tabController.index - 1 + _tabController.length) %
+                _tabController.length;
+            _changeTab(prevIndex);
+            return null;
+          },
+        ),
+        QuickPhysicalIntent: CallbackAction<QuickPhysicalIntent>(
+          onInvoke: (QuickPhysicalIntent intent) {
+            if (_tabController.index == 0) {
+              if (_isQuickMoneyDialogOpen) {
+                Navigator.pop(context);
+                if (_activeQuickMoneyType == MoneyType.digital) {
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    if (mounted) {
+                      final amount = _statistics['totalPhysical'] ?? 0.0;
+                      _showQuickMoneyDialog(MoneyType.physical, amount);
+                    }
+                  });
+                }
+              } else {
+                final amount = _statistics['totalPhysical'] ?? 0.0;
+                _showQuickMoneyDialog(MoneyType.physical, amount);
+              }
+            }
+            return null;
+          },
+        ),
+        QuickDigitalIntent: CallbackAction<QuickDigitalIntent>(
+          onInvoke: (QuickDigitalIntent intent) {
+            if (_tabController.index == 0) {
+              if (_isQuickMoneyDialogOpen) {
+                Navigator.pop(context);
+                if (_activeQuickMoneyType == MoneyType.physical) {
+                  Future.delayed(const Duration(milliseconds: 150), () {
+                    if (mounted) {
+                      final amount = _statistics['totalDigital'] ?? 0.0;
+                      _showQuickMoneyDialog(MoneyType.digital, amount);
+                    }
+                  });
+                }
+              } else {
+                final amount = _statistics['totalDigital'] ?? 0.0;
+                _showQuickMoneyDialog(MoneyType.digital, amount);
+              }
+            }
+            return null;
+          },
+        ),
       },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth >= 700) {
+            return Shortcuts(
+              shortcuts: desktopShortcuts,
+              child: Focus(
+                autofocus: true,
+                child: _buildDesktopLayout(context),
+              ),
+            );
+          }
+          return Shortcuts(
+            shortcuts: mobileShortcuts,
+            child: Focus(autofocus: true, child: _buildMobileLayout(context)),
+          );
+        },
+      ),
     );
   }
 
@@ -377,11 +535,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         children: [
           NavigationRail(
             selectedIndex: _tabController.index,
-            onDestinationSelected: (int index) {
-              setState(() {
-                _tabController.animateTo(index);
-              });
-            },
+            onDestinationSelected: _changeTab,
             labelType: NavigationRailLabelType.all,
             destinations: [
               NavigationRailDestination(
@@ -410,8 +564,11 @@ class _SavingsScreenState extends State<SavingsScreen>
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : TabBarView(
-                    controller: _tabController,
+                : PageView(
+                    controller: _pageController,
+                    scrollDirection: Axis.vertical,
+                    physics:
+                        const NeverScrollableScrollPhysics(), // Disable swipe to rely on rail
                     children: _buildTabViews(),
                   ),
           ),
@@ -443,9 +600,11 @@ class _SavingsScreenState extends State<SavingsScreen>
               onUserChanged: () async {
                 _dataManager.setUserManager(_userManager);
                 await _loadData();
-                setState(() {
-                  _userRefreshKey++;
-                });
+                if (mounted) {
+                  setState(() {
+                    _userRefreshKey++;
+                  });
+                }
               },
               onShowSnackBar: (message, isError) {
                 if (isError) {
@@ -474,7 +633,7 @@ class _SavingsScreenState extends State<SavingsScreen>
           labelColor: Theme.of(context).appBarTheme.foregroundColor,
           unselectedLabelColor: Theme.of(
             context,
-          ).appBarTheme.foregroundColor?.withOpacity(0.7),
+          ).appBarTheme.foregroundColor?.withValues(alpha: 0.7),
           indicatorColor: Theme.of(context).appBarTheme.foregroundColor,
           tabs: [
             Tab(text: l10n.summary, icon: const Icon(Icons.dashboard)),
@@ -506,7 +665,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         onRefresh: _loadData,
         onEditRecord: _showEditRecordDialog,
         onQuickMoneyTap: _showQuickMoneyDialog,
-        onViewAllTap: () => _tabController.animateTo(1),
+        onViewAllTap: () => _changeTab(1),
         palette: widget.palette,
       ),
       HistoryTab(
@@ -551,6 +710,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         statistics: _statistics,
         categories: _categories,
         categoryColors: _categoryColors,
+        categoryIcons: _categoryIcons,
         onAddCategory: _addCategory,
         onDeleteCategory: _deleteCategory,
       ),
@@ -561,4 +721,20 @@ class _SavingsScreenState extends State<SavingsScreen>
       ),
     ];
   }
+}
+
+class NextTabIntent extends Intent {
+  const NextTabIntent();
+}
+
+class PreviousTabIntent extends Intent {
+  const PreviousTabIntent();
+}
+
+class QuickPhysicalIntent extends Intent {
+  const QuickPhysicalIntent();
+}
+
+class QuickDigitalIntent extends Intent {
+  const QuickDigitalIntent();
 }

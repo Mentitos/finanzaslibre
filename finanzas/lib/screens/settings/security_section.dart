@@ -121,6 +121,8 @@ class _SecuritySectionState extends State<SecuritySection> {
   Future<void> _changePin(BuildContext context, AppLocalizations l10n) async {
     final currentPin = await widget.dataManager.loadPin();
 
+    if (!context.mounted) return;
+
     if (currentPin == null) {
       widget.onShowSnackBar(l10n.noPinConfigured, true);
       return;
@@ -145,6 +147,8 @@ class _SecuritySectionState extends State<SecuritySection> {
 
   Future<void> _disablePin(BuildContext context, AppLocalizations l10n) async {
     final currentPin = await widget.dataManager.loadPin();
+
+    if (!context.mounted) return;
 
     if (currentPin == null) {
       await widget.dataManager.setPinEnabled(false);

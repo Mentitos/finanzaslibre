@@ -42,28 +42,26 @@ void main() async {
       initialTheme = ThemeMode.system;
   }
 
-  runApp(MyApp(initialTheme: initialTheme, dataManager: dataManager));
+  runApp(
+    MyApp(isDarkMode: initialTheme == ThemeMode.dark, dataManager: dataManager),
+  );
 }
 
 class MyApp extends StatefulWidget {
-  final ThemeMode initialTheme;
+  final bool isDarkMode;
   final SavingsDataManager dataManager;
 
-  const MyApp({
-    super.key,
-    required this.initialTheme,
-    required this.dataManager,
-  });
+  const MyApp({super.key, required this.isDarkMode, required this.dataManager});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MyApp> createState() => MyAppState();
 
-  static _MyAppState of(BuildContext context) {
-    return context.findAncestorStateOfType<_MyAppState>()!;
+  static MyAppState of(BuildContext context) {
+    return context.findAncestorStateOfType<MyAppState>()!;
   }
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   late ThemeMode _themeMode;
   Locale _locale = const Locale('es');
   ColorPalette _currentPalette = ColorPalette.predefinedPalettes.first;
@@ -71,7 +69,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _themeMode = widget.initialTheme;
+    _themeMode = widget.isDarkMode ? ThemeMode.dark : ThemeMode.light;
     _loadLocale();
     _loadPalette();
   }
@@ -229,9 +227,9 @@ class _MyAppState extends State<MyApp> {
   }
 
   MaterialColor _getMaterialColor(Color color) {
-    final int red = color.red;
-    final int green = color.green;
-    final int blue = color.blue;
+    final int red = (color.r * 255.0).round();
+    final int green = (color.g * 255.0).round();
+    final int blue = (color.b * 255.0).round();
 
     final Map<int, Color> shades = {
       50: Color.fromRGBO(red, green, blue, .1),
@@ -246,7 +244,7 @@ class _MyAppState extends State<MyApp> {
       900: Color.fromRGBO(red, green, blue, 1),
     };
 
-    return MaterialColor(color.value, shades);
+    return MaterialColor(color.toARGB32(), shades);
   }
 
   Future<void> _loadPalette() async {

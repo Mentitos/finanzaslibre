@@ -4,7 +4,6 @@ import '../../services/user_manager.dart';
 import '../../l10n/app_localizations.dart';
 
 class ConfirmationDialogs {
- 
   static void showClearRecordsConfirmation(
     BuildContext context,
     SavingsDataManager dataManager,
@@ -78,9 +77,11 @@ class ConfirmationDialogs {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: Colors.blue.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Colors.blue.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,9 +136,11 @@ class ConfirmationDialogs {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.amber.withOpacity(0.1),
+                    color: Colors.amber.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Colors.amber.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,9 +186,11 @@ class ConfirmationDialogs {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
+                    color: Colors.red.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    border: Border.all(
+                      color: Colors.red.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -274,24 +279,18 @@ class ConfirmationDialogs {
                   if (keepRecords) {
                     await userManager.resetAppKeepingDefaultUser();
                     await dataManager.clearAllDataExceptDefaultUser();
-                    
+
                     if (context.mounted) {
                       Navigator.pop(context);
-                      onShowSnackBar(
-                        l10n.appResetWithRecordsKept,
-                        false,
-                      );
+                      onShowSnackBar(l10n.appResetWithRecordsKept, false);
                     }
                   } else {
                     await userManager.resetAppKeepingDefaultUser();
                     await dataManager.clearAllData();
-                    
+
                     if (context.mounted) {
                       Navigator.pop(context);
-                      onShowSnackBar(
-                        l10n.appResetAsNew,
-                        false,
-                      );
+                      onShowSnackBar(l10n.appResetAsNew, false);
                     }
                   }
 

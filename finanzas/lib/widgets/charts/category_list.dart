@@ -72,7 +72,11 @@ class CategoryList extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${AppConstants.currencySymbol}${Formatters.formatCurrencyWithSign(entry.value.abs(), showPositiveSign: false, useScientificNotation: true)}',
+                          Formatters.formatCurrencyWithSign(
+                            entry.value.abs(),
+                            showPositiveSign: false,
+                            useScientificNotation: true,
+                          ),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: entry.value >= 0 ? Colors.green : Colors.red,

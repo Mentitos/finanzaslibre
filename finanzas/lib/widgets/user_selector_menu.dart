@@ -44,15 +44,24 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
   }
 
   Future<void> _loadUsers() async {
-    final currentUser = await widget.userManager.getCurrentUser();
-    final allUsers = await widget.userManager.getAllUsers();
+    try {
+      final currentUser = await widget.userManager.getCurrentUser();
+      final allUsers = await widget.userManager.getAllUsers();
 
-    if (mounted) {
-      setState(() {
-        _currentUser = currentUser;
-        _allUsers = allUsers;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _currentUser = currentUser;
+          _allUsers = allUsers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading users: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -123,19 +132,25 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
         }).toList();
       },
       onSelected: (userId) async {
-        final selectedUser = _allUsers.firstWhere((u) => u.id == userId);
-
-        await widget.userManager.setCurrentUser(selectedUser);
-        widget.onUserChanged();
-
-        await _loadUsers();
-
-        if (mounted && widget.onShowSnackBar != null) {
+        try {
           final l10n = AppLocalizations.of(context)!;
-          widget.onShowSnackBar!(
-            '${l10n.switchedTo} ${selectedUser.name}',
-            false,
-          );
+          final selectedUser = _allUsers.firstWhere((u) => u.id == userId);
+
+          await widget.userManager.setCurrentUser(selectedUser);
+          widget.onUserChanged();
+
+          await _loadUsers();
+
+          if (!mounted) return;
+
+          if (widget.onShowSnackBar != null) {
+            widget.onShowSnackBar!(
+              '${l10n.switchedTo} ${selectedUser.name}',
+              false,
+            );
+          }
+        } catch (e) {
+          debugPrint('Error selecting user: $e');
         }
       },
       child: Padding(
@@ -180,7 +195,7 @@ class _UserSelectorMenuState extends State<UserSelectorMenu> {
       radius: size / 2,
       backgroundColor: Colors
           .primaries[user.name.hashCode % Colors.primaries.length]
-          .withOpacity(0.3),
+          .withValues(alpha: 0.3),
       child: Icon(
         Icons.person,
         color: Colors.primaries[user.name.hashCode % Colors.primaries.length],

@@ -102,7 +102,7 @@ class ExportImportDialogs {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.orange[900]?.withOpacity(0.3)
+                      ? Colors.orange[900]?.withValues(alpha: 0.3)
                       : Colors.orange[50],
                   border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
@@ -140,7 +140,7 @@ class ExportImportDialogs {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.blue[900]?.withOpacity(0.3)
+                      ? Colors.blue[900]?.withValues(alpha: 0.3)
                       : Colors.blue[50],
                   border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
@@ -530,7 +530,7 @@ class ExportImportDialogs {
         child: Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            border: Border.all(color: color.withOpacity(0.3)),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
@@ -814,7 +814,7 @@ class ExportImportDialogs {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.blue[900]?.withOpacity(0.3)
+                      ? Colors.blue[900]?.withValues(alpha: 0.3)
                       : Colors.blue[50],
                   border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
@@ -852,7 +852,7 @@ class ExportImportDialogs {
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.green[900]?.withOpacity(0.3)
+                      ? Colors.green[900]?.withValues(alpha: 0.3)
                       : Colors.green[50],
                   border: Border.all(
                     color: Theme.of(context).brightness == Brightness.dark
