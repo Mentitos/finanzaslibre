@@ -544,7 +544,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final isDesktop = constraints.maxWidth > 600;
+        final isDesktop = constraints.maxWidth > 900;
 
         return Dialog(
           shape: RoundedRectangleBorder(
@@ -569,20 +569,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (isDesktop)
-                          IntrinsicHeight(
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(flex: 3, child: _buildFormContent()),
-                                const SizedBox(width: 32),
-                                const VerticalDivider(width: 1),
-                                const SizedBox(width: 32),
-                                Expanded(
-                                  flex: 2,
-                                  child: _buildPreviewSection(),
-                                ),
-                              ],
-                            ),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(flex: 3, child: _buildFormContent()),
+                              const SizedBox(width: 32),
+                              // VerticalDivider removed to prevent layout issues
+                              const SizedBox(width: 32),
+                              Expanded(flex: 2, child: _buildPreviewSection()),
+                            ],
                           )
                         else ...[
                           _buildFormContent(),
@@ -623,6 +618,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   }
 
   Widget _buildFormContent() {
+    final isDesktop = MediaQuery.of(context).size.width > 900;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -649,8 +645,8 @@ class _CategoryDialogState extends State<_CategoryDialog> {
             if (_showCustomColorPicker)
               TextButton.icon(
                 onPressed: () => setState(() => _showCustomColorPicker = false),
-                icon: const Icon(Icons.grid_view, size: 16),
-                label: const Text('Volver'),
+                icon: Icon(isDesktop ? Icons.close : Icons.grid_view, size: 16),
+                label: Text(isDesktop ? 'Ocultar' : 'Volver'),
                 style: TextButton.styleFrom(
                   visualDensity: VisualDensity.compact,
                 ),
@@ -658,21 +654,47 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           ],
         ),
         const SizedBox(height: 12),
-        AnimatedCrossFade(
-          firstChild: Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              ..._colorPalette.map((color) => _buildColorOption(color)),
-              _buildCustomColorButton(),
-            ],
+        if (isDesktop) ...[
+          // Desktop: Always show grid, optional picker below
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 300),
+              child: Wrap(
+                spacing: 12,
+                runSpacing: 12,
+                children: [
+                  ..._colorPalette.map((color) => _buildColorOption(color)),
+                  _buildCustomColorButton(),
+                ],
+              ),
+            ),
           ),
-          secondChild: _buildInlineColorPicker(),
-          crossFadeState: _showCustomColorPicker
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 300),
-        ),
+          if (_showCustomColorPicker) ...[
+            const SizedBox(height: 24),
+            _buildInlineColorPicker(),
+          ],
+        ] else
+          // Mobile: Toggle between grid and picker
+          AnimatedCrossFade(
+            firstChild: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 300),
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    ..._colorPalette.map((color) => _buildColorOption(color)),
+                    _buildCustomColorButton(),
+                  ],
+                ),
+              ),
+            ),
+            secondChild: _buildInlineColorPicker(),
+            crossFadeState: _showCustomColorPicker
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 300),
+          ),
         const SizedBox(height: 24),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -702,13 +724,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           ],
         ),
         const SizedBox(height: 12),
-        AnimatedCrossFade(
-          firstChild: _buildQuickIconPicker(),
-          secondChild: _buildFullIconPicker(),
-          crossFadeState: _showIconPicker
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 300),
+        Center(
+          child: AnimatedCrossFade(
+            firstChild: _buildQuickIconPicker(),
+            secondChild: _buildFullIconPicker(),
+            crossFadeState: _showIconPicker
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 300),
+          ),
         ),
       ],
     );
@@ -728,10 +752,15 @@ class _CategoryDialogState extends State<_CategoryDialog> {
       Icons.school,
     ];
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [...quickIcons.map((icon) => _buildIconOption(icon))],
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [...quickIcons.map((icon) => _buildIconOption(icon))],
+        ),
+      ),
     );
   }
 
@@ -860,6 +889,8 @@ class _CategoryDialogState extends State<_CategoryDialog> {
   }
 
   Widget _buildPreviewSection() {
+    final isDesktop = MediaQuery.of(context).size.width > 900;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -871,20 +902,51 @@ class _CategoryDialogState extends State<_CategoryDialog> {
           ),
         ),
         const SizedBox(height: 16),
-        // Use the same aspect ratio logic or responsive height as the grid
-        AspectRatio(
-          aspectRatio: 1.5, // slightly wider for the preview
-          child: _CategorySummaryCard(
-            category: _controller.text.isEmpty
-                ? widget.l10n.categoryPreview
-                : _controller.text,
-            amount: 0,
-            color: _selectedColor,
-            icon: _selectedIcon,
-            l10n: widget.l10n,
-            isPreview: true,
+        if (isDesktop)
+          // Desktop: Show the summary card
+          AspectRatio(
+            aspectRatio: 1.5,
+            child: _CategorySummaryCard(
+              category: _controller.text.isEmpty
+                  ? widget.l10n.categoryPreview
+                  : _controller.text,
+              amount: 0,
+              color: _selectedColor,
+              icon: _selectedIcon,
+              l10n: widget.l10n,
+              isPreview: true,
+            ),
+          )
+        else
+          // Mobile: Show a list tile style preview (Management style)
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: _selectedColor.withValues(alpha: 0.5)),
+            ),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: _selectedColor.withValues(alpha: 0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(_selectedIcon, color: _selectedColor, size: 20),
+              ),
+              title: Text(
+                _controller.text.isEmpty
+                    ? widget.l10n.categoryPreview
+                    : _controller.text,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              trailing: const Icon(Icons.delete_outline, color: Colors.grey),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -959,7 +1021,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
 
     return GestureDetector(
       onTap: () {
-        if (MediaQuery.of(context).size.width > 600) {
+        if (MediaQuery.of(context).size.width > 900) {
           setState(() => _showCustomColorPicker = true);
         } else {
           _showColorPicker();
@@ -1069,23 +1131,29 @@ class _CategorySummaryCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  isPreview ? category : l10n.translateCategory(category),
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    isPreview ? category : l10n.translateCategory(category),
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Icon(icon, color: color, size: 24),
             ],
           ),

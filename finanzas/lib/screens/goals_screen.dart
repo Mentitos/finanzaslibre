@@ -633,87 +633,395 @@ class _GoalsScreenState extends State<GoalsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  const Text('🎯', style: TextStyle(fontSize: 28)),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Metas',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+    // Check for desktop width
+    final isDesktop = MediaQuery.of(context).size.width > 900;
+
+    if (isDesktop) {
+      return _buildDesktopLayout();
+    }
+
+    // Mobile Layout
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Column(
+        children: [
+          if (_statistics.isNotEmpty && !_isLoading) _buildStatisticsCard(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
+                      borderRadius: BorderRadius.circular(12),
                     ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      labelColor: Theme.of(context).textTheme.bodyLarge?.color,
+                      labelPadding: EdgeInsets.zero,
+                      tabs: [
+                        Tab(text: 'Activas (${_activeGoals.length})'),
+                        Tab(text: 'Completadas (${_completedGoals.length})'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: widget.palette.seedColor,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    onPressed: _showAddGoalDialog,
+                    icon: Icon(
+                      Icons.add,
+                      color: widget.palette.seedColor.computeLuminance() > 0.5
+                          ? Colors.black
+                          : Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildGoalsList(_activeGoals, isActive: true),
+                      _buildGoalsList(_completedGoals, isActive: false),
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopLayout() {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mis Metas',
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Gestiona y visualiza tu progreso financiero',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                    ),
+                  ],
+                ),
+                FilledButton.icon(
+                  onPressed: _showAddGoalDialog,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Nueva Meta'),
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+
+            // Statistics Grid (3 Cards)
+            if (_statistics.isNotEmpty && !_isLoading) _buildDesktopStats(),
+            const SizedBox(height: 32),
+
+            // Tabs and Content
+            Expanded(
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Theme.of(context).dividerColor,
+                        ),
+                      ),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      isScrollable: true,
+                      tabAlignment: TabAlignment.start,
+                      labelPadding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      indicatorColor: Theme.of(context).primaryColor,
+                      labelStyle: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      unselectedLabelStyle: const TextStyle(fontSize: 16),
+                      tabs: [
+                        Tab(text: 'Activas (${_activeGoals.length})'),
+                        Tab(text: 'Completadas (${_completedGoals.length})'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : TabBarView(
+                            controller: _tabController,
+                            children: [
+                              _buildDesktopGoalsGrid(
+                                _activeGoals,
+                                isActive: true,
+                              ),
+                              _buildDesktopGoalsGrid(
+                                _completedGoals,
+                                isActive: false,
+                              ),
+                            ],
+                          ),
                   ),
                 ],
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopStats() {
+    final totalProgress = _statistics['totalProgress'] ?? 0.0;
+    final totalCurrentAmount = _statistics['totalCurrentAmount'] ?? 0.0;
+    final totalTargetAmount = _statistics['totalTargetAmount'] ?? 0.0;
+    final progressPercent = (totalProgress * 100).clamp(0, 100).toInt();
+
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            title: 'Ahorro Total',
+            value: '\$${Formatters.formatCurrency(totalCurrentAmount)}',
+            icon: Icons.savings,
+            color: Colors.blue,
+            subtitle: 'En todas tus metas activas',
+          ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          child: _buildStatCard(
+            title: 'Meta Global',
+            value: '\$${Formatters.formatCurrency(totalTargetAmount)}',
+            icon: Icons.flag,
+            color: Colors.orange,
+            subtitle: 'Objetivo total a alcanzar',
+          ),
+        ),
+        const SizedBox(width: 24),
+        Expanded(
+          child: _buildStatCard(
+            title: 'Progreso General',
+            value: '$progressPercent%',
+            icon: Icons.trending_up,
+            color: Colors.green,
+            subtitle: 'Estás cada vez más cerca',
+            isProgress: true,
+            progressValue: totalProgress,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required String subtitle,
+    bool isProgress = false,
+    double progressValue = 0.0,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 32),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white
+                        : Colors.black87,
+                  ),
+                ),
+                if (isProgress) ...[
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progressValue,
+                      minHeight: 6,
+                      backgroundColor: color.withValues(alpha: 0.1),
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                    ),
+                  ),
+                ] else ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopGoalsGrid(
+    List<SavingsGoal> goals, {
+    required bool isActive,
+  }) {
+    if (goals.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(32),
+              decoration: BoxDecoration(
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isActive ? Icons.flag_outlined : Icons.emoji_events_outlined,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              isActive
+                  ? 'No tienes metas activas actualmente'
+                  : 'Aún no has completado ninguna meta',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isActive
+                  ? '¡Es un buen momento para empezar a ahorrar!'
+                  : 'Sigue ahorrando para alcanzar tus objetivos',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
+            ),
+            if (isActive) ...[
+              const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: _showAddGoalDialog,
-                icon: const Icon(Icons.add, size: 20),
-                label: const Text('Nueva'),
+                icon: const Icon(Icons.add),
+                label: const Text('Crear Primera Meta'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: () {
-                    final hsl = HSLColor.fromColor(widget.palette.seedColor);
-                    final isLight =
-                        Theme.of(context).brightness == Brightness.light;
-
-                    final lightness = isLight
-                        ? (hsl.lightness - 0.05).clamp(0.0, 1.0)
-                        : (hsl.lightness + 0.05).clamp(0.0, 1.0);
-
-                    return hsl.withLightness(lightness).toColor();
-                  }(),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
+                    horizontal: 24,
+                    vertical: 16,
                   ),
                 ),
               ),
             ],
-          ),
+          ],
         ),
+      );
+    }
 
-        if (_statistics.isNotEmpty && !_isLoading) _buildStatisticsCard(),
-
-        Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: TabBar(
-            controller: _tabController,
-            indicator: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              color: Theme.of(context).colorScheme.primaryContainer,
-            ),
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            labelColor: Theme.of(context).textTheme.bodyLarge?.color,
-            tabs: [
-              Tab(text: 'Activas (${_activeGoals.length})'),
-              Tab(text: 'Completadas (${_completedGoals.length})'),
-            ],
-          ),
-        ),
-
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildGoalsList(_activeGoals, isActive: true),
-                    _buildGoalsList(_completedGoals, isActive: false),
-                  ],
-                ),
-        ),
-      ],
+    return GridView.builder(
+      padding: EdgeInsets.zero,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 400,
+        childAspectRatio: 1.4,
+        crossAxisSpacing: 24,
+        mainAxisSpacing: 24,
+      ),
+      itemCount: goals.length,
+      itemBuilder: (context, index) {
+        final goal = goals[index];
+        return GoalCard(
+          goal: goal,
+          onTap: () => _showMoneyDialog(goal),
+          onEdit: () => _showEditGoalDialog(goal),
+          onDelete: () => _showDeleteConfirmation(goal),
+        );
+      },
     );
   }
 
@@ -722,56 +1030,172 @@ class _GoalsScreenState extends State<GoalsScreen>
     final totalCurrentAmount = _statistics['totalCurrentAmount'] ?? 0.0;
     final totalTargetAmount = _statistics['totalTargetAmount'] ?? 0.0;
 
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
       margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          // Background pattern or decoration (optional)
+          Positioned(
+            right: -20,
+            top: -20,
+            child: Icon(
+              Icons.trending_up,
+              size: 100,
+              color: Colors.white.withValues(alpha: 0.03),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Progreso Total en Metas',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Progreso Total',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.grey[400] : Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${(totalProgress * 100).toStringAsFixed(0)}%',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.emoji_events,
+                        color: Colors.green[400],
+                        size: 24,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${(totalProgress * 100).toStringAsFixed(0)}%',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green[700],
+                const SizedBox(height: 20),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: LinearProgressIndicator(
+                    value: totalProgress,
+                    minHeight: 12,
+                    backgroundColor: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.grey[300],
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.green[400]!,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.grey[200]!,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildMiniStat(
+                        'Ahorrado',
+                        '\$${Formatters.formatCurrency(totalCurrentAmount)}',
+                        Colors.blue[400]!,
+                        isDark,
+                      ),
+                      Container(
+                        width: 1,
+                        height: 24,
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.grey[300],
+                      ),
+                      _buildMiniStat(
+                        'Meta Global',
+                        '\$${Formatters.formatCurrency(totalTargetAmount)}',
+                        Colors.orange[400]!,
+                        isDark,
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: totalProgress,
-                minHeight: 12,
-                backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.green[700]!),
-              ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniStat(String label, String value, Color color, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Ahorrado: \$${Formatters.formatCurrency(totalCurrentAmount)}',
-                  style: const TextStyle(fontSize: 13),
-                ),
-                Text(
-                  'Meta: \$${Formatters.formatCurrency(totalTargetAmount)}',
-                  style: const TextStyle(fontSize: 13),
-                ),
-              ],
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDark ? Colors.grey[400] : Colors.grey[600],
+              ),
             ),
           ],
         ),
-      ),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white : Colors.black87,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -806,10 +1230,11 @@ class _GoalsScreenState extends State<GoalsScreen>
       );
     }
 
+    final isDesktop = MediaQuery.of(context).size.width > 900;
     return RefreshIndicator(
       onRefresh: _loadGoals,
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.fromLTRB(16, 16, 16, isDesktop ? 16 : 80),
         itemCount: goals.length,
         itemBuilder: (context, index) {
           final goal = goals[index];
