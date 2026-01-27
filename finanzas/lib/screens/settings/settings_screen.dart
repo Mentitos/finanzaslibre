@@ -37,136 +37,141 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Usuarios
-          _buildSettingsCard(
-            context: context,
-            icon: Icons.people,
-            iconColor: Colors.blue,
-            title: l10n.users,
-            subtitle: l10n.manageUsersWallets,
-            onTap: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UserListPage(
-                    userManager: userManager,
-                    onUserChanged: onDataChanged,
-                    onShowSnackBar: onShowSnackBar,
-                  ),
-                ),
-              );
-              await onDataChanged();
-            },
-          ),
-          const SizedBox(height: 12),
-
-          _buildSettingsCard(
-            context: context,
-            icon: Icons.cloud,
-            iconColor: Colors.blue,
-            title: 'Google Drive',
-            subtitle: 'Sincroniza tus datos en la nube',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => GoogleDriveSyncScreen(
-                    dataManager: dataManager,
-                    onShowSnackBar: onShowSnackBar,
-                    onDataChanged: onDataChanged,
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          // Preferencias
-          _buildSettingsCard(
-            context: context,
-            icon: Icons.tune,
-            iconColor: Colors.purple,
-            title: l10n.preferences,
-            subtitle: l10n.appearanceNotificationsSecurity,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => _PreferencesSettingsScreen(
-                    dataManager: dataManager,
-                    onShowSnackBar: onShowSnackBar,
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-
-          // Datos
-          _buildSettingsCard(
-            context: context,
-            icon: Icons.storage,
-            iconColor: Colors.orange,
-            title: l10n.data,
-            subtitle: l10n.exportImportManageData,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => _DataSettingsScreen(
-                    dataManager: dataManager,
-                    onDataChanged: onDataChanged,
-                    onShowSnackBar: onShowSnackBar,
-                    allRecordsCount: allRecordsCount,
-                    categoriesCount: categoriesCount,
-                  ),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildSettingsCard(
-            context: context,
-            icon: Icons.system_update,
-            iconColor: Colors.blue,
-            title: 'Buscar actualizaciones',
-            subtitle: 'Versión ${AppConstants.appVersion}',
-            onTap: () async {
-              showDialog(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // Usuarios
+              _buildSettingsCard(
                 context: context,
-                barrierDismissible: false,
-                builder: (context) =>
-                    const Center(child: CircularProgressIndicator()),
-              );
-
-              final updateInfo = await UpdateService().checkForUpdates();
-
-              if (context.mounted) {
-                Navigator.pop(context);
-
-                if (updateInfo != null) {
-                  UpdateService().showUpdateDialog(context, updateInfo);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('✅ Tienes la última versión instalada'),
+                icon: Icons.people,
+                iconColor: Colors.blue,
+                title: l10n.users,
+                subtitle: l10n.manageUsersWallets,
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UserListPage(
+                        userManager: userManager,
+                        onUserChanged: onDataChanged,
+                        onShowSnackBar: onShowSnackBar,
+                      ),
                     ),
                   );
-                }
-              }
-            },
-          ),
-          const SizedBox(height: 12),
-          const Divider(height: 40),
+                  await onDataChanged();
+                },
+              ),
+              const SizedBox(height: 12),
 
-          // Acerca de
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: AboutSection(l10n: l10n),
+              _buildSettingsCard(
+                context: context,
+                icon: Icons.cloud,
+                iconColor: Colors.blue,
+                title: 'Google Drive',
+                subtitle: 'Sincroniza tus datos en la nube',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GoogleDriveSyncScreen(
+                        dataManager: dataManager,
+                        onShowSnackBar: onShowSnackBar,
+                        onDataChanged: onDataChanged,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              // Preferencias
+              _buildSettingsCard(
+                context: context,
+                icon: Icons.tune,
+                iconColor: Colors.purple,
+                title: l10n.preferences,
+                subtitle: l10n.appearanceNotificationsSecurity,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => _PreferencesSettingsScreen(
+                        dataManager: dataManager,
+                        onShowSnackBar: onShowSnackBar,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+
+              // Datos
+              _buildSettingsCard(
+                context: context,
+                icon: Icons.storage,
+                iconColor: Colors.orange,
+                title: l10n.data,
+                subtitle: l10n.exportImportManageData,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => _DataSettingsScreen(
+                        dataManager: dataManager,
+                        onDataChanged: onDataChanged,
+                        onShowSnackBar: onShowSnackBar,
+                        allRecordsCount: allRecordsCount,
+                        categoriesCount: categoriesCount,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildSettingsCard(
+                context: context,
+                icon: Icons.system_update,
+                iconColor: Colors.blue,
+                title: 'Buscar actualizaciones',
+                subtitle: 'Versión ${AppConstants.appVersion}',
+                onTap: () async {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (context) =>
+                        const Center(child: CircularProgressIndicator()),
+                  );
+
+                  final updateInfo = await UpdateService().checkForUpdates();
+
+                  if (context.mounted) {
+                    Navigator.pop(context);
+
+                    if (updateInfo != null) {
+                      UpdateService().showUpdateDialog(context, updateInfo);
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('✅ Tienes la última versión instalada'),
+                        ),
+                      );
+                    }
+                  }
+                },
+              ),
+              const SizedBox(height: 12),
+              const Divider(height: 40),
+
+              // Acerca de
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: AboutSection(l10n: l10n),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -213,7 +218,7 @@ class SettingsScreen extends StatelessWidget {
                       subtitle,
                       style: Theme.of(
                         context,
-                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[400]),
                     ),
                   ],
                 ),
@@ -246,88 +251,93 @@ class _PreferencesSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.preferences)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Apariencia
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // Apariencia
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.palette, color: Colors.purple),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.appearance,
-                        style: Theme.of(context).textTheme.titleLarge,
+                      Row(
+                        children: [
+                          Icon(Icons.palette, color: Colors.purple),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.appearance,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      AppearanceSection(l10n: l10n),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Seguridad
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.security, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.security,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      SecuritySection(
+                        dataManager: dataManager,
+                        onShowSnackBar: onShowSnackBar,
+                        onCloseSettings: () => Navigator.pop(context),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  AppearanceSection(l10n: l10n),
-                ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
 
-          // Seguridad
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              const SizedBox(height: 16),
+
+              // Notificaciones
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.security, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.security,
-                        style: Theme.of(context).textTheme.titleLarge,
+                      Row(
+                        children: [
+                          Icon(Icons.notifications, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.notifications,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 16),
+                      NotificationsSection(),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  SecuritySection(
-                    dataManager: dataManager,
-                    onShowSnackBar: onShowSnackBar,
-                    onCloseSettings: () => Navigator.pop(context),
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-
-          const SizedBox(height: 16),
-
-          // Notificaciones
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.notifications, color: Colors.orange),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.notifications,
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  NotificationsSection(),
-                ],
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -354,67 +364,72 @@ class _DataSettingsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.data)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 800),
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.import_export, color: Colors.orange),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.dataManagementTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
+                      Row(
+                        children: [
+                          Icon(Icons.import_export, color: Colors.orange),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.dataManagementTitle,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      DataManagementSection(
+                        dataManager: dataManager,
+                        onDataChanged: onDataChanged,
+                        onShowSnackBar: onShowSnackBar,
+                        allRecordsCount: allRecordsCount,
+                        categoriesCount: categoriesCount,
+                        l10n: l10n,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  DataManagementSection(
-                    dataManager: dataManager,
-                    onDataChanged: onDataChanged,
-                    onShowSnackBar: onShowSnackBar,
-                    allRecordsCount: allRecordsCount,
-                    categoriesCount: categoriesCount,
-                    l10n: l10n,
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.warning, color: Colors.red),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.dangerZoneTitle,
-                        style: Theme.of(context).textTheme.titleLarge,
+                      Row(
+                        children: [
+                          Icon(Icons.warning, color: Colors.red),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.dangerZoneTitle,
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      DangerZoneSection(
+                        dataManager: dataManager,
+                        onDataChanged: onDataChanged,
+                        onShowSnackBar: onShowSnackBar,
+                        l10n: l10n,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  DangerZoneSection(
-                    dataManager: dataManager,
-                    onDataChanged: onDataChanged,
-                    onShowSnackBar: onShowSnackBar,
-                    l10n: l10n,
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

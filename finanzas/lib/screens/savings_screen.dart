@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:async'; // Added for Timer
 import '../models/savings_record.dart';
 import '../models/color_palette.dart';
 import '../services/savings_data_manager.dart';
@@ -16,6 +17,12 @@ import '../l10n/app_localizations.dart';
 import 'goals_screen.dart';
 import 'package:finanzas/services/data_change_notifier.dart';
 import 'package:finanzas/services/update_service.dart';
+import 'dialogs/recurring_expenses_dialog.dart';
+import 'dialogs/due_recurring_dialog.dart'; // Startup check
+import '../models/recurring_transaction.dart';
+import 'package:finanzas/utils/snackbar_utils.dart';
+
+import '../widgets/expandable_fab.dart';
 
 class SavingsScreen extends StatefulWidget {
   final UserManager userManager;
@@ -58,6 +65,11 @@ class _SavingsScreenState extends State<SavingsScreen>
   bool _isQuickMoneyDialogOpen = false;
   MoneyType? _activeQuickMoneyType;
 
+  // Recurring Check
+  Timer? _recurringCheckTimer;
+  final Set<String> _sessionSkippedRecurringIds = {};
+  bool _isRecurringDialogShowing = false;
+
   @override
   void initState() {
     super.initState();
@@ -68,6 +80,12 @@ class _SavingsScreenState extends State<SavingsScreen>
     _pageController = PageController(); // Initialize PageController
     _dataNotifier.addListener(_onDataChanged);
     _loadData();
+    // Start periodic check
+    _recurringCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      _checkRecurringExpenses();
+    });
+    // Initial check
+    Future.delayed(const Duration(seconds: 1), _checkRecurringExpenses);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       UpdateService().checkForUpdatesOnStartup(context);
     });
@@ -75,6 +93,7 @@ class _SavingsScreenState extends State<SavingsScreen>
 
   @override
   void dispose() {
+    _recurringCheckTimer?.cancel();
     _dataNotifier.removeListener(_onDataChanged);
     _tabController.dispose();
     _pageController.dispose(); // Dispose PageController
@@ -121,6 +140,147 @@ class _SavingsScreenState extends State<SavingsScreen>
   void _onDataChanged() {
     debugPrint('📢 Cambio en datos detectado, recargando Summary...');
     _loadData();
+  }
+
+  Future<void> _checkRecurringExpenses() async {
+    if (_isRecurringDialogShowing) {
+      // Check if dialog is ACTUALLY showing? No easy way.
+      // We rely on the flag.
+      return;
+    }
+
+    try {
+      final due = await _dataManager.getDueRecurringTransactions();
+
+      // Filter out skipped IDs
+      final pending = due
+          .where((t) => !_sessionSkippedRecurringIds.contains(t.id))
+          .toList();
+
+      if (pending.isEmpty) return;
+
+      // Split into Auto vs Manual
+      final autoProcess = pending.where((t) => t.autoPay).toList();
+      final manualProcess = pending.where((t) => !t.autoPay).toList();
+
+      // 1. Process Auto-Pay immediately
+      if (autoProcess.isNotEmpty) {
+        debugPrint(
+          '⚡ Auto-Pay: Processing ${autoProcess.length} items automatically.',
+        );
+        int autoParamCount = 0;
+        for (final t in autoProcess) {
+          await _addRecord(
+            SavingsRecord(
+              id:
+                  DateTime.now().millisecondsSinceEpoch.toString() +
+                  t.id +
+                  autoParamCount.toString(), // Unique ID
+              physicalAmount: t.physicalAmount,
+              digitalAmount: t.digitalAmount,
+              description: t.name,
+              createdAt: DateTime.now(),
+              type: t.type,
+              category: t.category,
+            ),
+          );
+          await _dataManager.markRecurringTransactionAsProcessed(
+            t.id,
+            DateTime.now(),
+          );
+          autoParamCount++;
+        }
+
+        if (mounted) {
+          SnackBarUtils.show(
+            context,
+            '⚡ ${autoProcess.length} pagos automáticos procesados (${autoProcess.map((e) => e.name).join(", ")})',
+            color: Colors.amber[700],
+          );
+        }
+      }
+
+      // 2. Show Dialog for Manual items (if any)
+      if (manualProcess.isNotEmpty && mounted) {
+        // Double check context
+        if (!context.mounted) return;
+
+        debugPrint(
+          '🔔 Manual Check: Showing dialog for ${manualProcess.length} items.',
+        );
+        _isRecurringDialogShowing = true;
+
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => DueRecurringDialog(
+            dueTransactions: manualProcess,
+            onSkip: () {
+              // Mark as skipped for this session
+              try {
+                _sessionSkippedRecurringIds.addAll(
+                  manualProcess.map((t) => t.id),
+                );
+              } catch (e) {
+                debugPrint('Error skipping: $e');
+              }
+              Navigator.of(context).pop(); // Ensure close
+            },
+            onProcess: (selected) async {
+              // Close dialog FIRST to unblock UI, then process
+              Navigator.of(context).pop();
+
+              if (selected.isEmpty) return;
+
+              try {
+                int processedCount = 0;
+                for (final t in selected) {
+                  await _addRecord(
+                    SavingsRecord(
+                      id:
+                          DateTime.now().millisecondsSinceEpoch.toString() +
+                          t.id,
+                      physicalAmount: t.physicalAmount,
+                      digitalAmount: t.digitalAmount,
+                      description: t.name,
+                      createdAt: DateTime.now(),
+                      type: t.type,
+                      category: t.category,
+                    ),
+                  );
+                  await _dataManager.markRecurringTransactionAsProcessed(
+                    t.id,
+                    DateTime.now(),
+                  );
+                  processedCount++;
+                }
+
+                if (mounted) {
+                  SnackBarUtils.show(
+                    context,
+                    '$processedCount gastos procesados',
+                  );
+                }
+              } catch (e) {
+                debugPrint('Error processing recurring: $e');
+                if (mounted) {
+                  SnackBarUtils.show(
+                    context,
+                    'Error al procesar algunos gastos',
+                  );
+                }
+              }
+            },
+          ),
+        );
+
+        // Ensure flag is reset after dialog close (awaited)
+        _isRecurringDialogShowing = false;
+      }
+    } catch (e) {
+      debugPrint('Error in recurring check loop: $e');
+      _isRecurringDialogShowing = false; // Reset on error
+    }
   }
 
   void _changeTab(int index) {
@@ -246,7 +406,7 @@ class _SavingsScreenState extends State<SavingsScreen>
     await _dataManager.savePrivacyMode(_privacyMode);
   }
 
-  void _showAddRecordDialog() {
+  void _showAddRecordDialog({RecurringTransaction? template}) {
     showDialog(
       context: context,
       builder: (context) => RecordDialog(
@@ -255,6 +415,7 @@ class _SavingsScreenState extends State<SavingsScreen>
         categoryColors: _categoryColors,
         categoryIcons: _categoryIcons,
         initialCategory: _selectedCategory != 'all' ? _selectedCategory : null,
+        template: template,
         currentPhysicalBalance: _statistics['totalPhysical'] ?? 0.0,
         currentDigitalBalance: _statistics['totalDigital'] ?? 0.0,
       ),
@@ -574,11 +735,41 @@ class _SavingsScreenState extends State<SavingsScreen>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddRecordDialog,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        child: const Icon(Icons.add),
+
+      floatingActionButton: ExpandableFab(
+        children: [
+          FabAction(
+            icon: Icons.camera_alt,
+            label: 'Escanear', // Placeholder
+            color: Colors.purple,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Próximamente: Escanear ticket')),
+              );
+            },
+          ),
+          FabAction(
+            icon: Icons.repeat,
+            label: 'Gastos Recurrentes',
+            color: Colors.blue,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => RecurringExpensesDialog(
+                  onSelectTemplate: (template) {
+                    _showAddRecordDialog(template: template);
+                  },
+                ),
+              );
+            },
+          ),
+          FabAction(
+            icon: Icons.edit_note,
+            label: l10n.newRecord,
+            color: Colors.orange,
+            onTap: _showAddRecordDialog,
+          ),
+        ],
       ),
     );
   }
@@ -646,11 +837,40 @@ class _SavingsScreenState extends State<SavingsScreen>
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : TabBarView(controller: _tabController, children: _buildTabViews()),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddRecordDialog,
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-        child: const Icon(Icons.add),
+      floatingActionButton: ExpandableFab(
+        children: [
+          FabAction(
+            icon: Icons.camera_alt,
+            label: 'Escanear',
+            color: Colors.purple,
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Próximamente: Escanear ticket')),
+              );
+            },
+          ),
+          FabAction(
+            icon: Icons.repeat,
+            label: 'Gastos Recurrentes',
+            color: Colors.blue,
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) => RecurringExpensesDialog(
+                  onSelectTemplate: (template) {
+                    _showAddRecordDialog(template: template);
+                  },
+                ),
+              );
+            },
+          ),
+          FabAction(
+            icon: Icons.edit_note,
+            label: l10n.newRecord,
+            color: Colors.orange,
+            onTap: _showAddRecordDialog,
+          ),
+        ],
       ),
     );
   }

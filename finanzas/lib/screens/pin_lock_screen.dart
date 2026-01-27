@@ -93,36 +93,46 @@ class _PinLockScreenState extends State<PinLockScreen>
 
     return Scaffold(
       backgroundColor: bgColor,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
-              _buildLogo(),
-              const SizedBox(height: 32),
-              _buildTitle(l10n),
-              const SizedBox(height: 8),
-              _buildSubtitle(l10n),
-              const SizedBox(height: 48),
-              AnimatedBuilder(
-                animation: _shakeAnimation,
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(_shakeAnimation.value, 0),
-                    child: child,
-                  );
-                },
-                child: _buildPinDots(),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 24),
+                      _buildLogo(),
+                      const SizedBox(height: 32),
+                      _buildTitle(l10n),
+                      const SizedBox(height: 8),
+                      _buildSubtitle(l10n),
+                      const SizedBox(height: 48),
+                      AnimatedBuilder(
+                        animation: _shakeAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(_shakeAnimation.value, 0),
+                            child: child,
+                          );
+                        },
+                        child: _buildPinDots(),
+                      ),
+                      if (_attempts > 0) ...[
+                        const SizedBox(height: 16),
+                        _buildAttemptWarning(l10n),
+                      ],
+                      const SizedBox(height: 48),
+                      _buildNumPad(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
               ),
-              if (_attempts > 0) ...[
-                const SizedBox(height: 16),
-                _buildAttemptWarning(l10n),
-              ],
-              const Spacer(),
-              _buildNumPad(),
-              const SizedBox(height: 24),
-            ],
+            ),
           ),
         ),
       ),

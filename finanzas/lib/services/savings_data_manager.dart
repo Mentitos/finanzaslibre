@@ -9,6 +9,8 @@ import 'data_managers/import_export_manager.dart';
 import 'data_managers/data_cleanup_manager.dart';
 import 'data_managers/goals_manager.dart';
 import '../models/savings_goal_model.dart';
+import 'data_managers/recurring_manager.dart';
+import '../models/recurring_transaction.dart';
 
 class SavingsDataManager {
   static final SavingsDataManager _instance = SavingsDataManager._internal();
@@ -21,6 +23,7 @@ class SavingsDataManager {
   late SharedPreferences _prefs;
 
   late GoalsManager _goalsManager;
+  late RecurringManager _recurringManager;
   late RecordsManager _recordsManager;
   late CategoriesManager _categoriesManager;
   late SecurityManager _securityManager;
@@ -39,6 +42,7 @@ class SavingsDataManager {
       _importExportManager = ImportExportManager();
       _dataCleanupManager = DataCleanupManager(_prefs);
       _goalsManager = GoalsManager(_prefs);
+      _recurringManager = RecurringManager(_prefs);
     } catch (e) {
       debugPrint('❌ Error initializing SavingsDataManager: $e');
     }
@@ -205,6 +209,26 @@ class SavingsDataManager {
   Future<Map<String, dynamic>> getGoalsStatistics() =>
       _goalsManager.getGoalsStatistics();
 
+  // --- DELEGACIÓN A RECURRING MANAGER ---
+  Future<List<RecurringTransaction>> loadRecurringTemplates({
+    bool forceReload = false,
+  }) => _recurringManager.loadTemplates(forceReload: forceReload);
+
+  Future<bool> saveRecurringTemplates(List<RecurringTransaction> templates) =>
+      _recurringManager.saveTemplates(templates);
+
+  Future<bool> addRecurringTemplate(RecurringTransaction template) =>
+      _recurringManager.addTemplate(template);
+
+  Future<bool> deleteRecurringTemplate(String id) =>
+      _recurringManager.deleteTemplate(id);
+
+  Future<List<RecurringTransaction>> getDueRecurringTransactions() =>
+      _recurringManager.getDueTransactions();
+
+  Future<void> markRecurringTransactionAsProcessed(String id, DateTime date) =>
+      _recurringManager.markAsProcessed(id, date);
+
   // Para compatibilidad con otros servicios
   void setUserManager(dynamic userManager) {
     _recordsManager.setUserManager(userManager);
@@ -212,11 +236,13 @@ class SavingsDataManager {
     _privacyManager.setUserManager(userManager);
     _dataCleanupManager.setUserManager(userManager);
     _goalsManager.setUserManager(userManager);
+    _recurringManager.setUserManager(userManager);
   }
 
   void clearCache() {
     _recordsManager.clearCache();
     _categoriesManager.clearCache();
     _goalsManager.clearCache();
+    _recurringManager.clearCache();
   }
 }

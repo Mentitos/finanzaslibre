@@ -307,83 +307,57 @@ class ExportImportDialogs {
             ),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.jsonFormat,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.titleMedium?.color,
+        content: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.jsonFormat,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.titleMedium?.color,
+                ),
               ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              constraints: const BoxConstraints(maxHeight: 300),
-              decoration: BoxDecoration(
-                border: Border.all(color: Theme.of(context).dividerColor),
-                borderRadius: BorderRadius.circular(8),
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[900]
-                    : Colors.grey[100],
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(12),
-                child: Text(
-                  jsonString,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontFamily: 'monospace',
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.grey[300]
-                        : Colors.black87,
+              const SizedBox(height: 12),
+              Container(
+                constraints: const BoxConstraints(maxHeight: 400),
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Theme.of(context).dividerColor),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.grey[900]
+                      : Colors.grey[100],
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(12),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                      const JsonEncoder.withIndent(
+                        '  ',
+                      ).convert(jsonDecode(jsonString)),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontFamily: 'monospace',
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.grey[300]
+                            : Colors.black87,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Clipboard.setData(ClipboardData(text: jsonString));
-                    if (dialogContext.mounted) {
-                      ScaffoldMessenger.of(dialogContext).showSnackBar(
-                        SnackBar(
-                          content: Row(
-                            children: [
-                              const Icon(
-                                Icons.check_circle,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(l10n.jsonCopiedToClipboard),
-                            ],
-                          ),
-                          duration: const Duration(seconds: 2),
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.copy),
-                  label: Text(l10n.copy),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    try {
-                      final exportDir = await _getExportDirectory();
-                      final file = File(
-                        '${exportDir.path}/datos_finanzas_completo.json',
-                      );
-                      await file.writeAsString(jsonString);
-
-                      debugPrint('✅ JSON guardado en: ${file.path}');
-
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: jsonString));
                       if (dialogContext.mounted) {
-                        Navigator.pop(dialogContext);
-
                         ScaffoldMessenger.of(dialogContext).showSnackBar(
                           SnackBar(
                             content: Row(
@@ -393,116 +367,153 @@ class ExportImportDialogs {
                                   color: Colors.white,
                                 ),
                                 const SizedBox(width: 8),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        l10n.fileSaved(
-                                          'datos_finanzas_completo.json',
+                                Text(l10n.jsonCopiedToClipboard),
+                              ],
+                            ),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.copy),
+                    label: Text(l10n.copy),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      try {
+                        final exportDir = await _getExportDirectory();
+                        final file = File(
+                          '${exportDir.path}/datos_finanzas_completo.json',
+                        );
+                        await file.writeAsString(jsonString);
+
+                        debugPrint('✅ JSON guardado en: ${file.path}');
+
+                        if (dialogContext.mounted) {
+                          Navigator.pop(dialogContext);
+
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.check_circle,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          l10n.fileSaved(
+                                            'datos_finanzas_completo.json',
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        file.path,
-                                        style: const TextStyle(
-                                          fontSize: 9,
-                                          color: Colors.white70,
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          file.path,
+                                          style: const TextStyle(
+                                            fontSize: 9,
+                                            color: Colors.white70,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Wrap(
-                                        spacing: 8,
-                                        children: [
-                                          GestureDetector(
-                                            onTap: () {
-                                              Clipboard.setData(
-                                                ClipboardData(text: file.path),
-                                              );
-                                              if (dialogContext.mounted) {
-                                                ScaffoldMessenger.of(
-                                                  dialogContext,
-                                                ).showSnackBar(
-                                                  SnackBar(
-                                                    content: Text(
-                                                      l10n.pathCopied,
-                                                    ),
-                                                    duration: const Duration(
-                                                      seconds: 1,
-                                                    ),
+                                        const SizedBox(height: 8),
+                                        Wrap(
+                                          spacing: 8,
+                                          children: [
+                                            GestureDetector(
+                                              onTap: () {
+                                                Clipboard.setData(
+                                                  ClipboardData(
+                                                    text: file.path,
                                                   ),
                                                 );
-                                              }
-                                            },
-                                            child: Text(
-                                              l10n.copyPath,
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.yellow,
-                                                fontWeight: FontWeight.bold,
-                                                decoration:
-                                                    TextDecoration.underline,
+                                                if (dialogContext.mounted) {
+                                                  ScaffoldMessenger.of(
+                                                    dialogContext,
+                                                  ).showSnackBar(
+                                                    SnackBar(
+                                                      content: Text(
+                                                        l10n.pathCopied,
+                                                      ),
+                                                      duration: const Duration(
+                                                        seconds: 1,
+                                                      ),
+                                                    ),
+                                                  );
+                                                }
+                                              },
+                                              child: Text(
+                                                l10n.copyPath,
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.yellow,
+                                                  fontWeight: FontWeight.bold,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          GestureDetector(
-                                            onTap: () {
-                                              Share.shareXFiles([
-                                                XFile(file.path),
-                                              ]);
-                                            },
-                                            child: Text(
-                                              l10n.share,
-                                              style: const TextStyle(
-                                                fontSize: 11,
-                                                color: Colors.yellow,
-                                                fontWeight: FontWeight.bold,
-                                                decoration:
-                                                    TextDecoration.underline,
+                                            GestureDetector(
+                                              onTap: () {
+                                                Share.shareXFiles([
+                                                  XFile(file.path),
+                                                ]);
+                                              },
+                                              child: Text(
+                                                l10n.share,
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                  color: Colors.yellow,
+                                                  fontWeight: FontWeight.bold,
+                                                  decoration:
+                                                      TextDecoration.underline,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 6),
                             ),
-                            behavior: SnackBarBehavior.floating,
-                            duration: const Duration(seconds: 6),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      debugPrint('❌ Error guardando JSON: $e');
-                      if (dialogContext.mounted) {
-                        ScaffoldMessenger.of(dialogContext).showSnackBar(
-                          SnackBar(
-                            content: Row(
-                              children: [
-                                const Icon(Icons.error, color: Colors.white),
-                                const SizedBox(width: 8),
-                                Expanded(child: Text('${l10n.error}: $e')),
-                              ],
+                          );
+                        }
+                      } catch (e) {
+                        debugPrint('❌ Error guardando JSON: $e');
+                        if (dialogContext.mounted) {
+                          ScaffoldMessenger.of(dialogContext).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Icon(Icons.error, color: Colors.white),
+                                  const SizedBox(width: 8),
+                                  Expanded(child: Text('${l10n.error}: $e')),
+                                ],
+                              ),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
                             ),
-                            backgroundColor: Colors.red,
-                            behavior: SnackBarBehavior.floating,
-                          ),
-                        );
+                          );
+                        }
                       }
-                    }
-                  },
-                  icon: const Icon(Icons.download),
-                  label: Text(l10n.download),
-                ),
-              ],
-            ),
-          ],
+                    },
+                    icon: const Icon(Icons.download),
+                    label: Text(l10n.download),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(

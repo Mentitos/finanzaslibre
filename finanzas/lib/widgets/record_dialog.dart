@@ -4,117 +4,8 @@ import '../models/savings_record.dart';
 import '../constants/app_constants.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/category_translations.dart';
-
-class SignedThousandsSeparatorInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-    if (newValue.text == '-') {
-      return newValue;
-    }
-
-    String text = newValue.text.replaceAll('.', '');
-
-    if (!RegExp(r'^-?\d*$').hasMatch(text)) {
-      return oldValue;
-    }
-
-    bool isNegative = text.startsWith('-');
-    String numericText = isNegative ? text.substring(1) : text;
-
-    if (numericText.isEmpty) {
-      return newValue; // can be empty or just "-"
-    }
-
-    String formatted = _formatWithThousands(numericText);
-    if (isNegative) {
-      formatted = '-$formatted';
-    }
-
-    return newValue.copyWith(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-
-  String _formatWithThousands(String text) {
-    if (text.isEmpty) return text;
-
-    String reversed = text.split('').reversed.join();
-    String formatted = '';
-
-    for (int i = 0; i < reversed.length; i++) {
-      if (i > 0 && i % 3 == 0) {
-        formatted += '.';
-      }
-      formatted += reversed[i];
-    }
-
-    return formatted.split('').reversed.join();
-  }
-}
-
-class ThousandsSeparatorInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-
-    String text = newValue.text.replaceAll('.', '');
-
-    if (!RegExp(r'^\d+$').hasMatch(text)) {
-      return oldValue;
-    }
-
-    String formatted = _formatWithThousands(text);
-
-    int selectionIndex = newValue.selection.end;
-    int oldDots =
-        oldValue.text.substring(0, oldValue.selection.end).split('.').length -
-        1;
-    int newDots =
-        formatted
-            .substring(
-              0,
-              selectionIndex + (formatted.split('.').length - 1 - oldDots),
-            )
-            .split('.')
-            .length -
-        1;
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(
-        offset: selectionIndex + newDots - oldDots,
-      ),
-    );
-  }
-
-  String _formatWithThousands(String text) {
-    if (text.isEmpty) return text;
-
-    String reversed = text.split('').reversed.join();
-    String formatted = '';
-
-    for (int i = 0; i < reversed.length; i++) {
-      if (i > 0 && i % 3 == 0) {
-        formatted += '.';
-      }
-      formatted += reversed[i];
-    }
-
-    return formatted.split('').reversed.join();
-  }
-}
+import '../models/recurring_transaction.dart';
+import '../utils/input_formatters.dart';
 
 class RecordDialog extends StatefulWidget {
   final Function(SavingsRecord) onSave;
@@ -123,6 +14,7 @@ class RecordDialog extends StatefulWidget {
   final Map<String, IconData>? categoryIcons;
   final SavingsRecord? record;
   final String? initialCategory;
+  final RecurringTransaction? template; // New parameter
   final double? currentPhysicalBalance;
   final double? currentDigitalBalance;
 
@@ -134,6 +26,7 @@ class RecordDialog extends StatefulWidget {
     this.categoryIcons,
     this.record,
     this.initialCategory,
+    this.template, // New parameter
     this.currentPhysicalBalance,
     this.currentDigitalBalance,
   });
@@ -147,7 +40,6 @@ class _RecordDialogState extends State<RecordDialog> {
   final _physicalController = TextEditingController();
   final _digitalController = TextEditingController();
   final _descriptionController = TextEditingController();
-  final _notesController = TextEditingController();
 
   RecordType _selectedType = RecordType.deposit;
   String _selectedCategory = 'General';
@@ -171,7 +63,6 @@ class _RecordDialogState extends State<RecordDialog> {
           ? _formatNumberWithDots(record.digitalAmount.toStringAsFixed(0))
           : '';
       _descriptionController.text = record.description;
-      _notesController.text = record.notes ?? '';
       _selectedType = record.type;
       _selectedCategory = record.category;
 
@@ -251,18 +142,19 @@ class _RecordDialogState extends State<RecordDialog> {
     _physicalController.dispose();
     _digitalController.dispose();
     _descriptionController.dispose();
-    _notesController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isDesktop = screenWidth > 800;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.95,
+        width: isDesktop ? 800 : screenWidth * 0.95,
         constraints: const BoxConstraints(maxHeight: 700),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -270,21 +162,34 @@ class _RecordDialogState extends State<RecordDialog> {
             _buildHeader(context, l10n),
             Flexible(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildTypeSelector(context, l10n),
-                      const SizedBox(height: 24),
-                      _buildAmountSection(context, l10n),
-                      const SizedBox(height: 24),
-                      _buildCategorySelector(context, l10n),
-                      const SizedBox(height: 20),
-                      _buildDescriptionInput(context, l10n),
-                      const SizedBox(height: 16),
-                      _buildNotesInput(context, l10n),
+                      const SizedBox(height: 32),
+                      _buildAmountSection(context, l10n, isDesktop),
+                      const SizedBox(height: 32),
+                      if (isDesktop)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: _buildCategorySelector(context, l10n),
+                            ),
+                            const SizedBox(width: 20),
+                            Expanded(
+                              child: _buildDescriptionInput(context, l10n),
+                            ),
+                          ],
+                        )
+                      else ...[
+                        _buildCategorySelector(context, l10n),
+                        const SizedBox(height: 24),
+                        _buildDescriptionInput(context, l10n),
+                      ],
                     ],
                   ),
                 ),
@@ -319,7 +224,7 @@ class _RecordDialogState extends State<RecordDialog> {
     iconColor = headerColor;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: headerColor.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.only(
@@ -330,7 +235,7 @@ class _RecordDialogState extends State<RecordDialog> {
       child: Row(
         children: [
           Icon(headerIcon, color: iconColor, size: 28),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             child: Text(
               _isEditing ? l10n.editRecord : l10n.newRecord,
@@ -358,7 +263,7 @@ class _RecordDialogState extends State<RecordDialog> {
             context,
           ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 16),
         Row(
           children: [
             Expanded(
@@ -370,7 +275,7 @@ class _RecordDialogState extends State<RecordDialog> {
                 Colors.green,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 16),
             Expanded(
               child: _buildTypeOption(
                 context,
@@ -380,7 +285,7 @@ class _RecordDialogState extends State<RecordDialog> {
                 Colors.red,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 16),
             Expanded(
               child: _buildTypeOption(
                 context,
@@ -413,27 +318,36 @@ class _RecordDialogState extends State<RecordDialog> {
       onTap: () => _onTypeChanged(type),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         decoration: BoxDecoration(
           color: isSelected ? color : unselectedBg,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : unselectedBorder!,
             width: isSelected ? 2 : 1,
           ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           children: [
             Icon(
               icon,
               color: isSelected ? Colors.white : unselectedColor,
-              size: 28,
+              size: 32,
             ),
             const SizedBox(height: 8),
             Text(
               label,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.bold,
                 color: isSelected ? Colors.white : unselectedColor,
               ),
@@ -445,60 +359,93 @@ class _RecordDialogState extends State<RecordDialog> {
     );
   }
 
-  Widget _buildAmountSection(BuildContext context, AppLocalizations l10n) {
+  Widget _buildAmountSection(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isDesktop,
+  ) {
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
     final isAdjustment = _selectedType == RecordType.adjustment;
+
+    final physicalField = _buildAmountField(
+      context,
+      l10n,
+      controller: _physicalController,
+      label: l10n.physicalMoney,
+      icon: Icons.account_balance_wallet,
+      color: Colors.blue,
+    );
+
+    final digitalField = _buildAmountField(
+      context,
+      l10n,
+      controller: _digitalController,
+      label: l10n.digitalMoney,
+      icon: Icons.credit_card,
+      color: Colors.purple,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          isAdjustment ? l10n.newBalance : l10n.amounts,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        _buildAmountField(
-          context,
-          l10n,
-          controller: _physicalController,
-          label: l10n.physicalMoney,
-          icon: Icons.account_balance_wallet,
-          color: Colors.blue,
-        ),
-        const SizedBox(height: 16),
-        _buildAmountField(
-          context,
-          l10n,
-          controller: _digitalController,
-          label: l10n.digitalMoney,
-          icon: Icons.credit_card,
-          color: Colors.purple,
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.blue.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.info_outline, size: 16, color: Colors.blue[700]),
+        Row(
+          children: [
+            Text(
+              isAdjustment ? l10n.newBalance : l10n.amounts,
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            if (!isAdjustment) ...[
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  isAdjustment
-                      ? l10n.adjustmentInfo
-                      : l10n.enterAtLeastOneAmount,
-                  style: TextStyle(fontSize: 12, color: textColor),
+              Text(
+                '(${l10n.enterAtLeastOneAmount})',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                  fontWeight: FontWeight.normal,
                 ),
               ),
             ],
-          ),
+          ],
         ),
+        const SizedBox(height: 16),
+        if (isDesktop)
+          Row(
+            children: [
+              Expanded(child: physicalField),
+              const SizedBox(width: 20),
+              Expanded(child: digitalField),
+            ],
+          )
+        else ...[
+          physicalField,
+          const SizedBox(height: 16),
+          digitalField,
+        ],
+        if (isAdjustment) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.blue.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 20, color: Colors.blue[700]),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    l10n.adjustmentInfo,
+                    style: TextStyle(fontSize: 13, color: textColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -518,7 +465,7 @@ class _RecordDialogState extends State<RecordDialog> {
     return Container(
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: controller.text.isNotEmpty ? color : borderColor!,
           width: controller.text.isNotEmpty ? 2 : 1,
@@ -528,7 +475,7 @@ class _RecordDialogState extends State<RecordDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
             child: Row(
               children: [
                 Icon(icon, color: color, size: 20),
@@ -536,7 +483,7 @@ class _RecordDialogState extends State<RecordDialog> {
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 14,
                     fontWeight: FontWeight.w600,
                     color: color,
                   ),
@@ -545,14 +492,14 @@ class _RecordDialogState extends State<RecordDialog> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
                   '\$',
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 36,
                     fontWeight: FontWeight.bold,
                     color: controller.text.isEmpty
                         ? (isDark ? Colors.grey[600] : Colors.grey[400])
@@ -566,7 +513,7 @@ class _RecordDialogState extends State<RecordDialog> {
                     decoration: InputDecoration(
                       hintText: '0',
                       hintStyle: TextStyle(
-                        fontSize: 32,
+                        fontSize: 36,
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.grey[700] : Colors.grey[300],
                       ),
@@ -575,7 +522,7 @@ class _RecordDialogState extends State<RecordDialog> {
                       contentPadding: EdgeInsets.zero,
                     ),
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 36,
                       fontWeight: FontWeight.bold,
                       color: color,
                     ),
@@ -607,7 +554,7 @@ class _RecordDialogState extends State<RecordDialog> {
                 ),
                 if (controller.text.isNotEmpty)
                   IconButton(
-                    icon: Icon(Icons.clear, color: color, size: 20),
+                    icon: Icon(Icons.clear, color: color, size: 24),
                     onPressed: () => setState(() => controller.clear()),
                   ),
               ],
@@ -621,14 +568,39 @@ class _RecordDialogState extends State<RecordDialog> {
   Widget _buildCategorySelector(BuildContext context, AppLocalizations l10n) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    if (_selectedType == RecordType.adjustment) {
+      return TextFormField(
+        initialValue: l10n.translateCategory('General'),
+        enabled: false,
+        decoration: InputDecoration(
+          labelText: l10n.category,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
+          filled: true,
+          fillColor: isDark ? Colors.grey[900] : Colors.grey[200],
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
+          // prefixIcon: const Icon(Icons.tune), // Descomentar si se quiere ícono
+        ),
+        style: TextStyle(
+          color: isDark ? Colors.grey[400] : Colors.grey[600],
+          fontWeight: FontWeight.bold,
+        ),
+      );
+    }
+
     return DropdownButtonFormField<String>(
       initialValue: _selectedCategory,
       decoration: InputDecoration(
         labelText: l10n.category,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        prefixIcon: const Icon(Icons.category),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         filled: true,
         fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
       items: widget.categories.map((category) {
         return DropdownMenuItem(
@@ -638,9 +610,9 @@ class _RecordDialogState extends State<RecordDialog> {
               Icon(
                 AppConstants.getCategoryIcon(category, widget.categoryIcons),
                 color: _getCategoryColor(category),
-                size: 20,
+                size: 22,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Text(AppLocalizations.of(context)!.translateCategory(category)),
             ],
           ),
@@ -658,33 +630,19 @@ class _RecordDialogState extends State<RecordDialog> {
       controller: _descriptionController,
       decoration: InputDecoration(
         labelText: l10n.description,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
         prefixIcon: const Icon(Icons.description),
         hintText: l10n.descriptionHintRecord,
         filled: true,
         fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
       ),
-      maxLines: 2,
-      maxLength: 100,
-      textCapitalization: TextCapitalization.sentences,
-    );
-  }
-
-  Widget _buildNotesInput(BuildContext context, AppLocalizations l10n) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return TextFormField(
-      controller: _notesController,
-      decoration: InputDecoration(
-        labelText: l10n.additionalNotes,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        prefixIcon: const Icon(Icons.note_add),
-        hintText: l10n.additionalNotesHint,
-        filled: true,
-        fillColor: isDark ? Colors.grey[850] : Colors.grey[50],
-      ),
+      minLines: 1,
       maxLines: 3,
-      maxLength: 200,
+      maxLength: 100,
       textCapitalization: TextCapitalization.sentences,
     );
   }
@@ -705,7 +663,7 @@ class _RecordDialogState extends State<RecordDialog> {
     }
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: isDark ? Colors.grey[900] : Colors.grey[50],
         borderRadius: const BorderRadius.only(
@@ -719,30 +677,30 @@ class _RecordDialogState extends State<RecordDialog> {
             child: OutlinedButton(
               onPressed: _isLoading ? null : () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: Text(l10n.cancel),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: FilledButton(
               onPressed: _isLoading ? null : () => _saveRecord(l10n),
               style: FilledButton.styleFrom(
                 backgroundColor: buttonColor,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child: _isLoading
                   ? const SizedBox(
-                      width: 20,
-                      height: 20,
+                      width: 24,
+                      height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: Colors.white,
@@ -791,6 +749,22 @@ class _RecordDialogState extends State<RecordDialog> {
       final physicalDelta = newPhysical - (widget.currentPhysicalBalance ?? 0);
       final digitalDelta = newDigital - (widget.currentDigitalBalance ?? 0);
 
+      if (physicalDelta == 0 && digitalDelta == 0) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.localeName == 'es'
+                  ? 'No hay cambios en el balance'
+                  : 'No balance changes detected',
+            ),
+            backgroundColor: Colors.orange,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
       physicalAmountToSave = physicalDelta;
       digitalAmountToSave = digitalDelta;
     }
@@ -804,10 +778,10 @@ class _RecordDialogState extends State<RecordDialog> {
       description: _descriptionController.text.trim(),
       createdAt: _isEditing ? widget.record!.createdAt : DateTime.now(),
       type: typeToSave,
-      category: _selectedCategory,
-      notes: _notesController.text.trim().isEmpty
-          ? null
-          : _notesController.text.trim(),
+      category: _selectedType == RecordType.adjustment
+          ? 'General'
+          : _selectedCategory,
+      notes: null,
     );
 
     widget.onSave(record);

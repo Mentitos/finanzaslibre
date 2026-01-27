@@ -68,25 +68,35 @@ class _PinSetupScreenState extends State<PinSetupScreen> {
         elevation: 0,
         foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const Spacer(),
-              _buildIcon(),
-              const SizedBox(height: 32),
-              _buildTitle(l10n),
-              const SizedBox(height: 48),
-              _buildPinDots(),
-              if (!_isVerifyingCurrent && !_isConfirming) ...[
-                const SizedBox(height: 32),
-                _buildBiometricToggle(l10n),
-              ],
-              const Spacer(),
-              _buildNumPad(),
-              const SizedBox(height: 24),
-            ],
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 24),
+                      _buildIcon(),
+                      const SizedBox(height: 32),
+                      _buildTitle(l10n),
+                      const SizedBox(height: 48),
+                      _buildPinDots(),
+                      if (!_isVerifyingCurrent && !_isConfirming) ...[
+                        const SizedBox(height: 32),
+                        _buildBiometricToggle(l10n),
+                      ],
+                      const SizedBox(height: 48),
+                      _buildNumPad(),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
